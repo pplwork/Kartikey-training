@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form Validation</title>
+    <script src="Task2.js" defer></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Form Validation</h1>
+      <div class="formContainer">
+        <form action="#">
+          <div>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" required />
+          </div>
+          <div>
+            <label for="password">Password</label>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              required
+              oninput="setCustomValidity('')"
+            />
+          </div>
+          <div>
+            <label for="sex">Sex</label>
+            <select name="sex" id="sex">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <p>Roles</p>
+          <div>
+            <label for="r1">Admin</label>
+            <input type="radio" name="role" id="r1" value="Admin" required />
+            <label for="r2">User</label>
+            <input type="radio" name="role" id="r2" value="User" />
+          </div>
+          <p>Permissions</p>
+          <div>
+            <label for="p1">Permission 1</label>
+            <input
+              type="checkbox"
+              name="permission"
+              id="p1"
+              value="Permission 1"
+            />
+            <label for="p2">Permission 2</label>
+            <input
+              type="checkbox"
+              name="permission"
+              id="p2"
+              value="Permission 2"
+            />
+            <label for="p3">Permission 3</label>
+            <input
+              type="checkbox"
+              name="permission"
+              id="p3"
+              value="Permission 3"
+            />
+            <label for="p4">Permission 4</label>
+            <input
+              type="checkbox"
+              name="permission"
+              id="p4"
+              value="Permission 4"
+            />
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+        <div id="userData" class="hidden">
+          <div id="userEmail"></div>
+          <div id="userPassword"></div>
+          <div id="userSex"></div>
+          <div id="userRole"></div>
+          <div id="userPermissions"></div>
+          <button>Confirm</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
