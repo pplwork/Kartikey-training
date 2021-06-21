@@ -1,0 +1,12 @@
+body {
+  background-color: var(--background);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 5rem;
+  gap: 5rem;
+  min-height: 100vh;
+}

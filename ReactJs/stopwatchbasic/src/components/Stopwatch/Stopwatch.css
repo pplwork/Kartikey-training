@@ -1,0 +1,27 @@
+.clockContainer {
+  background-color: var(--white);
+  border-radius: 50%;
+  height: 50vw;
+  width: 50vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0px 0px 1rem 1rem var(--background-dark);
+}
+
+.Timer {
+  font-family: "Roboto Mono", sans-serif;
+  font-size: 1.2rem;
+}
+
+#clockBorder {
+  position: absolute;
+  width: 55vw;
+  height: 55vw;
+  transform: rotateZ(-90deg);
+}
+#percentage {
+  stroke-width: 0.2rem;
+  stroke-linecap: round;
+  stroke: var(--pink);
+}

@@ -1,0 +1,19 @@
+:root {
+  --background: #e9f2f7;
+  --background-light: #ebf0f4;
+  --background-dark: #e0e9f2;
+  --pink: #f93388;
+  --blue: #385e8f;
+  --white: #fbfaf9;
+}
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* font-family: 'Montserrat', sans-serif;
+font-family: 'Open Sans', sans-serif;
+font-family: 'Open Sans Condensed', sans-serif;
+font-family: 'Raleway', sans-serif;
+font-family: 'Roboto', sans-serif; */
