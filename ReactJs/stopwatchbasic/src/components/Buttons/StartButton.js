@@ -1,38 +1,48 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
 import "./Buttons.css";
 
 class StartButton extends Component {
-  constructor(props) {
-    super(props);
-    this.start = props.start;
-    this.pause = props.pause;
-    this.timer = props.timer;
-    this.state = {
-      isRunning: props.timer.isRunning,
-    };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.timer.isRunning !== this.props.timer.isRunning) {
-      this.setState({
-        isRunning: this.props.timer.isRunning,
-      });
-      document.querySelector("#startBtn").classList.toggle("active");
-    }
-  }
-
   handleClick = (e) => {
-    this.state.isRunning ? this.pause() : this.start();
+    // was running , we need to pause
+    if (this.props.isRunning) {
+      clearInterval(this.props.intervalId);
+      this.props.setIntervalId(null);
+    } else {
+      // was not running , need to start
+      this.props.setIntervalId(setInterval(this.props.incrementTime, 10));
+    }
   };
   render() {
     return (
-      <div className="button" id="startBtn" onClick={this.handleClick}>
-        <FontAwesomeIcon icon={this.state.isRunning ? faPause : faPlay} />
+      <div
+        className={`button ${this.props.isRunning ? "active" : ""}`}
+        onClick={this.handleClick}
+      >
+        <FontAwesomeIcon icon={this.props.isRunning ? faPause : faPlay} />
       </div>
     );
   }
 }
 
-export default StartButton;
+const mapStateToProps = (state) => {
+  return {
+    isRunning: state.isRunning,
+    intervalId: state.intervalId,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    incrementTime: () => {
+      dispatch({ type: "INCREMENT_TIME" });
+    },
+    setIntervalId: (id) => {
+      dispatch({ type: "SET_INTERVAL_ID", payload: id });
+    },
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(StartButton);

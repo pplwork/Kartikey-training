@@ -6,16 +6,14 @@ import ResetButton from "../Buttons/ResetButton";
 
 import "./Controls.css";
 
-const Controls = ({ timer, start, pause, stop, lap, reset }) => {
+const Controls = () => {
   return (
-    <>
-      <div className="controlsContainer">
-        <StartButton start={start} pause={pause} timer={timer} />
-        <StopButton stop={stop} />
-        <LapButton lap={lap} />
-        <ResetButton reset={reset} timer={timer} />
-      </div>
-    </>
+    <div className="controlsContainer">
+      <StartButton />
+      <StopButton />
+      <LapButton />
+      <ResetButton />
+    </div>
   );
 };
 
