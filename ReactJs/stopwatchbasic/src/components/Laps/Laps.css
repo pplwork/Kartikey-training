@@ -16,15 +16,15 @@
   background-color: var(--blue);
   color: var(--white);
   font-family: "Montserrat", sans-serif;
-  font-size: 1rem;
   align-items: center;
 }
 .lapLeft {
   flex: 1;
+  font-size: 1rem;
 }
 
 .lapRight {
-  flex: 1;
+  flex: 2;
   font-size: 0.6rem;
   opacity: 1;
   display: flex;
@@ -42,4 +42,73 @@
 
 .lapValue {
   font-size: 0.8rem;
+}
+
+@media only screen and (max-width: 320px) {
+  .lapRight {
+    font-size: 0.6rem;
+  }
+  .lapValue {
+    font-size: 0.5rem;
+  }
+  .lapLeft {
+    font-size: 0.6rem;
+  }
+}
+
+@media only screen and (min-width: 321px) {
+  .lapLeft {
+    font-size: 0.8rem;
+  }
+  .lapRight {
+    font-size: 0.6rem;
+  }
+  .lapValue {
+    font-size: 0.8rem;
+  }
+}
+
+@media only screen and (min-width: 600px) {
+  .lapRight {
+    font-size: 0.8rem;
+  }
+  .lapLeft {
+    font-size: 1rem;
+  }
+  .lapValue {
+    font-size: 1rem;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  .lap {
+    width: 60vw;
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  .lap {
+    width: 60vw;
+  }
+}
+
+@media only screen and (min-width: 1440px) {
+  .lap {
+    width: 50vw;
+  }
+}
+
+@media only screen and (min-width: 2560px) {
+  .lap {
+    width: 40vw;
+  }
+  .lapRight {
+    font-size: 1rem;
+  }
+  .lapLeft {
+    font-size: 1.5rem;
+  }
+  .lapValue {
+    font-size: 1.5rem;
+  }
 }

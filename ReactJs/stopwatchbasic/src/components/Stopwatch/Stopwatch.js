@@ -5,6 +5,7 @@ class StopWatch extends Component {
     super(props);
     this.timer = { props };
     this.percentageRef = createRef();
+    this.clockRef = createRef();
     this.hours = 0;
     this.minutes = 0;
     this.seconds = 0;
@@ -12,7 +13,8 @@ class StopWatch extends Component {
   }
   //setting initial dot border ring
   componentDidMount() {
-    let radius = this.percentageRef.current.getBoundingClientRect().height / 2;
+    let radius = this.clockRef.current.getBoundingClientRect().height / 2;
+    this.percentageRef.current.setAttribute("r", radius);
     this.percentageRef.current.setAttribute(
       "stroke-dasharray",
       `${0},${2 * Math.PI * radius}`
@@ -21,7 +23,8 @@ class StopWatch extends Component {
   //updating ring to match seconds
   componentDidUpdate() {
     // this.timer = this.props.timer;
-    let radius = this.percentageRef.current.getBoundingClientRect().height / 2;
+    let radius = this.clockRef.current.getBoundingClientRect().height / 2;
+    this.percentageRef.current.setAttribute("r", radius);
     this.percentageRef.current.setAttribute(
       "stroke-dasharray",
       `${(((this.timer.elapsed % 60000) / 1000) * Math.PI * radius) / 30},${
@@ -55,7 +58,7 @@ class StopWatch extends Component {
   render() {
     return (
       <>
-        <div className="clockContainer">
+        <div className="clockContainer" ref={this.clockRef}>
           <svg id="clockBorder">
             <circle
               ref={this.percentageRef}

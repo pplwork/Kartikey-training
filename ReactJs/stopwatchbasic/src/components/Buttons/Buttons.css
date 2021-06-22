@@ -18,3 +18,59 @@
   background-color: var(--pink);
   color: var(--white);
 }
+
+@media only screen and (max-width: 320px) {
+  .button {
+    font-size: 1rem;
+    height: 2.5rem;
+    width: 2.5rem;
+  }
+}
+
+@media only screen and (min-width: 321px) {
+  .button {
+    font-size: 1rem;
+    height: 2.5rem;
+    width: 2.5rem;
+  }
+}
+
+@media only screen and (min-width: 600px) {
+  .button {
+    font-size: 1rem;
+    height: 2.5rem;
+    width: 2.5rem;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  .button {
+    font-size: 1rem;
+    height: 2.5rem;
+    width: 2.5rem;
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  .button {
+    font-size: 1rem;
+    height: 2.5rem;
+    width: 2.5rem;
+  }
+}
+
+@media only screen and (min-width: 1440px) {
+  .button {
+    font-size: 1.5rem;
+    height: 4rem;
+    width: 4rem;
+  }
+}
+
+@media only screen and (min-width: 2560px) {
+  .button {
+    font-size: 1.5rem;
+    height: 4rem;
+    width: 4rem;
+  }
+}

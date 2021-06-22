@@ -16,12 +16,148 @@
 
 #clockBorder {
   position: absolute;
-  width: 55vw;
-  height: 55vw;
+  width: calc(50vw + 0.2rem);
+  height: calc(50vw + 0.2rem);
   transform: rotateZ(-90deg);
 }
 #percentage {
   stroke-width: 0.2rem;
   stroke-linecap: round;
   stroke: var(--pink);
+}
+
+@media only screen and (max-width: 320px) {
+  .Timer {
+    font-size: 1rem;
+  }
+}
+
+@media only screen and (min-width: 321px) {
+  .Timer {
+    font-size: 1rem;
+  }
+  .clockContainer {
+    height: 45vw;
+    width: 45vw;
+  }
+  #clockborder {
+    height: calc(45vw + 0.2rem);
+    width: calc(45vw + 0.2rem);
+  }
+}
+@media only screen and (min-width: 400px) {
+  .Timer {
+    font-size: 1rem;
+  }
+  .clockContainer {
+    height: 40vw;
+    width: 40vw;
+  }
+  #clockborder {
+    height: calc(40vw + 0.2rem);
+    width: calc(40vw + 0.2rem);
+  }
+}
+@media only screen and (min-width: 500px) {
+  .Timer {
+    font-size: 1rem;
+  }
+  .clockContainer {
+    height: 33vw;
+    width: 33vw;
+  }
+  #clockborder {
+    height: calc(33vw + 0.2rem);
+    width: calc(33vw + 0.2rem);
+  }
+}
+
+@media only screen and (min-width: 600px) {
+  .Timer {
+    font-size: 1rem;
+  }
+  .clockContainer {
+    height: 30vw;
+    width: 30vw;
+  }
+  #clockBorder {
+    height: calc(30vw + 0.2rem);
+    width: calc(30vw + 0.2rem);
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  .clockContainer {
+    height: 25vw;
+    width: 25vw;
+  }
+  #clockBorder {
+    height: calc(25vw + 0.2rem);
+    width: calc(25vw + 0.2rem);
+  }
+  .Timer {
+    font-size: 1rem;
+  }
+}
+@media only screen and (min-width: 900px) {
+  .clockContainer {
+    height: 20vw;
+    width: 20vw;
+  }
+  #clockborder {
+    height: calc(20vw + 0.2rem);
+    width: calc(20vw + 0.2rem);
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  .clockContainer {
+    height: 18vw;
+    width: 18vw;
+  }
+  #clockBorder {
+    height: calc(18w + 0.2rem);
+    width: calc(18vw + 0.2rem);
+  }
+}
+@media only screen and (min-width: 1210px) {
+  .clockContainer {
+    height: 15vw;
+    width: 15vw;
+  }
+  #clockBorder {
+    height: calc(15vw + 0.2rem);
+    width: calc(15vw + 0.2rem);
+  }
+  .Timer {
+    font-size: 1rem;
+  }
+}
+
+@media only screen and (min-width: 1440px) {
+  .clockContainer {
+    height: 13vw;
+    width: 13vw;
+  }
+  #clockBorder {
+    height: calc(13vw + 0.3rem);
+    width: calc(13vw + 0.3rem);
+  }
+  .Timer {
+    font-size: 1rem;
+  }
+}
+
+@media only screen and (min-width: 2560px) {
+  .clockContainer {
+    height: 12vw;
+    width: 12vw;
+  }
+  #clockBorder {
+    height: calc(12vw + 0.2rem);
+    width: calc(12vw + 0.2rem);
+  }
+  .Timer {
+    font-size: 1.5rem;
+  }
 }
