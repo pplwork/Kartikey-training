@@ -34,15 +34,12 @@ const rootReducer = (state = initState, action) => {
         intervalId: -1,
       };
     case "RESET_WATCH":
-      if (!state.isRunning) {
-        return {
-          laps: [],
-          isRunning: false,
-          elapsed: 0,
-          intervalId: null,
-        };
-      }
-      return state;
+      return {
+        laps: [],
+        isRunning: false,
+        elapsed: 0,
+        intervalId: null,
+      };
     case "LAP":
       if (state.isRunning)
         return {

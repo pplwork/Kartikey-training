@@ -1,9 +1,11 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import timeParser from "../../Helpers/timeParser";
 
 import "./Laps.css";
-const Laps = ({ laps }) => {
+
+const Laps = () => {
+  const laps = useSelector((state) => state.laps);
   return (
     <div className="lapContainer">
       {laps.map((ele, index) => {
@@ -29,10 +31,4 @@ const Laps = ({ laps }) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    laps: state.laps,
-  };
-};
-
-export default connect(mapStateToProps)(Laps);
+export default Laps;

@@ -1,48 +1,39 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
 import "./Buttons.css";
 
-class StartButton extends Component {
-  handleClick = (e) => {
+const StartButton = () => {
+  const [isRunning, intervalId] = useSelector((state) => [
+    state.isRunning,
+    state.intervalId,
+  ]);
+  const dispatch = useDispatch();
+  const handleClick = (e) => {
     // was running , we need to pause
-    if (this.props.isRunning) {
-      clearInterval(this.props.intervalId);
-      this.props.setIntervalId(null);
+    if (isRunning) {
+      clearInterval(intervalId);
+      dispatch({
+        type: "SET_INTERVAL_ID",
+        payload: null,
+      });
     } else {
       // was not running , need to start
-      this.props.setIntervalId(setInterval(this.props.incrementTime, 10));
+      dispatch({
+        type: "SET_INTERVAL_ID",
+        payload: setInterval(() => dispatch({ type: "INCREMENT_TIME" }), 10),
+      });
     }
   };
-  render() {
-    return (
-      <div
-        className={`button ${this.props.isRunning ? "active" : ""}`}
-        onClick={this.handleClick}
-      >
-        <FontAwesomeIcon icon={this.props.isRunning ? faPause : faPlay} />
-      </div>
-    );
-  }
-}
-
-const mapStateToProps = (state) => {
-  return {
-    isRunning: state.isRunning,
-    intervalId: state.intervalId,
-  };
+  return (
+    <div
+      className={`button ${isRunning ? "active" : ""}`}
+      onClick={handleClick}
+    >
+      <FontAwesomeIcon icon={isRunning ? faPause : faPlay} />
+    </div>
+  );
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    incrementTime: () => {
-      dispatch({ type: "INCREMENT_TIME" });
-    },
-    setIntervalId: (id) => {
-      dispatch({ type: "SET_INTERVAL_ID", payload: id });
-    },
-  };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(StartButton);
+export default StartButton;

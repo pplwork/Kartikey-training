@@ -11,6 +11,10 @@
   margin: 0;
   box-sizing: border-box;
 }
+html,
+body {
+  overflow-x: hidden;
+}
 
 /* font-family: 'Montserrat', sans-serif;
 font-family: 'Open Sans', sans-serif;
