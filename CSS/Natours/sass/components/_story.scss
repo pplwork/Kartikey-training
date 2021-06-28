@@ -21,6 +21,10 @@
     border-radius: 50%;
     overflow: hidden;
     transform: translateX(-3rem) skewX(12deg);
+
+    @include respond(phone) {
+      transform: translateX(-3rem) skewX(12deg);
+    }
   }
   &__image {
     height: 100%;

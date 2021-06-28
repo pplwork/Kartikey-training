@@ -2,6 +2,7 @@
   background-color: $color-grey-light-1;
   padding: 25rem 0;
   margin-top: -20vh;
+  overflow: hidden;
 
   @include respond(tab-port) {
     padding: 20rem 0;
@@ -38,6 +39,7 @@
 
 .section-stories {
   position: relative;
+  overflow: hidden;
   padding: 15rem 0;
   @include respond(tab-port) {
     padding: 10rem 0;

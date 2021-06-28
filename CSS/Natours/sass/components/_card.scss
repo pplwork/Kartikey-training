@@ -175,6 +175,7 @@
       position: relative;
       height: auto;
       border-radius: 3px;
+      box-shadow: none;
       &--back {
         transform: rotateY(0deg);
         clip-path: polygon(0% 15%, 100% 0%, 100% 100%, 0% 100%);
