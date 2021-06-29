@@ -8,6 +8,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  @media only screen and (max-width: 75em) {
+    font-size: 50%;
+  }
+  @media only screen and (max-width: 31.25em) {
+    order: 1;
+    flex: 0 0 100%;
+  }
   &__input {
     font-family: inherit;
     font-size: inherit;
@@ -102,10 +109,18 @@
   font-size: 1.4rem;
   list-style: none;
   margin-top: 3.5rem;
+  @media only screen and (max-width: 56.25em) {
+    display: flex;
+    margin: 0;
+  }
   &__item {
     position: relative;
     &:not(:last-child) {
       margin-bottom: 0.5rem;
+    }
+    @media only screen and (max-width: 56.25em) {
+      flex: 1;
+      margin: 0 !important;
     }
   }
 
@@ -140,6 +155,14 @@
     align-items: center;
     z-index: 10;
     position: relative;
+    @media only screen and (max-width: 56.25em) {
+      padding: 2rem;
+      justify-content: center;
+    }
+    @media only screen and (max-width: 37.5em) {
+      flex-direction: column;
+      padding: 1.5rem;
+    }
   }
 
   &__icon {
@@ -147,6 +170,12 @@
     height: 1.75rem;
     fill: currentColor;
     margin-right: 2rem;
+    @media only screen and (max-width: 37.5em) {
+      margin-right: 0;
+      margin-bottom: 0.7rem;
+      height: 1.5rem;
+      width: 1.5rem;
+    }
   }
 }
 
@@ -155,6 +184,9 @@
   text-align: center;
   padding: 2.5rem;
   color: var(--grey-light-4);
+  @media only screen and (max-width: 56.25em) {
+    display: none;
+  }
 }
 
 .gallery {
@@ -177,6 +209,10 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     padding: 1.5rem 3rem;
+    @media only screen and (max-width: 37.5em) {
+      font-size: 1.8rem;
+      padding: 1.25rem 2rem;
+    }
   }
 
   &__stars {
@@ -208,16 +244,26 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    @media only screen and (max-width: 37.5em) {
+      padding: 0 1.5rem;
+    }
   }
 
   &__rating-average {
     font-size: 2.25rem;
     font-weight: 300;
+    margin-bottom: -3px;
+    @media only screen and (max-width: 37.5em) {
+      font-size: 1.8rem;
+    }
   }
 
   &__rating-count {
     font-size: 0.8rem;
     text-transform: uppercase;
+    @media only screen and (max-width: 37.5em) {
+      font-size: 0.5rem;
+    }
   }
 }
 
@@ -285,11 +331,18 @@
     width: 1rem;
     margin-right: 0.7rem;
     display: inline-block;
-    background-color: var(--primary);
-    -webkit-mask-image: url(../img/chevron-thin-right.svg);
-    mask-image: url(../img/chevron-thin-right.svg);
-    -webkit-mask-size: cover;
-    mask-size: cover;
+
+    background-image: url(../img/chevron-thin-right.svg);
+    background-size: cover;
+
+    @supports (-webkit-mask-image: url()) or (mask-image: url()) {
+      background-color: var(--primary);
+      -webkit-mask-image: url(../img/chevron-thin-right.svg);
+      mask-image: url(../img/chevron-thin-right.svg);
+      -webkit-mask-size: cover;
+      mask-size: cover;
+      background-image: none;
+    }
   }
 }
 
@@ -299,6 +352,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  &__friends {
+    display: flex;
+  }
   &__photo {
     box-sizing: content-box;
     border: 3px solid white;
@@ -306,7 +363,7 @@
     width: 4rem;
     border-radius: 50%;
     &:not(:last-child) {
-      margin-right: -2.5rem;
+      margin-right: -2rem;
     }
   }
 }
@@ -318,6 +375,10 @@
   margin-bottom: 3.5rem;
   position: relative;
   overflow: hidden;
+  @media only screen and (max-width: 56.25em) {
+    padding: 2rem;
+    margin-bottom: 3rem;
+  }
   &__text {
     margin-bottom: 2rem;
     position: relative;
@@ -374,7 +435,9 @@
 .cta {
   padding: 3.5rem;
   text-align: center;
-
+  @media only screen and (max-width: 56.25em) {
+    padding: 2.5rem;
+  }
   &__book-now {
     text-transform: uppercase;
     font-size: 2rem;
