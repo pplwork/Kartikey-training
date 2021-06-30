@@ -1,0 +1,24 @@
+object-fit : specify how <img> or <video> should fit , options- cover,contain,fill,none,scale-down 
+backface-visibility : specifies if backside of element should be visible or not
+outline: like border but can have offset
+outline-offset : outline offset
+backdrop-filter : backdrop filter
+column-count : splits paragraph into columns
+column-gap : gap between columns 
+column-rule : line between colom , same syntax as border 
+hyphens : word clip should have hyphens or not 
+color:currentColor - sets color to same as of font of self or parent
+shape-outside : defines how text will flow around a floated object.
+
+
+grid notes 
+min-content : minimum space so that the smallest word can be accomodated
+max-content : maximum space so that largest line can be accomodated without line break.
+fit-content : makes box use as much space asrequired, but not morethan max-content.
+fit-content(value) : makes box use as much space as required , but not more than valaue.
+[track-start] 1fr [track-end] : naming tracks in grid 
+grid-auto-flow : how the implicit components should be placed. options - row, column, row dense, column dense, dense.
+grid-auto-rows : specifies size of automatically created rows
+grid-auto-column : specifies size of automatically created columns
+auto-fill: fills as many rows/columns as it can even if they are em
+auto-fit:fits all the currently available columns/rows , adds extra columns/rows of 0 height/width .
