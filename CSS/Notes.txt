@@ -22,3 +22,36 @@ grid-auto-rows : specifies size of automatically created rows
 grid-auto-column : specifies size of automatically created columns
 auto-fill: fills as many rows/columns as it can even if they are em
 auto-fit:fits all the currently available columns/rows , adds extra columns/rows of 0 height/width .
+
+SASS notes 
+%scss_that_can_be_extended{
+    css_property:"";
+}
+
+element{
+    @extend %scss_that_can_be_extended;
+}
+
+@mixin my_mixin($value:default){
+    some_css_property:"";
+    @if $value == something{
+        css_to_be_inserted:"";
+    }
+}
+
+element{
+    @include my_mixin;
+}
+
+@import(filepath/filename); - to import file
+
+$variable:value;
+
+@function my_func($val1,$val2:default){
+    @for $_ from 1 through $val2{
+        $val1:$val1+$val2;
+    }
+    @return $val1;
+}
+
+#{$variable} -> interpolation inside string
