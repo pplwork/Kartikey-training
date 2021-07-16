@@ -1,0 +1,41 @@
+doctype html
+html
+    head 
+        title API Tester 
+        link(href="/style.css" rel="stylesheet")
+    body 
+        div(class='container')
+            div(class='left-top')
+                h1 Add Cat
+                form(id="add")
+                    label(class="form-label") Name
+                    input(type="text" name='name')
+                    label(class="form-label") Breed 
+                    input(type="text" name='breed')
+                    label(class="form-label") Age 
+                    input(type="number" name='age')
+                    button(id='addBtn') Add Cat
+                
+            div(class='left-bottom')
+                h1 Update Cat
+                form(id="update")
+                    label(class="form-label") Name
+                    input(type="text" name='name')
+                    label(class="form-label") Breed 
+                    input(type="text" name='breed')
+                    label(class="form-label") Age 
+                    input(type="number" name='age')
+                    input(type='number' name='id' style="display:none;")
+                    button(id='editBtn') Update
+            div(class='right')
+                each cat in catlist
+                    div(class='catData')
+                        span Name = #{cat.name} 
+                        span Breed = #{cat.breed} 
+                        span Age = #{cat.age} 
+                        span ID = #{cat.id}
+                        div(class='btn-group')
+                            button(data-id=cat.id class='delete') Delete 
+                            button(data-id=cat.id data-name=cat.name data-breed=cat.breed data-age=cat.age class='edit') Edit  
+        script(src="/handler.js") 
+            
