@@ -1,76 +1,18 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
-  FlatList,
+  SafeAreaView,
   ScrollView,
   Image,
 } from "react-native";
 import colors from "../constants/colors";
+import activities from "../data/activites";
 
-const activities = [
-  {
-    user: "sarakaysmusic",
-    userPic: require("../assets/images/profiles/sara.jpg"),
-    postPic: require("../assets/images/posts/therock/0/0.jpg"),
-    sub: "mentioned you in a comment:",
-    comment: "Hey, this looks great , wanna go saturday evening?",
-    age: "1d",
-  },
-  {
-    user: "sarakaysmusic",
-    userPic: require("../assets/images/profiles/sara.jpg"),
-    postPic: require("../assets/images/posts/therock/0/0.jpg"),
-    sub: "mentioned you in a comment:",
-    comment: "Hey, this looks great , wanna go saturday evening?",
-    age: "1d",
-  },
-  {
-    user: "sarakaysmusic",
-    userPic: require("../assets/images/profiles/sara.jpg"),
-    postPic: require("../assets/images/posts/therock/0/0.jpg"),
-    sub: "mentioned you in a comment:",
-    comment: "Hey, this looks great , wanna go saturday evening?",
-    age: "1d",
-  },
-  {
-    user: "sarakaysmusic",
-    userPic: require("../assets/images/profiles/sara.jpg"),
-    postPic: require("../assets/images/posts/therock/0/0.jpg"),
-    sub: "mentioned you in a comment:",
-    comment: "Hey, this looks great , wanna go saturday evening?",
-    age: "1d",
-  },
-  {
-    user: "sarakaysmusic",
-    userPic: require("../assets/images/profiles/sara.jpg"),
-    postPic: require("../assets/images/posts/therock/0/0.jpg"),
-    sub: "mentioned you in a comment:",
-    comment: "Hey, this looks great , wanna go saturday evening?",
-    age: "1d",
-  },
-  {
-    user: "sarakaysmusic",
-    userPic: require("../assets/images/profiles/sara.jpg"),
-    postPic: require("../assets/images/posts/therock/0/0.jpg"),
-    sub: "mentioned you in a comment:",
-    comment: "Hey, this looks great , wanna go saturday evening?",
-    age: "1d",
-  },
-  {
-    user: "sarakaysmusic",
-    userPic: require("../assets/images/profiles/sara.jpg"),
-    postPic: require("../assets/images/posts/therock/0/0.jpg"),
-    sub: "mentioned you in a comment:",
-    comment: "Hey, this looks great , wanna go saturday evening?",
-    age: "1d",
-  },
-];
-
-const ActivityItem = ({ user, sub, comment, userPic, postPic, age }) => {
+const ActivityItem = ({ user, sub, comment, userPic, postPic, age, index }) => {
   return (
-    <View style={styles.activityItemContainer}>
+    <View key={index} style={styles.activityItemContainer}>
       <View>
         <Image
           source={userPic}
@@ -107,9 +49,11 @@ const ActivityItem = ({ user, sub, comment, userPic, postPic, age }) => {
 
 const ActivityScreen = () => {
   const [scroll, setScroll] = useState(0);
-
+  const scrollHandler = useCallback((e) => {
+    setScroll(e.nativeEvent.contentOffset.y);
+  }, []);
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View
         style={{
           ...styles.header,
@@ -120,9 +64,7 @@ const ActivityScreen = () => {
         <Text style={styles.headerText}>Activity</Text>
       </View>
       <ScrollView
-        onScroll={(e) => {
-          setScroll(e.nativeEvent.contentOffset.y);
-        }}
+        onScroll={scrollHandler}
         style={styles.activity}
         contentContainerStyle={{ alignItems: "center" }}
       >
@@ -158,15 +100,15 @@ const ActivityScreen = () => {
         <View style={styles.activitiesHeader}>
           <Text style={{ fontSize: 18, fontWeight: "bold" }}>Activity</Text>
         </View>
-        {activities.map((ele) => {
-          return <ActivityItem {...ele} />;
+        {activities.map((ele, index) => {
+          return <ActivityItem key={index} index={index} {...ele} />;
         })}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
-export default ActivityScreen;
+export default React.memo(ActivityScreen);
 
 const styles = StyleSheet.create({
   container: {

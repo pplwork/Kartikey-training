@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   Dimensions,
   StyleSheet,
@@ -6,22 +6,19 @@ import {
   View,
   Image,
   FlatList,
-  ImageStore,
   TextInput,
   SafeAreaView,
 } from "react-native";
 import {
   MaterialCommunityIcons,
-  FontAwesome5,
   FontAwesome,
   AntDesign,
   Ionicons,
-  EvilIcons,
 } from "@expo/vector-icons";
 import colors from "../constants/colors";
 
 import { LinearGradient } from "expo-linear-gradient";
-import { Video, AVPlaybackStatus } from "expo-av";
+import { Video } from "expo-av";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 const user = {
@@ -31,11 +28,124 @@ const user = {
 
 const win = Dimensions.get("window");
 
-const FeedCard = ({ logo, title, content, comments, caption, likes }) => {
+const FeedCard = ({
+  logo,
+  title,
+  content,
+  comments,
+  caption,
+  likes,
+  index,
+  curIndex,
+  isFocused,
+}) => {
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
-  const videoRefs = useRef({});
+  const [curItem, setCurItem] = useState(1);
+  const videoRefs = useRef({}); //format {source:ref}
+  const videoIndex = useRef({}); //format {source:index}
   const [heightScaled, setHeightScaled] = useState(1.77);
+  const [isMuted, setIsMuted] = useState({}); //format {index:boolean}
+  useEffect(() => {
+    for (const video in videoRefs.current) {
+      if (curIndex != index) videoRefs.current[video].pauseAsync();
+      else {
+        if (isFocused) videoRefs.current[video].playAsync();
+      }
+      if (!isFocused) videoRefs.current[video].pauseAsync();
+    }
+  }, [curIndex, index, isFocused]);
+  useEffect(() => {
+    // find video source with index curItem
+    let source;
+    for (const src in videoIndex.current) {
+      if (videoIndex.current[src] == curItem - 1) {
+        source = src;
+        break;
+      }
+    }
+    // pause all videos except one where videoIndex and curItem match
+    for (const video in videoRefs.current) {
+      if (video == source) videoRefs.current[video].playAsync();
+      else videoRefs.current[video].pauseAsync();
+    }
+  }, [curItem, videoIndex, videoRefs]);
+  const setItemHandler = useCallback(
+    (e) =>
+      setCurItem(Math.floor(e.nativeEvent.contentOffset.x / win.width + 1)),
+    []
+  );
+  const keyExtractor = useCallback((item, index) => index.toString(), []);
+  const renderItem = useCallback(
+    ({ item, index }) => {
+      if (item.type == "image") {
+        const { height, width } = Image.resolveAssetSource(item.source);
+        return (
+          <Image
+            source={item.source}
+            style={{
+              ...styles.carouselContent,
+              aspectRatio: width / height,
+            }}
+          />
+        );
+      } else if (item.type == "video") {
+        return (
+          <TouchableWithoutFeedback
+            onPress={() => {
+              videoRefs.current[item.source].getStatusAsync().then((e) => {
+                videoRefs.current[item.source].setIsMutedAsync(!e.isMuted);
+                setIsMuted((prev) => ({
+                  ...prev,
+                  [index]: !e.isMuted,
+                }));
+              });
+            }}
+          >
+            <Video
+              ref={(ref) => {
+                videoIndex.current[item.source] = index;
+                return (videoRefs.current[item.source] = ref);
+              }}
+              source={item.source}
+              style={{
+                height: heightScaled,
+                width: win.width,
+              }}
+              volume={1}
+              resizeMode="cover"
+              shouldPlay={true}
+              isLooping={true}
+              isMuted={true}
+              onReadyForDisplay={(res) => {
+                const { height, width } = res.naturalSize;
+                setHeightScaled(height * (win.width / width));
+              }}
+            />
+            <View
+              style={{
+                position: "absolute",
+                bottom: 16,
+                right: 16,
+                padding: 8,
+                backgroundColor: "rgba(12,12,12,.9)",
+                borderRadius: 100,
+              }}
+            >
+              {isMuted[index] == true || isMuted[index] == undefined ? (
+                <Ionicons name="md-volume-mute" size={20} color="white" />
+              ) : (
+                <Ionicons name="md-volume-high" size={20} color="white" />
+              )}
+            </View>
+          </TouchableWithoutFeedback>
+        );
+      }
+    },
+    [videoRefs, videoIndex, heightScaled, win.width, isMuted]
+  );
+  const likeHandler = useCallback(() => setLiked((prev) => !prev), []);
+  const bookmarkHandler = useCallback(() => setBookmarked((prev) => !prev), []);
   return (
     <SafeAreaView style={styles.cardContainer}>
       <View style={styles.header}>
@@ -54,62 +164,37 @@ const FeedCard = ({ logo, title, content, comments, caption, likes }) => {
       </View>
       <View style={styles.carousel}>
         <FlatList
-          keyExtractor={(item, index) => index.toString()}
+          onScroll={setItemHandler}
+          keyExtractor={keyExtractor}
           snapToInterval={win.width}
           pagingEnabled={true}
           snapToAlignment="center"
           decelerationRate={0}
           horizontal={true}
-          data={[...content]}
-          renderItem={({ item }) => {
-            if (item.type == "image") {
-              const { height, width } = Image.resolveAssetSource(item.source);
-              return (
-                <Image
-                  source={item.source}
-                  style={{
-                    ...styles.carouselContent,
-                    aspectRatio: width / height,
-                  }}
-                />
-              );
-            } else if (item.type == "video") {
-              return (
-                <TouchableWithoutFeedback
-                  onPress={() => {
-                    videoRefs.current[item.source]
-                      .getStatusAsync((e) => {
-                        return e;
-                      })
-                      .then((e) => {
-                        videoRefs.current[item.source].setIsMutedAsync(
-                          !e.isMuted
-                        );
-                      });
-                  }}
-                >
-                  <Video
-                    ref={(ref) => (videoRefs.current[item.source] = ref)}
-                    source={item.source}
-                    style={{
-                      height: heightScaled,
-                      width: win.width,
-                    }}
-                    volume={1}
-                    resizeMode="cover"
-                    shouldPlay={true}
-                    isLooping={true}
-                    isMuted={true}
-                    onReadyForDisplay={(res) => {
-                      const { height, width } = res.naturalSize;
-                      setHeightScaled(height * (win.width / width));
-                    }}
-                  />
-                </TouchableWithoutFeedback>
-              );
-            }
-          }}
+          data={content}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
         />
+        {content.length > 1 ? (
+          <View
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              backgroundColor: "rgba(12,12,12,.9)",
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              borderRadius: 16,
+            }}
+          >
+            <Text style={{ color: colors.white }}>
+              {curItem}/{content.length}
+            </Text>
+          </View>
+        ) : (
+          false
+        )}
       </View>
       <View style={styles.control}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -118,7 +203,7 @@ const FeedCard = ({ logo, title, content, comments, caption, likes }) => {
             size={22}
             color={liked ? "red" : "black"}
             style={{ marginRight: 16 }}
-            onPress={() => setLiked((prev) => !prev)}
+            onPress={likeHandler}
           />
           <Image
             source={require("../assets/icons/comment.png")}
@@ -130,7 +215,7 @@ const FeedCard = ({ logo, title, content, comments, caption, likes }) => {
           name={bookmarked ? "bookmark" : "bookmark-o"}
           size={22}
           color="black"
-          onPress={() => setBookmarked((prev) => !prev)}
+          onPress={bookmarkHandler}
         />
       </View>
       <View style={styles.likes}>
@@ -241,7 +326,7 @@ const FeedCard = ({ logo, title, content, comments, caption, likes }) => {
   );
 };
 
-export default FeedCard;
+export default React.memo(FeedCard);
 
 const styles = StyleSheet.create({
   cardContainer: {

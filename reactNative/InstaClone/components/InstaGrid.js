@@ -146,4 +146,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InstaGrid;
+export default React.memo(InstaGrid);

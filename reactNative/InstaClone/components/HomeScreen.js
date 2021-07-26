@@ -1,199 +1,77 @@
-import React, { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  StatusBar,
-  FlatList,
-  Image,
-} from "react-native";
+import { useIsFocused } from "@react-navigation/native";
+import React, { useState, useCallback, useMemo } from "react";
+import { StyleSheet, Text, View, FlatList, Image } from "react-native";
 import FeedCard from "./FeedCard";
 import colors from "../constants/colors";
 import { useFonts } from "expo-font";
-import {
-  MaterialIcons,
-  AntDesign,
-  Foundation,
-  Ionicons,
-  FontAwesome,
-  MaterialCommunityIcons,
-  FontAwesome5,
-} from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-const stories = [
-  {
-    id: 1,
-    photo: require("../assets/images/profiles/pfp.jpg"),
-    name: "Your Story",
-  },
-  {
-    id: 2,
-    photo: require("../assets/images/profiles/alessia.jpg"),
-    name: "alessiasmusic",
-  },
-  {
-    id: 3,
-    photo: require("../assets/images/profiles/9gag.jpg"),
-    name: "9gag",
-  },
-  {
-    id: 4,
-    photo: require("../assets/images/profiles/conan.jpg"),
-    name: "conangray",
-  },
-  {
-    id: 5,
-    photo: require("../assets/images/profiles/rock.jpg"),
-    name: "therock",
-  },
-  {
-    id: 6,
-    photo: require("../assets/images/profiles/sanholo.jpg"),
-    name: "sanholobeats",
-  },
-  {
-    id: 7,
-    photo: require("../assets/images/profiles/novo.jpg"),
-    name: "novoamor",
-  },
-  {
-    id: 8,
-    photo: require("../assets/images/profiles/netflix.jpg"),
-    name: "netflix",
-  },
-  {
-    id: 9,
-    photo: require("../assets/images/profiles/tanmay.jpg"),
-    name: "tanmaybhat",
-  },
-  {
-    id: 10,
-    photo: require("../assets/images/profiles/sara.jpg"),
-    name: "sarakaysmusic",
-  },
-];
-
-const feed = [
-  {
-    logo: require("../assets/images/profiles/9gag.jpg"),
-    title: "9gag",
-    content: [
-      {
-        source: require("../assets/images/posts/9gag/0/0.jpg"),
-        type: "image",
-      },
-      {
-        source: require("../assets/images/posts/9gag/0/1.jpg"),
-        type: "image",
-      },
-      {
-        source: require("../assets/images/posts/9gag/0/2.jpg"),
-        type: "image",
-      },
-      {
-        source: require("../assets/images/posts/9gag/0/3.jpg"),
-        type: "image",
-      },
-      {
-        source: require("../assets/images/posts/9gag/0/4.jpg"),
-        type: "image",
-      },
-      {
-        source: require("../assets/images/posts/9gag/0/5.jpg"),
-        type: "image",
-      },
-      {
-        source: require("../assets/images/posts/9gag/0/6.jpg"),
-        type: "image",
-      },
-      {
-        source: require("../assets/images/posts/9gag/0/7.jpg"),
-        type: "image",
-      },
-    ],
-    comments: [
-      { user: "Tom Holland", comment: "All fun and games until i join in 😏" },
-    ],
-    caption: "Daily Olympics in Tokyo",
-    likes: 122468,
-  },
-  {
-    logo: require("../assets/images/profiles/rock.jpg"),
-    title: "therock",
-    content: [
-      {
-        source: require("../assets/images/posts/therock/0/0.jpg"),
-        type: "image",
-      },
-    ],
-    comments: [{ user: "sevenbucksprod", comment: "Audience first💯👊🏼" }],
-    caption: "Captains of Industry 🥃",
-    likes: 915943,
-  },
-  {
-    logo: require("../assets/images/profiles/novo.jpg"),
-    title: "novoamor",
-    content: [
-      {
-        source: require("../assets/images/posts/novoamor/0/0.jpg"),
-        type: "image",
-      },
-    ],
-    comments: [{ user: "evilashr", comment: "ena que kkj nao tenho dinheiro" }],
-    caption: "Brazil 2022. On sale now.",
-    likes: 14304,
-  },
-  {
-    logo: require("../assets/images/profiles/conan.jpg"),
-    title: "conangray",
-    content: [
-      {
-        source: require("../assets/videos/posts/conan/0/0.mp4"),
-        type: "video",
-      },
-    ],
-    comments: [{ user: "kindalukacouffaine", comment: "PERFECT<3" }],
-    caption: "Conan X Bershka is here 🌹",
-    likes: 122468,
-  },
-  {
-    logo: require("../assets/images/profiles/sanholo.jpg"),
-    title: "sanholobeats",
-    content: [
-      {
-        source: require("../assets/images/posts/sanholobeats/0/0.jpg"),
-        type: "image",
-      },
-      {
-        source: require("../assets/videos/posts/sanholobeats/0/0.mp4"),
-        type: "video",
-      },
-      {
-        source: require("../assets/videos/posts/sanholobeats/0/1.mp4"),
-        type: "video",
-      },
-      {
-        source: require("../assets/images/posts/sanholobeats/0/1.jpg"),
-        type: "image",
-      },
-    ],
-    comments: [{ user: "chetporter", comment: "insane" }],
-    caption: "yooo ❤️ i just uploaded all the stems from the album!",
-    likes: 13824,
-  },
-];
+import stories from "../data/homestories";
+import feed from "../data/homefeed";
 
 const HomeScreen = () => {
   const [loaded] = useFonts({
     InstagramRegular: require("../assets/fonts/regular.otf"),
     InstagramBold: require("../assets/fonts/bold.otf"),
   });
+  const isFocused = useIsFocused();
   const [scroll, setScroll] = useState(0);
-
+  const [curItem, setCurItem] = useState(0);
+  const feedItem = useCallback(
+    ({ item, index }) => {
+      if (index == 0)
+        return (
+          <View style={styles.storyContainer}>
+            <FlatList
+              horizontal={true}
+              data={stories}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={(itemData) => {
+                return (
+                  <View style={styles.storyImgLabelContainer}>
+                    <LinearGradient
+                      colors={["#DD2A7B", "#F58529"]}
+                      style={styles.outlineGradient}
+                    >
+                      <View style={styles.imageContainer}>
+                        <Image
+                          source={itemData.item.photo}
+                          style={styles.storyImage}
+                        />
+                      </View>
+                    </LinearGradient>
+                    <Text
+                      ellipsizeMode="tail"
+                      numberOfLines={1}
+                      style={{ fontSize: 12 }}
+                    >
+                      {itemData.item.name}
+                    </Text>
+                  </View>
+                );
+              }}
+            />
+          </View>
+        );
+      return (
+        <FeedCard
+          isFocused={isFocused}
+          index={index}
+          curIndex={curItem}
+          {...item}
+        />
+      );
+    },
+    [stories, curItem, isFocused]
+  );
+  const keyExtractor = useCallback((item, index) => index.toString(), []);
+  const scrollHandler = useCallback((e) => {
+    setScroll(e.nativeEvent.contentOffset.y);
+  }, []);
+  const setItem = useCallback((e) => setCurItem(e.viewableItems[0].index), []);
   if (!loaded) return null;
   return (
     <>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View
         style={{
           ...styles.navbar,
@@ -234,55 +112,21 @@ const HomeScreen = () => {
       </View>
       <View style={styles.feedContainer}>
         <FlatList
+          onViewableItemsChanged={setItem}
+          viewabilityConfig={{
+            viewAreaCoveragePercentThreshold: 40,
+          }}
           data={[{}, ...feed]}
-          onScroll={(e) => {
-            setScroll(e.nativeEvent.contentOffset.y);
-          }}
-          renderItem={({ item, index }) => {
-            if (index == 0)
-              return (
-                <View style={styles.storyContainer}>
-                  <FlatList
-                    horizontal={true}
-                    data={stories}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={(itemData) => {
-                      return (
-                        <View style={styles.storyImgLabelContainer}>
-                          <LinearGradient
-                            colors={["#DD2A7B", "#F58529"]}
-                            style={styles.outlineGradient}
-                          >
-                            <View style={styles.imageContainer}>
-                              <Image
-                                source={itemData.item.photo}
-                                style={styles.storyImage}
-                              />
-                            </View>
-                          </LinearGradient>
-                          <Text
-                            ellipsizeMode="tail"
-                            numberOfLines={1}
-                            style={{ fontSize: 12 }}
-                          >
-                            {itemData.item.name}
-                          </Text>
-                        </View>
-                      );
-                    }}
-                  />
-                </View>
-              );
-            return <FeedCard {...item} />;
-          }}
-          keyExtractor={(item, index) => index.toString()}
+          onScroll={scrollHandler}
+          renderItem={feedItem}
+          keyExtractor={keyExtractor}
         />
       </View>
     </>
   );
 };
 
-export default HomeScreen;
+export default React.memo(HomeScreen);
 
 const styles = StyleSheet.create({
   feedContainer: {
