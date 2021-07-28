@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import AutoHeightImage from "react-native-auto-height-image";
 import {
   Dimensions,
   StyleSheet,
@@ -20,11 +21,7 @@ import colors from "../constants/colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { Video } from "expo-av";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-
-const user = {
-  id: 1,
-  photo: require("../assets/images/profiles/pfp.jpg"),
-};
+import { storage } from "../firebase";
 
 const win = Dimensions.get("window");
 
@@ -39,6 +36,9 @@ const FeedCard = ({
   curIndex,
   isFocused,
 }) => {
+  const [user, setUser] = useState(null);
+  const isMounted = useRef(true);
+  const [likeUsers, setLikeUsers] = useState([]);
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [curItem, setCurItem] = useState(1);
@@ -46,6 +46,11 @@ const FeedCard = ({
   const videoIndex = useRef({}); //format {source:index}
   const [heightScaled, setHeightScaled] = useState(1.77);
   const [isMuted, setIsMuted] = useState({}); //format {index:boolean}
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
   useEffect(() => {
     for (const video in videoRefs.current) {
       if (curIndex != index) videoRefs.current[video].pauseAsync();
@@ -70,6 +75,32 @@ const FeedCard = ({
       else videoRefs.current[video].pauseAsync();
     }
   }, [curItem, videoIndex, videoRefs]);
+  useEffect(() => {
+    (async () => {
+      let camilla = await storage
+        .refFromURL(
+          "gs://instaclone-b124e.appspot.com/images/profiles/camilla.jpg"
+        )
+        .getDownloadURL();
+
+      let shawn = await storage
+        .refFromURL(
+          "gs://instaclone-b124e.appspot.com/images/profiles/shawn.jpg"
+        )
+        .getDownloadURL();
+
+      let lemon = await storage
+        .refFromURL(
+          "gs://instaclone-b124e.appspot.com/images/profiles/lemon.jpg"
+        )
+        .getDownloadURL();
+      if (isMounted.current) setLikeUsers([camilla, shawn, lemon]);
+      let me = await storage
+        .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/pfp.jpg")
+        .getDownloadURL();
+      if (isMounted.current) setUser(me);
+    })();
+  }, []);
   const setItemHandler = useCallback(
     (e) =>
       setCurItem(Math.floor(e.nativeEvent.contentOffset.x / win.width + 1)),
@@ -79,15 +110,8 @@ const FeedCard = ({
   const renderItem = useCallback(
     ({ item, index }) => {
       if (item.type == "image") {
-        const { height, width } = Image.resolveAssetSource(item.source);
         return (
-          <Image
-            source={item.source}
-            style={{
-              ...styles.carouselContent,
-              aspectRatio: width / height,
-            }}
-          />
+          <AutoHeightImage source={{ uri: item.source }} width={win.width} />
         );
       } else if (item.type == "video") {
         return (
@@ -107,7 +131,7 @@ const FeedCard = ({
                 videoIndex.current[item.source] = index;
                 return (videoRefs.current[item.source] = ref);
               }}
-              source={item.source}
+              source={{ uri: item.source }}
               style={{
                 height: heightScaled,
                 width: win.width,
@@ -155,7 +179,7 @@ const FeedCard = ({
             style={styles.outlineGradient}
           >
             <View style={styles.imageContainer}>
-              <Image source={logo} style={styles.headerImage} />
+              <Image source={{ uri: logo }} style={styles.headerImage} />
             </View>
           </LinearGradient>
           <Text style={styles.headerText}>{title}</Text>
@@ -169,7 +193,8 @@ const FeedCard = ({
           snapToInterval={win.width}
           pagingEnabled={true}
           snapToAlignment="center"
-          decelerationRate={0}
+          decelerationRate="normal"
+          disableIntervalMomentum
           horizontal={true}
           data={content}
           renderItem={renderItem}
@@ -189,7 +214,7 @@ const FeedCard = ({
             }}
           >
             <Text style={{ color: colors.white }}>
-              {curItem}/{content.length}
+              {Math.max(1, curItem)}/{content.length}
             </Text>
           </View>
         ) : (
@@ -228,7 +253,7 @@ const FeedCard = ({
           }}
         >
           <Image
-            source={require("../assets/images/profiles/camilla.jpg")}
+            source={{ uri: likeUsers[0] }}
             style={{
               ...styles.likesPic,
             }}
@@ -244,7 +269,7 @@ const FeedCard = ({
           }}
         >
           <Image
-            source={require("../assets/images/profiles/shawn.jpg")}
+            source={{ uri: likeUsers[1] }}
             style={{
               ...styles.likesPic,
             }}
@@ -260,7 +285,7 @@ const FeedCard = ({
           }}
         >
           <Image
-            source={require("../assets/images/profiles/lemon.jpg")}
+            source={{ uri: likeUsers[2] }}
             style={{
               ...styles.likesPic,
             }}
@@ -299,7 +324,7 @@ const FeedCard = ({
       </View>
       <View style={styles.inputContainer}>
         <View style={{ flex: 1 }}>
-          <Image source={user.photo} style={styles.inputPhoto} />
+          <Image source={{ uri: user }} style={styles.inputPhoto} />
         </View>
         <View style={{ flex: 6 }}>
           <TextInput placeholder="Add a comment..." />

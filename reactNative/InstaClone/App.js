@@ -1,5 +1,6 @@
 import "react-native-gesture-handler";
-import React, { useState } from "react";
+import { LogBox } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
 import { Image, StatusBar } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -12,9 +13,29 @@ import ReelsScreen from "./components/ReelsScreen";
 import ActivityScreen from "./components/ActivityScreen";
 import ProfileScreen from "./components/ProfileScreen";
 import colors from "./constants/colors";
+import "react-native-console-time-polyfill";
+
+import { storage } from "./firebase";
+
+LogBox.ignoreLogs(["Setting a timer"]);
 
 export default function App() {
+  const isMounted = useRef(true);
   const [screen, setScreen] = useState(0);
+  const [pfpURI, setPfpURI] = useState(null);
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    (async () => {
+      let uri = await storage
+        .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/pfp.jpg")
+        .getDownloadURL();
+      if (isMounted.current) setPfpURI(uri);
+    })();
+  }, []);
   return (
     <>
       <StatusBar
@@ -78,7 +99,7 @@ export default function App() {
                 case "Profile":
                   return (
                     <Image
-                      source={require("./assets/images/profiles/pfp.jpg")}
+                      source={{ uri: pfpURI }}
                       style={{
                         height: 28,
                         width: 28,

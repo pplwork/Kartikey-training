@@ -19,7 +19,17 @@ import colors from "../constants/colors";
 
 const win = Dimensions.get("window");
 
-const Reel = ({ item, height, curItem, index }) => {
+const Reel = ({
+  uri,
+  user,
+  caption,
+  userURI,
+  songOwner,
+  songOwnerURI,
+  height,
+  curItem,
+  index,
+}) => {
   const [isLiked, setIsLiked] = useState(false);
   const screenIsFocused = useIsFocused();
   const videoRef = useRef(null);
@@ -40,14 +50,14 @@ const Reel = ({ item, height, curItem, index }) => {
     videoRef.current.getStatusAsync().then((e) => {
       videoRef.current.setIsMutedAsync(!e.isMuted);
     });
-  }, [videoRef]);
+  }, []);
   const likeHandler = useCallback(() => setIsLiked((prev) => !prev), []);
   return (
     <>
       <TouchableWithoutFeedback onPress={muteHandler}>
         <Video
           ref={videoRef}
-          source={item}
+          source={{ uri: uri }}
           style={{
             height: height,
             width: win.width,
@@ -86,7 +96,7 @@ const Reel = ({ item, height, curItem, index }) => {
           style={{ marginBottom: 24 }}
         />
         <Image
-          source={require("../assets/images/profiles/conan.jpg")}
+          source={{ uri: userURI }}
           style={{
             width: 30,
             height: 30,
@@ -105,7 +115,7 @@ const Reel = ({ item, height, curItem, index }) => {
               width: 32,
               marginRight: 8,
             }}
-            source={require("../assets/images/profiles/conan.jpg")}
+            source={{ uri: songOwnerURI ? songOwnerURI : userURI }}
           />
           <Text
             style={{
@@ -114,7 +124,7 @@ const Reel = ({ item, height, curItem, index }) => {
               marginRight: 8,
             }}
           >
-            conangray
+            {user}
           </Text>
           <MaterialIcons
             name="verified"
@@ -132,7 +142,7 @@ const Reel = ({ item, height, curItem, index }) => {
             numberOfLines={1}
             ellipsizeMode="tail"
           >
-            The reel caption goes here
+            {caption}{" "}
           </Text>
         </View>
         <View style={styles.audio}>
@@ -147,7 +157,7 @@ const Reel = ({ item, height, curItem, index }) => {
             numberOfLines={1}
             ellipsizeMode="tail"
           >
-            conangray • Original Audio
+            {songOwner ? songOwner : user} • Original Audio
           </Text>
         </View>
       </View>

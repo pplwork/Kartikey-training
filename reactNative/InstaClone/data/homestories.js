@@ -49,6 +49,21 @@ const stories = [
     photo: require("../assets/images/profiles/sara.jpg"),
     name: "sarakaysmusic",
   },
+  {
+    id: 11,
+    photo: require("../assets/images/profiles/camilla.jpg"),
+    name: "camilla_cabelo",
+  },
+  {
+    id: 12,
+    photo: require("../assets/images/profiles/shawn.jpg"),
+    name: "shawnmendes",
+  },
+  {
+    id: 13,
+    photo: require("../assets/images/profiles/lemon.jpg"),
+    name: "lemon.socks",
+  },
 ];
 
 export default stories;

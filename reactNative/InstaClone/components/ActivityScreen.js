@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,46 +8,78 @@ import {
   Image,
 } from "react-native";
 import colors from "../constants/colors";
-import activities from "../data/activites";
+import { storage, db } from "../firebase";
 
-const ActivityItem = ({ user, sub, comment, userPic, postPic, age, index }) => {
-  return (
-    <View key={index} style={styles.activityItemContainer}>
-      <View>
-        <Image
-          source={userPic}
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: 48,
-            borderWidth: 1,
-            borderColor: "rgba(0,0,0,0.0975)",
-          }}
-        />
+const ActivityItem = React.memo(
+  ({ user, sub, comment, userPic, postPic, age, index }) => {
+    return (
+      <View key={index} style={styles.activityItemContainer}>
+        <View>
+          <Image
+            source={{ uri: userPic }}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 48,
+              borderWidth: 1,
+              borderColor: "rgba(0,0,0,0.0975)",
+            }}
+          />
+        </View>
+        <View style={{ flex: 1, marginHorizontal: 16 }}>
+          <Text>
+            <Text style={{ fontWeight: "bold" }}>{user}</Text> {sub} {comment}{" "}
+            <Text style={{ color: "rgba(0,0,0,0.5)" }}>{age}</Text>
+          </Text>
+        </View>
+        <View>
+          <Image
+            source={{ uri: postPic }}
+            style={{
+              width: 48,
+              height: 48,
+              resizeMode: "contain",
+              borderWidth: 1,
+              borderColor: "rgba(0,0,0,0.0975)",
+            }}
+          />
+        </View>
       </View>
-      <View style={{ flex: 1, marginHorizontal: 16 }}>
-        <Text>
-          <Text style={{ fontWeight: "bold" }}>{user}</Text> {sub} {comment}{" "}
-          <Text style={{ color: "rgba(0,0,0,0.5)" }}>{age}</Text>
-        </Text>
-      </View>
-      <View>
-        <Image
-          source={postPic}
-          style={{
-            width: 48,
-            height: 48,
-            resizeMode: "contain",
-            borderWidth: 1,
-            borderColor: "rgba(0,0,0,0.0975)",
-          }}
-        />
-      </View>
-    </View>
-  );
-};
+    );
+  }
+);
 
 const ActivityScreen = () => {
+  const isMounted = useRef(true);
+  const [activities, setActivities] = useState([]);
+  const [requestUser, setRequestUser] = useState(null);
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    (async () => {
+      let uri;
+      uri = await storage
+        .refFromURL(
+          "gs://instaclone-b124e.appspot.com/images/profiles/Anuv-Jain.jpg"
+        )
+        .getDownloadURL();
+      if (isMounted.current) setRequestUser(uri);
+    })();
+    (async () => {
+      let docs = await db.collection("activities").get();
+      docs = docs.docs;
+      for (const doc of docs) {
+        let data = doc.data();
+        data.postPic = await storage.refFromURL(data.postPic).getDownloadURL();
+        data.userPic = await storage.refFromURL(data.userPic).getDownloadURL();
+        if (isMounted.current) setActivities((prev) => [...prev, data]);
+      }
+    })();
+  }, []);
+
   const [scroll, setScroll] = useState(0);
   const scrollHandler = useCallback((e) => {
     setScroll(e.nativeEvent.contentOffset.y);
@@ -71,7 +103,7 @@ const ActivityScreen = () => {
         <View style={styles.followRequests}>
           <View>
             <Image
-              source={require("../assets/images/profiles/conan.jpg")}
+              source={{ uri: requestUser }}
               style={{ width: 48, height: 48, borderRadius: 48 }}
             />
             <View
