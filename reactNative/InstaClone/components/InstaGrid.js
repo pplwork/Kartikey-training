@@ -1,102 +1,192 @@
 import React, { useCallback, useRef } from "react";
-import { View, StyleSheet, Dimensions, ScrollView, Image } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+  Image,
+  Text,
+} from "react-native";
 var { width } = Dimensions.get("window");
 import * as _ from "lodash";
 
 const InstaGrid = ({ data }) => {
-  const currentRow = useRef(0);
+  let currentRow = 0;
   const groupEveryNthRow = 3;
   const rowsArray = _.chunk(data, 3);
   let side = "right";
 
-  const renderGroupedItem = useCallback((row) => {
+  const renderGroupedItem = (row) => {
     const smallImage1 = row[0];
     const smallImage2 = row[1];
     const largeImage = row[2];
     if (side === "right") {
       side = "left";
       return (
-        <View style={styles.rowContainer} key={currentRow.current}>
+        <View style={styles.rowContainer} key={currentRow}>
           <View style={styles.colContainer2}>
             <View style={{ ...styles.imageContainer, marginBottom: 3 }}>
-              <Image
-                style={styles.imageThumbnail}
-                source={{ uri: smallImage1 && smallImage1.source }}
-              />
+              {smallImage1 == "notLoaded" ? (
+                <View
+                  style={{
+                    ...styles.imageThumbnail,
+                    backgroundColor: "rgb(220,220,220)",
+                  }}
+                >
+                  <Text></Text>
+                </View>
+              ) : (
+                <Image
+                  style={styles.imageThumbnail}
+                  source={{ uri: smallImage1 && smallImage1.source }}
+                />
+              )}
             </View>
             <View style={styles.imageContainer}>
-              <Image
-                style={styles.imageThumbnail}
-                source={{ uri: smallImage2 && smallImage2.source }}
-              />
+              {smallImage1 == "notLoaded" ? (
+                <View
+                  style={{
+                    ...styles.imageThumbnail,
+                    backgroundColor: "rgb(220,220,220)",
+                  }}
+                ></View>
+              ) : (
+                <Image
+                  style={styles.imageThumbnail}
+                  source={{ uri: smallImage2 && smallImage2.source }}
+                />
+              )}
             </View>
           </View>
           <View style={{ ...styles.imageContainer, marginLeft: 3 }}>
-            <Image
-              style={styles.imageThumbnailLarge}
-              source={{ uri: largeImage && largeImage.source }}
-            />
+            {smallImage1 == "notLoaded" ? (
+              <View
+                style={{
+                  ...styles.imageThumbnailLarge,
+                  backgroundColor: "rgb(220,220,220)",
+                }}
+              ></View>
+            ) : (
+              <Image
+                style={styles.imageThumbnailLarge}
+                source={{ uri: largeImage && largeImage.source }}
+              />
+            )}
           </View>
         </View>
       );
     } else {
       side = "right";
       return (
-        <View style={styles.rowContainer} key={currentRow.current}>
+        <View style={styles.rowContainer} key={currentRow}>
           <View style={{ ...styles.imageContainer, marginRight: 3 }}>
-            <Image
-              style={styles.imageThumbnailLarge}
-              source={{ uri: largeImage && largeImage.source }}
-            />
+            {smallImage1 == "notLoaded" ? (
+              <View
+                style={{
+                  ...styles.imageThumbnailLarge,
+                  backgroundColor: "rgb(220,220,220)",
+                }}
+              ></View>
+            ) : (
+              <Image
+                style={styles.imageThumbnailLarge}
+                source={{ uri: largeImage && largeImage.source }}
+              />
+            )}
           </View>
           <View style={styles.colContainer2}>
             <View style={{ ...styles.imageContainer, marginBottom: 3 }}>
-              <Image
-                style={styles.imageThumbnail}
-                source={{ uri: smallImage1 && smallImage1.source }}
-              />
+              {smallImage1 == "notLoaded" ? (
+                <View
+                  style={{
+                    ...styles.imageThumbnail,
+                    backgroundColor: "rgb(220,220,220)",
+                  }}
+                ></View>
+              ) : (
+                <Image
+                  style={styles.imageThumbnail}
+                  source={{ uri: smallImage1 && smallImage1.source }}
+                />
+              )}
             </View>
             <View style={styles.imageContainer}>
-              <Image
-                style={styles.imageThumbnail}
-                source={{ uri: smallImage2 && smallImage2.source }}
-              />
+              {smallImage1 == "notLoaded" ? (
+                <View
+                  style={{
+                    ...styles.imageThumbnail,
+                    backgroundColor: "rgb(220,220,220)",
+                  }}
+                ></View>
+              ) : (
+                <Image
+                  style={styles.imageThumbnail}
+                  source={{ uri: smallImage2 && smallImage2.source }}
+                />
+              )}
             </View>
           </View>
         </View>
       );
     }
-  }, []);
+  };
 
-  const renderCell = useCallback((row) => {
-    if (currentRow.current % groupEveryNthRow === 0) {
-      currentRow.current++;
+  const renderCell = (row) => {
+    if (currentRow % groupEveryNthRow === 0) {
+      currentRow++;
       return renderGroupedItem(row);
     }
-    currentRow.current++;
+    currentRow++;
     return (
-      <View style={styles.rowContainer} key={currentRow.current}>
+      <View style={styles.rowContainer} key={currentRow}>
         <View style={styles.imageContainer}>
-          <Image
-            style={styles.imageThumbnail}
-            source={{ uri: row[0] && row[0].source }}
-          />
+          {row[0] == "notLoaded" ? (
+            <View
+              style={{
+                ...styles.imageThumbnail,
+                backgroundColor: "rgb(220,220,220)",
+              }}
+            ></View>
+          ) : (
+            <Image
+              style={styles.imageThumbnail}
+              source={{ uri: row[0] && row[0].source }}
+            />
+          )}
         </View>
         <View style={{ ...styles.imageContainer, marginHorizontal: 3 }}>
-          <Image
-            style={styles.imageThumbnail}
-            source={{ uri: row[1] && row[1].source }}
-          />
+          {row[1] == "notLoaded" ? (
+            <View
+              style={{
+                ...styles.imageThumbnail,
+                backgroundColor: "rgb(220,220,220)",
+              }}
+            ></View>
+          ) : (
+            <Image
+              style={styles.imageThumbnail}
+              source={{ uri: row[1] && row[1].source }}
+            />
+          )}
         </View>
         <View style={styles.imageContainer}>
-          <Image
-            style={styles.imageThumbnail}
-            source={{ uri: row[2] && row[2].source }}
-          />
+          {row[2] == "notLoaded" ? (
+            <View
+              style={{
+                ...styles.imageThumbnail,
+                backgroundColor: "rgb(220,220,220)",
+              }}
+            ></View>
+          ) : (
+            <Image
+              style={styles.imageThumbnail}
+              source={{ uri: row[2] && row[2].source }}
+            />
+          )}
         </View>
       </View>
     );
-  }, []);
+  };
 
   return (
     <ScrollView style={{ width: "100%" }}>

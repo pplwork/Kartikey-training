@@ -16,24 +16,31 @@ const FeedList = ({ scrollHandler }) => {
   }, []);
   useEffect(() => {
     (async () => {
-      console.time("gettingFeed");
       let home_feed = await db.collection("homeFeed").get();
-      console.timeEnd("gettingFeed");
-      home_feed = home_feed.docs;
-      for (const doc of home_feed) {
-        let data = doc.data();
-        console.time("gettingLogo");
-        data.logo = await storage.refFromURL(data.logo).getDownloadURL();
-        console.timeEnd("gettingLogo");
-        for (let i = 0; i < data.content.length; ++i) {
-          console.time("gettingContentSource");
-          data.content[i].source = await storage
-            .refFromURL(data.content[i].source)
-            .getDownloadURL();
-          console.timeEnd("gettingContentSource");
-        }
-        if (isMounted.current) setFeed((prev) => [...prev, data]);
-      }
+      let data = home_feed.docs.map((doc) => doc.data());
+      data.forEach((item) => {
+        let logoContentPromises = [
+          storage.refFromURL(item.logo).getDownloadURL(),
+        ];
+        item.content.forEach((obj) => {
+          logoContentPromises.push(
+            storage.refFromURL(obj.source).getDownloadURL()
+          );
+        });
+        Promise.all(logoContentPromises).then((URIArray) => {
+          for (let i = 1; i < URIArray.length; ++i)
+            item.content[i - 1].source = URIArray[i];
+          if (isMounted.current)
+            setFeed((prev) => [
+              ...prev,
+              {
+                ...item,
+                logo: URIArray[0],
+                content: item.content,
+              },
+            ]);
+        });
+      });
     })();
   }, []);
 

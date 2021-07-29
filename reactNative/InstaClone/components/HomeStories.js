@@ -1,39 +1,60 @@
 import React, { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, View, FlatList, Image } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Image,
+  Dimensions,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { storage, db } from "../firebase";
 import colors from "../constants/colors";
 
+const win = Dimensions.get("window");
+
 const HomeStories = () => {
   const isMounted = useRef(true);
+  const [userIMG, setUserIMG] = useState();
   const [stories, setStories] = useState([]);
-  const [storyImages, setStoryImages] = useState({});
   useEffect(() => {
     return () => {
       isMounted.current = false;
     };
   }, []);
   useEffect(() => {
+    db.collection("user")
+      .where("Username", "==", "benbenabraham")
+      .get()
+      .then((snapshot) => {
+        let doc = snapshot.docs[0].data();
+        storage
+          .refFromURL(doc.Photo)
+          .getDownloadURL()
+          .then((uri) => {
+            if (isMounted.current) setUserIMG(uri);
+          });
+      });
     (async () => {
-      console.time("gettingStories");
       let docs = await db.collection("stories").get();
-      console.timeEnd("gettingStories");
-      docs = docs.docs;
-      let str = [];
-      for (const doc of docs) {
-        str.push(doc.data());
-      }
-      if (isMounted.current) setStories(str);
-      for (const doc of docs) {
-        console.time("gettingImage");
-        let url = await storage.refFromURL(doc.data().photo).getDownloadURL();
-        console.timeEnd("gettingImage");
-        if (isMounted.current)
-          setStoryImages((prev) => ({
-            ...prev,
-            [doc.data().id]: url,
-          }));
-      }
+      let str = docs.docs.map((doc) => doc.data());
+      str.unshift();
+      // start all requeests and set states as data keeps coming in
+      str.forEach((story) => {
+        storage
+          .refFromURL(story.photo)
+          .getDownloadURL()
+          .then((url) => {
+            if (isMounted.current)
+              setStories((prev) => [
+                ...prev,
+                {
+                  ...story,
+                  photo: url,
+                },
+              ]);
+          });
+      });
     })();
   }, []);
   return (
@@ -42,7 +63,7 @@ const HomeStories = () => {
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
         horizontal={true}
-        data={stories}
+        data={[{ id: 1, name: "Your Story", photo: userIMG }, ...stories]}
         keyExtractor={(item) => item.id.toString()}
         renderItem={(itemData) => {
           return (
@@ -53,7 +74,7 @@ const HomeStories = () => {
               >
                 <View style={styles.imageContainer}>
                   <Image
-                    source={{ uri: storyImages[itemData.item.id] }}
+                    source={{ uri: itemData.item.photo }}
                     style={styles.storyImage}
                   />
                 </View>
@@ -77,6 +98,7 @@ export default React.memo(HomeStories);
 
 const styles = StyleSheet.create({
   storyContainer: {
+    width: win.width,
     backgroundColor: colors.white,
     paddingVertical: 10,
     borderBottomColor: "rgba(0,0,0,0.2)",

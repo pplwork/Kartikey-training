@@ -18,12 +18,22 @@ const ProfileGrid = () => {
   useEffect(() => {
     (async () => {
       let docs = await db.collection("profileGrid").get();
-      docs = docs.docs;
-      for (const doc of docs) {
-        let data = doc.data();
-        data.source = await storage.refFromURL(data.source).getDownloadURL();
-        if (isMounted.current) setGridContent((prev) => [...prev, data]);
-      }
+      let data = docs.docs.map((doc) => doc.data());
+      data.forEach((doc) => {
+        storage
+          .refFromURL(doc.source)
+          .getDownloadURL()
+          .then((uri) => {
+            if (isMounted.current)
+              setGridContent((prev) => [
+                ...prev,
+                {
+                  ...doc,
+                  source: uri,
+                },
+              ]);
+          });
+      });
     })();
   }, []);
 

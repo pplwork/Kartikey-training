@@ -21,12 +21,22 @@ const DiscoverPeopleList = () => {
   useEffect(() => {
     (async () => {
       let docs = await db.collection("discoverPeople").get();
-      docs = docs.docs;
-      for (const doc of docs) {
-        let data = doc.data();
-        data.image = await storage.refFromURL(data.image).getDownloadURL();
-        if (isMounted.current) setDiscoverPeopleData((prev) => [...prev, data]);
-      }
+      let data = docs.docs.map((doc) => doc.data());
+      data.forEach((doc) => {
+        storage
+          .refFromURL(doc.image)
+          .getDownloadURL()
+          .then((uri) => {
+            if (isMounted.current)
+              setDiscoverPeopleData((prev) => [
+                ...prev,
+                {
+                  ...doc,
+                  image: uri,
+                },
+              ]);
+          });
+      });
     })();
   }, []);
 

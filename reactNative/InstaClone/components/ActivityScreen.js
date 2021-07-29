@@ -70,13 +70,23 @@ const ActivityScreen = () => {
     })();
     (async () => {
       let docs = await db.collection("activities").get();
-      docs = docs.docs;
-      for (const doc of docs) {
-        let data = doc.data();
-        data.postPic = await storage.refFromURL(data.postPic).getDownloadURL();
-        data.userPic = await storage.refFromURL(data.userPic).getDownloadURL();
-        if (isMounted.current) setActivities((prev) => [...prev, data]);
-      }
+      let data = docs.docs.map((doc) => doc.data());
+      data.forEach((doc) => {
+        Promise.all([
+          storage.refFromURL(doc.postPic).getDownloadURL(),
+          storage.refFromURL(doc.userPic).getDownloadURL(),
+        ]).then((URIArray) => {
+          if (isMounted.current)
+            setActivities((prev) => [
+              ...prev,
+              {
+                ...doc,
+                postPic: URIArray[0],
+                userPic: URIArray[1],
+              },
+            ]);
+        });
+      });
     })();
   }, []);
 

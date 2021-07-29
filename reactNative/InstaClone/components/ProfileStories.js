@@ -15,12 +15,22 @@ const ProfileStories = () => {
   useEffect(() => {
     (async () => {
       let docs = await db.collection("profileStories").get();
-      docs = docs.docs;
-      for (const doc of docs) {
-        let data = doc.data();
-        data.photo = await storage.refFromURL(data.photo).getDownloadURL();
-        if (isMounted.current) setStories((prev) => [...prev, data]);
-      }
+      let data = docs.docs.map((doc) => doc.data());
+      data.forEach((doc) => {
+        storage
+          .refFromURL(doc.photo)
+          .getDownloadURL()
+          .then((uri) => {
+            if (isMounted.current)
+              setStories((prev) => [
+                ...prev,
+                {
+                  ...doc,
+                  photo: uri,
+                },
+              ]);
+          });
+      });
     })();
   }, []);
   const keyExtractor = useCallback((item) => item.id.toString(), []);

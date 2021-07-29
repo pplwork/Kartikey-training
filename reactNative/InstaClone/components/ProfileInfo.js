@@ -5,7 +5,10 @@ import colors from "../constants/colors";
 
 const parseThis = (num) => {
   if (num == undefined) return 0;
-  if (num < 9999) return num.toLocaleString("en-US");
+  if (num < 9999)
+    return Number(num)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   else return `${(num / 1000).toFixed(1)}K`;
 };
 

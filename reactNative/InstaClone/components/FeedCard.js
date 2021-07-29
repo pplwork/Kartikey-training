@@ -76,30 +76,28 @@ const FeedCard = ({
     }
   }, [curItem, videoIndex, videoRefs]);
   useEffect(() => {
-    (async () => {
-      let camilla = await storage
-        .refFromURL(
-          "gs://instaclone-b124e.appspot.com/images/profiles/camilla.jpg"
-        )
-        .getDownloadURL();
+    let camilla = storage
+      .refFromURL(
+        "gs://instaclone-b124e.appspot.com/images/profiles/camilla.jpg"
+      )
+      .getDownloadURL();
 
-      let shawn = await storage
-        .refFromURL(
-          "gs://instaclone-b124e.appspot.com/images/profiles/shawn.jpg"
-        )
-        .getDownloadURL();
+    let shawn = storage
+      .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/shawn.jpg")
+      .getDownloadURL();
 
-      let lemon = await storage
-        .refFromURL(
-          "gs://instaclone-b124e.appspot.com/images/profiles/lemon.jpg"
-        )
-        .getDownloadURL();
-      if (isMounted.current) setLikeUsers([camilla, shawn, lemon]);
-      let me = await storage
-        .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/pfp.jpg")
-        .getDownloadURL();
-      if (isMounted.current) setUser(me);
-    })();
+    let lemon = storage
+      .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/lemon.jpg")
+      .getDownloadURL();
+    Promise.all([camilla, shawn, lemon]).then((data) => {
+      if (isMounted.current) setLikeUsers([data[0], data[1], data[2]]);
+    });
+    storage
+      .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/pfp.jpg")
+      .getDownloadURL()
+      .then((uri) => {
+        if (isMounted.current) setUser(uri);
+      });
   }, []);
   const setItemHandler = useCallback(
     (e) =>

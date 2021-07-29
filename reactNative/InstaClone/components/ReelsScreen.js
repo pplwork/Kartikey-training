@@ -27,18 +27,25 @@ const ReelsScreen = () => {
   useEffect(() => {
     (async () => {
       let docs = await db.collection("reels").get();
-      docs = docs.docs;
-      for (const doc of docs) {
-        let data = doc.data();
-        data.uri = await storage.refFromURL(data.reel).getDownloadURL();
-        data.userURI = await storage
-          .refFromURL(data.userImage)
-          .getDownloadURL();
-        data.songOwnerURI = await storage
-          .refFromURL(data.songOwnerImage)
-          .getDownloadURL();
-        if (isMounted.current) setReelData((prev) => [...prev, data]);
-      }
+      let data = docs.docs.map((doc) => doc.data());
+      data.forEach((doc) => {
+        Promise.all([
+          storage.refFromURL(doc.reel).getDownloadURL(),
+          storage.refFromURL(doc.userImage).getDownloadURL(),
+          storage.refFromURL(doc.songOwnerImage).getDownloadURL(),
+        ]).then((URIArray) => {
+          if (isMounted.current)
+            setReelData((prev) => [
+              ...prev,
+              {
+                ...doc,
+                uri: URIArray[0],
+                userURI: URIArray[1],
+                songOwnerURI: URIArray[2],
+              },
+            ]);
+        });
+      });
     })();
   }, []);
   const heightHandler = useCallback((event) => {

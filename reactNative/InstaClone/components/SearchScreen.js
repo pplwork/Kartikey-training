@@ -7,7 +7,7 @@ import { storage, db } from "../firebase";
 
 const SearchScreen = () => {
   const isMounted = useRef(true);
-  const [gridData, setGridData] = useState([]);
+  const [gridData, setGridData] = useState(Array(12).fill("notLoaded"));
   useEffect(() => {
     return () => {
       isMounted.current = false;
@@ -15,18 +15,21 @@ const SearchScreen = () => {
   }, []);
   useEffect(() => {
     (async () => {
-      console.time("getting explore images");
       let docs = await db.collection("explore").get();
-      console.timeEnd("getting explore images");
-      docs = docs.docs;
-      for (const doc of docs) {
-        let data = doc.data();
-        console.time("gettingEXPLOREimageurl");
-        let uri = await storage.refFromURL(data.source).getDownloadURL();
-        console.timeEnd("gettingEXPLOREimageurl");
-        data.source = uri;
-        if (isMounted.current) setGridData((prev) => [...prev, data]);
-      }
+      let data = docs.docs.map((doc) => doc.data());
+      let promiseArray = [];
+      data.forEach((doc) => {
+        promiseArray.push(storage.refFromURL(doc.source).getDownloadURL());
+      });
+      Promise.all(promiseArray).then((URIArray) => {
+        let gData = data.map((doc, index) => {
+          return {
+            ...doc,
+            source: URIArray[index],
+          };
+        });
+        if (isMounted.current) setGridData(gData);
+      });
     })();
   }, []);
   return (
