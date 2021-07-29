@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import { StyleSheet, View, Image, Dimensions } from "react-native";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { StyleSheet, View, Image, Dimensions, Pressable } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import * as _ from "lodash";
 import { db, storage } from "../firebase";
+import * as Analytics from "expo-firebase-analytics";
 
 const win = Dimensions.get("window");
 
@@ -37,6 +38,10 @@ const ProfileGrid = () => {
     })();
   }, []);
 
+  const logImageOpened = useCallback(() => {
+    Analytics.logEvent("UserProfileGridImageOpened");
+  }, []);
+
   const rows = _.chunk(gridContent, 3);
 
   return (
@@ -46,10 +51,12 @@ const ProfileGrid = () => {
           return (
             <View style={styles.gridRow} key={index}>
               <View style={styles.gridImageContainer}>
-                <Image
-                  source={{ uri: item[0] && item[0].source }}
-                  style={styles.gridImage}
-                />
+                <Pressable onPress={logImageOpened}>
+                  <Image
+                    source={{ uri: item[0] && item[0].source }}
+                    style={styles.gridImage}
+                  />
+                </Pressable>
                 <View style={{ position: "absolute", right: 8, top: 8 }}>
                   {item[0] && item[0].type == "video" ? (
                     <FontAwesome5 name="play" size={14} color="white" />
@@ -80,10 +87,12 @@ const ProfileGrid = () => {
                   marginHorizontal: 3,
                 }}
               >
-                <Image
-                  source={{ uri: item[1] && item[1].source }}
-                  style={styles.gridImage}
-                />
+                <Pressable onPress={logImageOpened}>
+                  <Image
+                    source={{ uri: item[1] && item[1].source }}
+                    style={styles.gridImage}
+                  />
+                </Pressable>
                 <View style={{ position: "absolute", right: 8, top: 8 }}>
                   {item[1] && item[1].type == "video" ? (
                     <FontAwesome5 name="play" size={14} color="white" />
@@ -109,10 +118,12 @@ const ProfileGrid = () => {
                 </View>
               </View>
               <View style={styles.gridImageContainer}>
-                <Image
-                  source={{ uri: item[2] && item[2].source }}
-                  style={styles.gridImage}
-                />
+                <Pressable onPress={logImageOpened}>
+                  <Image
+                    source={{ uri: item[2] && item[2].source }}
+                    style={styles.gridImage}
+                  />
+                </Pressable>
                 <View style={{ position: "absolute", right: 8, top: 8 }}>
                   {item[2] && item[2].type == "video" ? (
                     <FontAwesome5 name="play" size={14} color="white" />

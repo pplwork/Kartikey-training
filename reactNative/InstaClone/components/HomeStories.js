@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,9 +6,11 @@ import {
   FlatList,
   Image,
   Dimensions,
+  Pressable,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { storage, db } from "../firebase";
+import * as Analytics from "expo-firebase-analytics";
 import colors from "../constants/colors";
 
 const win = Dimensions.get("window");
@@ -57,6 +59,33 @@ const HomeStories = () => {
       });
     })();
   }, []);
+  const logStoryImageOpened = useCallback(
+    () => Analytics.logEvent("StoryOpened"),
+    []
+  );
+  const keyExtractor = useCallback((item) => item.id.toString(), []);
+  const renderItem = useCallback((itemData) => {
+    return (
+      <View style={styles.storyImgLabelContainer}>
+        <Pressable onPress={logStoryImageOpened}>
+          <LinearGradient
+            colors={["#DD2A7B", "#F58529"]}
+            style={styles.outlineGradient}
+          >
+            <View style={styles.imageContainer}>
+              <Image
+                source={{ uri: itemData.item.photo }}
+                style={styles.storyImage}
+              />
+            </View>
+          </LinearGradient>
+        </Pressable>
+        <Text ellipsizeMode="tail" numberOfLines={1} style={{ fontSize: 12 }}>
+          {itemData.item.name}
+        </Text>
+      </View>
+    );
+  }, []);
   return (
     <View style={styles.storyContainer}>
       <FlatList
@@ -64,31 +93,8 @@ const HomeStories = () => {
         showsVerticalScrollIndicator={false}
         horizontal={true}
         data={[{ id: 1, name: "Your Story", photo: userIMG }, ...stories]}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={(itemData) => {
-          return (
-            <View style={styles.storyImgLabelContainer}>
-              <LinearGradient
-                colors={["#DD2A7B", "#F58529"]}
-                style={styles.outlineGradient}
-              >
-                <View style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: itemData.item.photo }}
-                    style={styles.storyImage}
-                  />
-                </View>
-              </LinearGradient>
-              <Text
-                ellipsizeMode="tail"
-                numberOfLines={1}
-                style={{ fontSize: 12 }}
-              >
-                {itemData.item.name}
-              </Text>
-            </View>
-          );
-        }}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
       />
     </View>
   );

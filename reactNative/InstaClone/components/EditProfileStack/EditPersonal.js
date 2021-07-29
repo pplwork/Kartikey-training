@@ -15,10 +15,10 @@ const EditPersonal = ({ user, setUser }) => {
       Phone: e,
     }));
   }, []);
-  const birthdayHandler = useCallback((e) => {
+  const genderHandler = useCallback((e) => {
     setUser((prev) => ({
       ...prev,
-      Birthday: e,
+      Gender: e,
     }));
   }, []);
   return (
@@ -52,7 +52,7 @@ const EditPersonal = ({ user, setUser }) => {
           <TextInput
             value={user.Gender}
             style={styles.formInput}
-            onChangeText={birthdayHandler}
+            onChangeText={genderHandler}
           />
         </View>
         <View style={styles.formGroup}>

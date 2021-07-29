@@ -10,11 +10,15 @@ import {
 import colors from "../constants/colors";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import Reel from "./Reel";
+import * as Analytics from "expo-firebase-analytics";
 import { storage, db } from "../firebase";
 
 const win = Dimensions.get("window");
 
 const ReelsScreen = () => {
+  useEffect(() => {
+    Analytics.logEvent("ReelsScreenLoaded");
+  }, []);
   const isMounted = useRef(true);
   useEffect(() => {
     return () => {

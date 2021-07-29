@@ -16,6 +16,7 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import colors from "../constants/colors";
+import * as Analytics from "expo-firebase-analytics";
 
 const win = Dimensions.get("window");
 
@@ -30,6 +31,9 @@ const Reel = ({
   curItem,
   index,
 }) => {
+  useEffect(() => {
+    Analytics.logEvent("ReelLoaded");
+  }, []);
   const [isLiked, setIsLiked] = useState(false);
   const screenIsFocused = useIsFocused();
   const videoRef = useRef(null);

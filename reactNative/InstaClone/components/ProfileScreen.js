@@ -1,4 +1,10 @@
-import React, { useCallback, useState, useRef, useLayoutEffect } from "react";
+import React, {
+  useCallback,
+  useState,
+  useRef,
+  useLayoutEffect,
+  useEffect,
+} from "react";
 import {
   StyleSheet,
   Text,
@@ -8,7 +14,9 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
+import * as Analytics from "expo-firebase-analytics";
 import { Entypo } from "@expo/vector-icons";
+
 import colors from "../constants/colors";
 
 const win = Dimensions.get("window");
@@ -21,6 +29,9 @@ import ProfileGrid from "./ProfileGrid";
 import DiscoverPeopleList from "./DiscoverPeopleList";
 
 const ProfileScreen = ({ navigation }) => {
+  useEffect(() => {
+    Analytics.logEvent("ProfileScreenLoaded");
+  }, []);
   const username = useRef("benbenabraham");
   const [modalVisible, setModalVisible] = useState(false);
   useLayoutEffect(() => {

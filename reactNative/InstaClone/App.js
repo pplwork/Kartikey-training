@@ -17,7 +17,7 @@ import "react-native-console-time-polyfill";
 
 import { storage } from "./firebase";
 
-LogBox.ignoreLogs(["Setting a timer"]);
+LogBox.ignoreLogs(["Setting a timer", "Constants.installationId"]);
 
 export default function App() {
   const isMounted = useRef(true);

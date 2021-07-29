@@ -3,9 +3,13 @@ import { StyleSheet, View, TextInput } from "react-native";
 import colors from "../constants/colors";
 import { AntDesign } from "@expo/vector-icons";
 import InstaGrid from "./InstaGrid";
+import * as Analytics from "expo-firebase-analytics";
 import { storage, db } from "../firebase";
 
 const SearchScreen = () => {
+  useEffect(() => {
+    Analytics.logEvent("SearchScreenLoaded");
+  }, []);
   const isMounted = useRef(true);
   const [gridData, setGridData] = useState(Array(12).fill("notLoaded"));
   useEffect(() => {
@@ -41,7 +45,13 @@ const SearchScreen = () => {
           color="black"
           style={{ marginRight: 12 }}
         />
-        <TextInput placeholder="Search" style={{ fontSize: 16 }} />
+        <TextInput
+          placeholder="Search"
+          style={{ fontSize: 16 }}
+          onEndEditing={(e) =>
+            Analytics.logEvent("SearchingInExploreFeed", { query: e })
+          }
+        />
       </View>
       <InstaGrid data={gridData} />
     </View>

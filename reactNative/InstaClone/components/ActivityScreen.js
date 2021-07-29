@@ -7,6 +7,7 @@ import {
   ScrollView,
   Image,
 } from "react-native";
+import * as Analytics from "expo-firebase-analytics";
 import colors from "../constants/colors";
 import { storage, db } from "../firebase";
 
@@ -51,6 +52,9 @@ const ActivityItem = React.memo(
 
 const ActivityScreen = () => {
   const isMounted = useRef(true);
+  useEffect(() => {
+    Analytics.logEvent("ActivityScreenLoaded");
+  }, []);
   const [activities, setActivities] = useState([]);
   const [requestUser, setRequestUser] = useState(null);
   useEffect(() => {

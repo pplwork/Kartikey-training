@@ -9,6 +9,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import EditPersonal from "./EditProfileStack/EditPersonal";
 import EditProfile from "./EditProfileStack/EditProfile";
 import { EvilIcons, AntDesign } from "@expo/vector-icons";
+import * as Analytics from "expo-firebase-analytics";
 import colors from "../constants/colors";
 import { db, storage } from "../firebase";
 
@@ -40,7 +41,10 @@ const EditProfileModal = ({ setVisible, username }) => {
     db.collection("user")
       .doc(userId.current)
       .update(user)
-      .then(() => setVisible(false));
+      .then(() => {
+        Analytics.logEvent("ProfileUpdated");
+        setVisible(false);
+      });
   }, [user]);
 
   useEffect(() => {

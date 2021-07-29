@@ -22,7 +22,9 @@ const firebaseConfig = {
   measurementId: FIREBASE_MEASUREMENT_ID,
 };
 
-if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
+if (firebase.apps.length === 0) {
+  firebase.initializeApp(firebaseConfig);
+}
 
 const storage = firebase.storage();
 const db = firebase.firestore();

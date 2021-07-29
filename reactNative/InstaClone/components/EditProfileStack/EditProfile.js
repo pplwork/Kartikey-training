@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef } from "react";
+import React, { useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -30,10 +30,7 @@ const EditProfile = ({ navigation, user, setUser }) => {
     }));
   }, []);
 
-  const goToPersonal = useCallback(
-    () => navigation.navigate("personal", [user, setUser]),
-    []
-  );
+  const goToPersonal = useCallback(() => navigation.navigate("personal"), []);
   return (
     <View style={styles.container}>
       <View style={styles.imgLabelContainer}>
