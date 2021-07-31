@@ -32,8 +32,8 @@ const FeedCard = ({
   comments,
   caption,
   likes,
-  index,
-  curIndex,
+  index, // index of the card itself
+  curIndex, // index of the current item in the feedlist
   isFocused,
 }) => {
   const [user, setUser] = useState(null);
@@ -52,29 +52,30 @@ const FeedCard = ({
     };
   }, []);
   useEffect(() => {
+    // iterate through all videos
     for (const video in videoRefs.current) {
+      // if current card is not on screen, pause video
       if (curIndex != index) videoRefs.current[video].pauseAsync();
+      // if current card is on the screen, play video if focused
       else {
-        if (isFocused) videoRefs.current[video].playAsync();
+        if (isFocused) {
+          let source;
+          // get the src of the video we want to play
+          for (const src in videoIndex.current) {
+            if (videoIndex.current[src] == curItem) {
+              source = src;
+              break;
+            }
+          }
+          // find the video with the given src and play it
+          for (const video in videoRefs.current) {
+            if (video == source) videoRefs.current[video].playAsync();
+            else videoRefs.current[video].pauseAsync();
+          }
+        } else videoRefs.current[video].pauseAsync();
       }
-      if (!isFocused) videoRefs.current[video].pauseAsync();
     }
-  }, [curIndex, index, isFocused]);
-  useEffect(() => {
-    // find video source with index curItem
-    let source;
-    for (const src in videoIndex.current) {
-      if (videoIndex.current[src] == curItem - 1) {
-        source = src;
-        break;
-      }
-    }
-    // pause all videos except one where videoIndex and curItem match
-    for (const video in videoRefs.current) {
-      if (video == source) videoRefs.current[video].playAsync();
-      else videoRefs.current[video].pauseAsync();
-    }
-  }, [curItem, videoIndex, videoRefs]);
+  }, [isFocused, curIndex, curItem]);
   useEffect(() => {
     let camilla = storage
       .refFromURL(
@@ -99,11 +100,6 @@ const FeedCard = ({
         if (isMounted.current) setUser(uri);
       });
   }, []);
-  const setItemHandler = useCallback(
-    (e) =>
-      setCurItem(Math.floor(e.nativeEvent.contentOffset.x / win.width + 1)),
-    []
-  );
   const keyExtractor = useCallback((item, index) => index.toString(), []);
   const renderItem = useCallback(
     ({ item, index }) => {
@@ -168,6 +164,10 @@ const FeedCard = ({
   );
   const likeHandler = useCallback(() => setLiked((prev) => !prev), []);
   const bookmarkHandler = useCallback(() => setBookmarked((prev) => !prev), []);
+  const viewabilityConfig = useRef({
+    viewAreaCoveragePercentThreshold: 10,
+  });
+  const setItem = useCallback((e) => setCurItem(e.viewableItems[0].index), []);
   return (
     <SafeAreaView style={styles.cardContainer}>
       <View style={styles.header}>
@@ -186,7 +186,8 @@ const FeedCard = ({
       </View>
       <View style={styles.carousel}>
         <FlatList
-          onScroll={setItemHandler}
+          onViewableItemsChanged={setItem}
+          viewabilityConfig={viewabilityConfig.current}
           keyExtractor={keyExtractor}
           snapToInterval={win.width}
           pagingEnabled={true}
@@ -212,7 +213,7 @@ const FeedCard = ({
             }}
           >
             <Text style={{ color: colors.white }}>
-              {Math.max(1, curItem)}/{content.length}
+              {curItem + 1}/{content.length}
             </Text>
           </View>
         ) : (

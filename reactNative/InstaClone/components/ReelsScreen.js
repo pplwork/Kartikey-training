@@ -55,12 +55,6 @@ const ReelsScreen = () => {
   const heightHandler = useCallback((event) => {
     setHeight(event.nativeEvent.layout.height);
   }, []);
-  const curItemHandler = useCallback(
-    (e) => {
-      setCurItem(Math.ceil(e.nativeEvent.contentOffset.y / height));
-    },
-    [height]
-  );
   const keyExtractor = useCallback((item, index) => index.toString(), []);
   const renderItem = useCallback(
     ({ item, index }) => {
@@ -68,10 +62,15 @@ const ReelsScreen = () => {
     },
     [height, curItem]
   );
+  const viewabilityConfig = useRef({
+    viewAreaCoveragePercentThreshold: 10,
+  });
+  const setItem = useCallback((e) => setCurItem(e.viewableItems[0].index), []);
   return (
     <SafeAreaView style={styles.container} onLayout={heightHandler}>
       <FlatList
-        onScroll={curItemHandler}
+        onViewableItemsChanged={setItem}
+        viewabilityConfig={viewabilityConfig.current}
         snapToInterval={height}
         pagingEnabled={true}
         snapToAlignment="center"
