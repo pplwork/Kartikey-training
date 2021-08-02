@@ -50,7 +50,9 @@ const SearchScreen = () => {
           placeholder="Search"
           style={{ fontSize: 16 }}
           onEndEditing={(e) =>
-            Analytics.logEvent("SearchingInExploreFeed", { query: e })
+            Analytics().logEvent("SearchingInExploreFeed", {
+              query: e.nativeEvent.text,
+            })
           }
         />
       </View>
