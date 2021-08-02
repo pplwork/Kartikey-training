@@ -15,7 +15,7 @@ import ProfileScreen from "./components/ProfileScreen";
 import colors from "./constants/colors";
 import "react-native-console-time-polyfill";
 
-import { storage } from "./firebase";
+import storage from "@react-native-firebase/storage";
 
 LogBox.ignoreLogs(["Setting a timer", "Constants.installationId"]);
 
@@ -30,7 +30,7 @@ export default function App() {
   }, []);
   useEffect(() => {
     (async () => {
-      let uri = await storage
+      let uri = await storage()
         .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/pfp.jpg")
         .getDownloadURL();
       if (isMounted.current) setPfpURI(uri);

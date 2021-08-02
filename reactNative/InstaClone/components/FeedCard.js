@@ -21,7 +21,8 @@ import colors from "../constants/colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { Video } from "expo-av";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { storage } from "../firebase";
+
+import storage from "@react-native-firebase/storage";
 
 const win = Dimensions.get("window");
 
@@ -77,23 +78,23 @@ const FeedCard = ({
     }
   }, [isFocused, curIndex, curItem]);
   useEffect(() => {
-    let camilla = storage
+    let camilla = storage()
       .refFromURL(
         "gs://instaclone-b124e.appspot.com/images/profiles/camilla.jpg"
       )
       .getDownloadURL();
 
-    let shawn = storage
+    let shawn = storage()
       .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/shawn.jpg")
       .getDownloadURL();
 
-    let lemon = storage
+    let lemon = storage()
       .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/lemon.jpg")
       .getDownloadURL();
     Promise.all([camilla, shawn, lemon]).then((data) => {
       if (isMounted.current) setLikeUsers([data[0], data[1], data[2]]);
     });
-    storage
+    storage()
       .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/pfp.jpg")
       .getDownloadURL()
       .then((uri) => {

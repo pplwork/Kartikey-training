@@ -14,7 +14,9 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
-import * as Analytics from "expo-firebase-analytics";
+
+import Analytics from "@react-native-firebase/analytics";
+
 import { Entypo } from "@expo/vector-icons";
 
 import colors from "../constants/colors";
@@ -30,7 +32,7 @@ import DiscoverPeopleList from "./DiscoverPeopleList";
 
 const ProfileScreen = ({ navigation }) => {
   useEffect(() => {
-    Analytics.logEvent("ProfileScreenLoaded");
+    Analytics().logEvent("ProfileScreenLoaded");
   }, []);
   const username = useRef("benbenabraham");
   const [modalVisible, setModalVisible] = useState(false);

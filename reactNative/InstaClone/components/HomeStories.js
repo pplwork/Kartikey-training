@@ -9,8 +9,11 @@ import {
   Pressable,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { storage, db } from "../firebase";
-import * as Analytics from "expo-firebase-analytics";
+
+import Analytics from "@react-native-firebase/analytics";
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
+
 import colors from "../constants/colors";
 
 const win = Dimensions.get("window");
@@ -25,12 +28,13 @@ const HomeStories = () => {
     };
   }, []);
   useEffect(() => {
-    db.collection("user")
+    firestore()
+      .collection("user")
       .where("Username", "==", "benbenabraham")
       .get()
       .then((snapshot) => {
         let doc = snapshot.docs[0].data();
-        storage
+        storage()
           .refFromURL(doc.Photo)
           .getDownloadURL()
           .then((uri) => {
@@ -38,12 +42,12 @@ const HomeStories = () => {
           });
       });
     (async () => {
-      let docs = await db.collection("stories").get();
+      let docs = await firestore().collection("stories").get();
       let str = docs.docs.map((doc) => doc.data());
       str.unshift();
       // start all requeests and set states as data keeps coming in
       str.forEach((story) => {
-        storage
+        storage()
           .refFromURL(story.photo)
           .getDownloadURL()
           .then((url) => {
@@ -60,7 +64,7 @@ const HomeStories = () => {
     })();
   }, []);
   const logStoryImageOpened = useCallback(
-    () => Analytics.logEvent("StoryOpened"),
+    () => Analytics().logEvent("StoryOpened"),
     []
   );
   const keyExtractor = useCallback((item) => item.id.toString(), []);

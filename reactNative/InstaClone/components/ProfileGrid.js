@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { StyleSheet, View, Image, Dimensions, Pressable } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import * as _ from "lodash";
-import { db, storage } from "../firebase";
-import * as Analytics from "expo-firebase-analytics";
+
+import Analytics from "@react-native-firebase/analytics";
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 
 const win = Dimensions.get("window");
 
@@ -18,10 +20,10 @@ const ProfileGrid = () => {
 
   useEffect(() => {
     (async () => {
-      let docs = await db.collection("profileGrid").get();
+      let docs = await firestore().collection("profileGrid").get();
       let data = docs.docs.map((doc) => doc.data());
       data.forEach((doc) => {
-        storage
+        storage()
           .refFromURL(doc.source)
           .getDownloadURL()
           .then((uri) => {
@@ -39,7 +41,7 @@ const ProfileGrid = () => {
   }, []);
 
   const logImageOpened = useCallback(() => {
-    Analytics.logEvent("UserProfileGridImageOpened");
+    Analytics().logEvent("UserProfileGridImageOpened");
   }, []);
 
   const rows = _.chunk(gridContent, 3);

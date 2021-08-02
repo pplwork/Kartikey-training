@@ -10,14 +10,16 @@ import {
 import colors from "../constants/colors";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import Reel from "./Reel";
-import * as Analytics from "expo-firebase-analytics";
-import { storage, db } from "../firebase";
+
+import Analytics from "@react-native-firebase/analytics";
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 
 const win = Dimensions.get("window");
 
 const ReelsScreen = () => {
   useEffect(() => {
-    Analytics.logEvent("ReelsScreenLoaded");
+    Analytics().logEvent("ReelsScreenLoaded");
   }, []);
   const isMounted = useRef(true);
   useEffect(() => {
@@ -30,13 +32,13 @@ const ReelsScreen = () => {
   const [curItem, setCurItem] = useState(0);
   useEffect(() => {
     (async () => {
-      let docs = await db.collection("reels").get();
+      let docs = await firestore().collection("reels").get();
       let data = docs.docs.map((doc) => doc.data());
       data.forEach((doc) => {
         Promise.all([
-          storage.refFromURL(doc.reel).getDownloadURL(),
-          storage.refFromURL(doc.userImage).getDownloadURL(),
-          storage.refFromURL(doc.songOwnerImage).getDownloadURL(),
+          storage().refFromURL(doc.reel).getDownloadURL(),
+          storage().refFromURL(doc.userImage).getDownloadURL(),
+          storage().refFromURL(doc.songOwnerImage).getDownloadURL(),
         ]).then((URIArray) => {
           if (isMounted.current)
             setReelData((prev) => [

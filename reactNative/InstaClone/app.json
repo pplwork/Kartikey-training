@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "InstaClone",
-    "slug": "InstaClone",
+    "name": "instaclone",
+    "slug": "instaclone",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -27,18 +27,8 @@
       "googleServicesFile": "./google-services.json"
     },
     "web": {
-      "favicon": "./assets/favicon.png",
-      "config": {
-        "firebase": {
-          "apiKey": "AIzaSyDS4Llr5KJv3_0ecfyc8PeQXr_E1b8o0p4",
-          "authDomain": "instaclone-b124e.firebaseapp.com",
-          "projectId": "instaclone-b124e",
-          "storageBucket": "instaclone-b124e.appspot.com",
-          "messagingSenderId": "1:945651837752:web:3b1d0987e0f84982bcafcd",
-          "appId": "945651837752",
-          "measurementId": "G-2WSLDKXHR9"
-        }
-      }
-    }
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": ["@react-native-firebase/app"]
   }
 }

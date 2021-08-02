@@ -3,12 +3,13 @@ import { StyleSheet, View, TextInput } from "react-native";
 import colors from "../constants/colors";
 import { AntDesign } from "@expo/vector-icons";
 import InstaGrid from "./InstaGrid";
-import * as Analytics from "expo-firebase-analytics";
-import { storage, db } from "../firebase";
+import Analytics from "@react-native-firebase/analytics";
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 
 const SearchScreen = () => {
   useEffect(() => {
-    Analytics.logEvent("SearchScreenLoaded");
+    Analytics().logEvent("SearchScreenLoaded");
   }, []);
   const isMounted = useRef(true);
   const [gridData, setGridData] = useState(Array(12).fill("notLoaded"));
@@ -19,11 +20,11 @@ const SearchScreen = () => {
   }, []);
   useEffect(() => {
     (async () => {
-      let docs = await db.collection("explore").get();
+      let docs = await firestore().collection("explore").get();
       let data = docs.docs.map((doc) => doc.data());
       let promiseArray = [];
       data.forEach((doc) => {
-        promiseArray.push(storage.refFromURL(doc.source).getDownloadURL());
+        promiseArray.push(storage().refFromURL(doc.source).getDownloadURL());
       });
       Promise.all(promiseArray).then((URIArray) => {
         let gData = data.map((doc, index) => {

@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View, FlatList, Image } from "react-native";
-import { db, storage } from "../firebase";
+
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 import colors from "../constants/colors";
 
 const ProfileStories = () => {
@@ -14,10 +16,10 @@ const ProfileStories = () => {
   const [stories, setStories] = useState([]);
   useEffect(() => {
     (async () => {
-      let docs = await db.collection("profileStories").get();
+      let docs = await firestore().collection("profileStories").get();
       let data = docs.docs.map((doc) => doc.data());
       data.forEach((doc) => {
-        storage
+        storage()
           .refFromURL(doc.photo)
           .getDownloadURL()
           .then((uri) => {

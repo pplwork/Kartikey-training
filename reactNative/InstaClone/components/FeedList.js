@@ -4,7 +4,9 @@ import { StyleSheet, FlatList, View } from "react-native";
 import FeedCard from "./FeedCard";
 import colors from "../constants/colors";
 import HomeStories from "./HomeStories";
-import { storage, db } from "../firebase";
+
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 
 const FeedList = ({ scrollHandler }) => {
   const isMounted = useRef(true);
@@ -16,15 +18,15 @@ const FeedList = ({ scrollHandler }) => {
   }, []);
   useEffect(() => {
     (async () => {
-      let home_feed = await db.collection("homeFeed").get();
+      let home_feed = await firestore().collection("homeFeed").get();
       let data = home_feed.docs.map((doc) => doc.data());
       data.forEach((item) => {
         let logoContentPromises = [
-          storage.refFromURL(item.logo).getDownloadURL(),
+          storage().refFromURL(item.logo).getDownloadURL(),
         ];
         item.content.forEach((obj) => {
           logoContentPromises.push(
-            storage.refFromURL(obj.source).getDownloadURL()
+            storage().refFromURL(obj.source).getDownloadURL()
           );
         });
         Promise.all(logoContentPromises).then((URIArray) => {

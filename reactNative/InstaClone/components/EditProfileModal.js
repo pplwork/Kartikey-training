@@ -9,9 +9,11 @@ import { createStackNavigator } from "@react-navigation/stack";
 import EditPersonal from "./EditProfileStack/EditPersonal";
 import EditProfile from "./EditProfileStack/EditProfile";
 import { EvilIcons, AntDesign } from "@expo/vector-icons";
-import * as Analytics from "expo-firebase-analytics";
 import colors from "../constants/colors";
-import { db, storage } from "../firebase";
+
+import Analytics from "@react-native-firebase/analytics";
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 
 const win = Dimensions.get("window");
 
@@ -26,29 +28,30 @@ const EditProfileModal = ({ setVisible, username }) => {
   }, []);
   useEffect(() => {
     (async () => {
-      let docs = await db
+      let docs = await firestore()
         .collection("user")
         .where("Username", "==", username)
         .get();
       let data = docs.docs[0].data();
-      data.Photo = await storage.refFromURL(data.Photo).getDownloadURL();
+      data.Photo = await storage().refFromURL(data.Photo).getDownloadURL();
       if (isMounted.current) userId.current = docs.docs[0].id;
       if (isMounted.current) setUser(data);
     })();
   }, []);
 
   const saveUpdates = useCallback(() => {
-    db.collection("user")
+    firestore()
+      .collection("user")
       .doc(userId.current)
       .update(user)
       .then(() => {
-        Analytics.logEvent("ProfileUpdated");
+        Analytics().logEvent("ProfileUpdated");
         setVisible(false);
       });
   }, [user]);
 
   useEffect(() => {
-    const unsubscribe = db
+    const unsubscribe = firestore()
       .collection("user")
       .where("Username", "==", username)
       .onSnapshot((snapshot) => {

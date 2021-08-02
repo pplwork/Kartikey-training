@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
 } from "react-native";
 import DiscoverPeopleCard from "./DiscoverPeopleCard";
-import { db, storage } from "../firebase";
+
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 
 const DiscoverPeopleList = () => {
   const isMounted = useRef(true);
@@ -20,10 +22,10 @@ const DiscoverPeopleList = () => {
   const [discoverPeopleData, setDiscoverPeopleData] = useState([]);
   useEffect(() => {
     (async () => {
-      let docs = await db.collection("discoverPeople").get();
+      let docs = await firestore().collection("discoverPeople").get();
       let data = docs.docs.map((doc) => doc.data());
       data.forEach((doc) => {
-        storage
+        storage()
           .refFromURL(doc.image)
           .getDownloadURL()
           .then((uri) => {

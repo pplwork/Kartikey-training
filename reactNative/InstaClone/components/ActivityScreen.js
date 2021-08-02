@@ -7,9 +7,11 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import * as Analytics from "expo-firebase-analytics";
 import colors from "../constants/colors";
-import { storage, db } from "../firebase";
+
+import Analytics from "@react-native-firebase/analytics";
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 
 const ActivityItem = React.memo(
   ({ user, sub, comment, userPic, postPic, age, index }) => {
@@ -53,7 +55,7 @@ const ActivityItem = React.memo(
 const ActivityScreen = () => {
   const isMounted = useRef(true);
   useEffect(() => {
-    Analytics.logEvent("ActivityScreenLoaded");
+    Analytics().logEvent("ActivityScreenLoaded");
   }, []);
   const [activities, setActivities] = useState([]);
   const [requestUser, setRequestUser] = useState(null);
@@ -65,7 +67,7 @@ const ActivityScreen = () => {
   useEffect(() => {
     (async () => {
       let uri;
-      uri = await storage
+      uri = await storage()
         .refFromURL(
           "gs://instaclone-b124e.appspot.com/images/profiles/Anuv-Jain.jpg"
         )
@@ -73,12 +75,12 @@ const ActivityScreen = () => {
       if (isMounted.current) setRequestUser(uri);
     })();
     (async () => {
-      let docs = await db.collection("activities").get();
+      let docs = await firestore().collection("activities").get();
       let data = docs.docs.map((doc) => doc.data());
       data.forEach((doc) => {
         Promise.all([
-          storage.refFromURL(doc.postPic).getDownloadURL(),
-          storage.refFromURL(doc.userPic).getDownloadURL(),
+          storage().refFromURL(doc.postPic).getDownloadURL(),
+          storage().refFromURL(doc.userPic).getDownloadURL(),
         ]).then((URIArray) => {
           if (isMounted.current)
             setActivities((prev) => [

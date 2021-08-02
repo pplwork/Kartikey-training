@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
-import { db, storage } from "../firebase";
+
+import storage from "@react-native-firebase/storage";
+import firestore from "@react-native-firebase/firestore";
 import colors from "../constants/colors";
 
 const parseThis = (num) => {
@@ -23,17 +25,17 @@ const ProfileInfo = ({ username }) => {
   const [user, setUser] = useState({});
   useEffect(() => {
     (async () => {
-      let docs = await db
+      let docs = await firestore()
         .collection("user")
         .where("Username", "==", username)
         .get();
       let data = docs.docs[0].data();
-      data.Photo = await storage.refFromURL(data.Photo).getDownloadURL();
+      data.Photo = await storage().refFromURL(data.Photo).getDownloadURL();
       if (isMounted.current) setUser(data);
     })();
   }, []);
   useEffect(() => {
-    const unsubscribe = db
+    const unsubscribe = firestore()
       .collection("user")
       .where("Username", "==", username)
       .onSnapshot((snapshot) => {
