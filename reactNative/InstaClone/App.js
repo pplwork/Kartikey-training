@@ -5,6 +5,7 @@ import { Image, StatusBar } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AntDesign, Ionicons, FontAwesome } from "@expo/vector-icons";
+import inAppMessaging from "@react-native-firebase/in-app-messaging";
 
 //screens
 import HomeScreen from "./components/HomeScreen";
@@ -19,6 +20,7 @@ import storage from "@react-native-firebase/storage";
 import Analytics from "@react-native-firebase/analytics";
 import messaging from "@react-native-firebase/messaging";
 import crashlytics from "@react-native-firebase/crashlytics";
+import remoteConfig from "@react-native-firebase/remote-config";
 
 LogBox.ignoreLogs(["Setting a timer", "Constants.installationId"]);
 
@@ -29,6 +31,19 @@ export default function App() {
   const [pfpURI, setPfpURI] = useState(null);
   useEffect(() => {
     crashlytics().log("App Mounted");
+    inAppMessaging().setMessagesDisplaySuppressed(false);
+    remoteConfig()
+      .setDefaults({
+        test: "someDefaultValue",
+      })
+      .then(() => remoteConfig().fetchAndActivate())
+      .then(
+        console.log(
+          "Remote Config Value = ",
+          remoteConfig().getValue("test").asString()
+        )
+      );
+
     // check for initial notification
     messaging()
       .getInitialNotification()

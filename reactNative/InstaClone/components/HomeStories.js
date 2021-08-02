@@ -59,7 +59,7 @@ const HomeStories = () => {
         crashlytics().recordError(err);
       }
       crashlytics().log("Resolving story image urls home screen");
-      // start all requeests and set states as data keeps coming in
+      // start all requests and set states as data keeps coming in
       str
         .forEach((story) => {
           storage()
@@ -83,10 +83,9 @@ const HomeStories = () => {
       crashlytics().recordError(err);
     });
   }, []);
-  const logStoryImageOpened = useCallback(
-    () => Analytics().logEvent("StoryOpened"),
-    []
-  );
+  const logStoryImageOpened = useCallback(() => {
+    Analytics().logEvent("StoryOpened");
+  }, []);
   const keyExtractor = useCallback((item) => item.id.toString(), []);
   const renderItem = useCallback((itemData) => {
     return (
