@@ -6,6 +6,7 @@ import firestore from "@react-native-firebase/firestore";
 import colors from "../constants/colors";
 
 import crashlytics from "@react-native-firebase/crashlytics";
+import perf from "@react-native-firebase/perf";
 
 const ProfileStories = () => {
   const isMounted = useRef(true);
@@ -20,6 +21,7 @@ const ProfileStories = () => {
     (async () => {
       let docs,
         data = [];
+      const trace = await perf().startTrace("Fetching Profile Stories Data");
       crashlytics().log("Fetching Profile stories data");
       try {
         docs = await firestore().collection("profileStories").get();
@@ -46,6 +48,7 @@ const ProfileStories = () => {
             crashlytics.recordError(err);
           });
       });
+      await trace.stop();
     })().catch((err) => crashlytics().recordError(err));
   }, []);
   const keyExtractor = useCallback((item) => item.id.toString(), []);

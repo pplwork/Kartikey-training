@@ -7,7 +7,7 @@ import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
-
+import perf from "@react-native-firebase/perf";
 const SearchScreen = () => {
   const isMounted = useRef(true);
   const [gridData, setGridData] = useState(Array(12).fill("notLoaded"));
@@ -20,6 +20,7 @@ const SearchScreen = () => {
     (async () => {
       let docs,
         data = [];
+      const trace = perf().startTrace("Fetching Explore Images");
       crashlytics().log("Fetching explore screen image url refs");
       try {
         docs = await firestore().collection("explore").get();
@@ -45,6 +46,7 @@ const SearchScreen = () => {
         .catch((err) => {
           crashlytics().recordError(err);
         });
+      await trace.stop();
     })();
   }, []);
   return (

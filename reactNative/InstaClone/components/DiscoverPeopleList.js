@@ -11,6 +11,7 @@ import DiscoverPeopleCard from "./DiscoverPeopleCard";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
+import perf from "@react-native-firebase/perf";
 
 const DiscoverPeopleList = () => {
   const isMounted = useRef(true);
@@ -25,6 +26,7 @@ const DiscoverPeopleList = () => {
     (async () => {
       let docs,
         data = [];
+      const trace = await perf().startTrace("Fetching discover people data");
       crashlytics().log("Fetching Discover People Data");
       try {
         docs = await firestore().collection("discoverPeople").get();
@@ -49,6 +51,7 @@ const DiscoverPeopleList = () => {
           })
           .catch((err) => crashlytics().recordError(err));
       });
+      await trace.stop();
     })();
   }, []);
 

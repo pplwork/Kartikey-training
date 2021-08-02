@@ -14,12 +14,13 @@ import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
+import perf from "@react-native-firebase/perf";
 
 import colors from "../constants/colors";
 
 const win = Dimensions.get("window");
 
-const HomeStories = () => {
+const HomeStories = ({ navigation }) => {
   const isMounted = useRef(true);
   const [userIMG, setUserIMG] = useState();
   const [stories, setStories] = useState([]);
@@ -50,6 +51,7 @@ const HomeStories = () => {
     (async () => {
       let docs,
         str = [];
+      const trace = await perf().startTrace("Fetching Stories on home page");
       crashlytics().log("Fetching stories on home page");
       try {
         docs = await firestore().collection("stories").get();
@@ -79,18 +81,22 @@ const HomeStories = () => {
         .catch((err) => {
           crashlytics().recordError(err);
         });
+      await trace.stop();
     })().catch((err) => {
       crashlytics().recordError(err);
     });
   }, []);
-  const logStoryImageOpened = useCallback(() => {
-    Analytics().logEvent("StoryOpened");
+  const logStoryImageOpened = useCallback((index) => {
+    if (index == 0) {
+      navigation.navigate("Camera");
+      Analytics().logEvent("CameraOpened");
+    } else Analytics().logEvent("StoryOpened");
   }, []);
   const keyExtractor = useCallback((item) => item.id.toString(), []);
   const renderItem = useCallback((itemData) => {
     return (
       <View style={styles.storyImgLabelContainer}>
-        <Pressable onPress={logStoryImageOpened}>
+        <Pressable onPress={() => logStoryImageOpened(itemData.index)}>
           <LinearGradient
             colors={["#DD2A7B", "#F58529"]}
             style={styles.outlineGradient}

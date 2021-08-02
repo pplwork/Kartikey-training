@@ -7,6 +7,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@babel/runtime": "^7.14.8",
     "@expo/vector-icons": "^12.0.5",
     "@react-native-community/masked-view": "0.1.10",
     "@react-native-firebase/analytics": "^12.4.0",
@@ -15,6 +16,7 @@
     "@react-native-firebase/firestore": "^12.4.0",
     "@react-native-firebase/in-app-messaging": "^12.4.0",
     "@react-native-firebase/messaging": "^12.4.0",
+    "@react-native-firebase/perf": "^12.4.0",
     "@react-native-firebase/remote-config": "^12.4.0",
     "@react-native-firebase/storage": "^12.4.0",
     "@react-navigation/bottom-tabs": "^5.11.11",
@@ -23,6 +25,7 @@
     "dotenv": "^10.0.0",
     "expo": "~42.0.1",
     "expo-av": "~9.2.3",
+    "expo-camera": "~11.2.2",
     "expo-font": "~9.2.1",
     "expo-linear-gradient": "~9.2.0",
     "expo-splash-screen": "~0.11.2",

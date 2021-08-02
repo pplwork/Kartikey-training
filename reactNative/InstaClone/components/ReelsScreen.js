@@ -14,6 +14,7 @@ import Reel from "./Reel";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
+import perf from "@react-native-firebase/perf";
 
 const win = Dimensions.get("window");
 
@@ -31,6 +32,7 @@ const ReelsScreen = () => {
     (async () => {
       let docs,
         data = [];
+      const trace = await perf().startTrace("Fetching Reels Data");
       crashlytics().log("Fetching reels data");
       try {
         docs = await firestore().collection("reels").get();
@@ -61,6 +63,7 @@ const ReelsScreen = () => {
             crashlytics().recordError(err);
           });
       });
+      await trace.stop();
     })();
   }, []);
   const heightHandler = useCallback((event) => {

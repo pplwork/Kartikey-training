@@ -8,8 +8,9 @@ import HomeStories from "./HomeStories";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
+import perf from "@react-native-firebase/perf";
 
-const FeedList = ({ scrollHandler }) => {
+const FeedList = ({ scrollHandler, navigation }) => {
   const isMounted = useRef(true);
   const [feed, setFeed] = useState([]);
   useEffect(() => {
@@ -21,6 +22,7 @@ const FeedList = ({ scrollHandler }) => {
     (async () => {
       let home_feed,
         data = [];
+      const trace = await perf().startTrace("HomeFeedList Initial Load");
       crashlytics().log("Fetching homefeed data");
       try {
         home_feed = await firestore().collection("homeFeed").get();
@@ -56,6 +58,7 @@ const FeedList = ({ scrollHandler }) => {
         .catch((err) => {
           crashlytics().recordError(err);
         });
+      await trace.stop();
     })().catch((err) => crashlytics().recordError(err));
   }, []);
 
@@ -69,7 +72,7 @@ const FeedList = ({ scrollHandler }) => {
 
   const feedItem = useCallback(
     ({ item, index }) => {
-      if (index == 0) return <HomeStories />;
+      if (index == 0) return <HomeStories navigation={navigation} />;
       return (
         <FeedCard
           isFocused={isFocused}

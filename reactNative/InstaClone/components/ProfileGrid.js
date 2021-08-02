@@ -7,6 +7,7 @@ import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
+import perf from "@react-native-firebase/perf";
 
 const win = Dimensions.get("window");
 
@@ -23,6 +24,7 @@ const ProfileGrid = () => {
     (async () => {
       let docs,
         data = [];
+      const trace = await perf().startTrace("Fetching user grid data");
       crashlytics().log("fetching profile grid data");
       try {
         docs = await firestore().collection("profileGrid").get();
@@ -50,6 +52,7 @@ const ProfileGrid = () => {
         .catch((err) => {
           crashlytics().recordError(err);
         });
+      await trace.stop();
     })().catch((err) => crashlytics().recordError(err));
   }, []);
 

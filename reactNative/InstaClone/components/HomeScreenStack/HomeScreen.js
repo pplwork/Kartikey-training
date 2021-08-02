@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { StyleSheet } from "react-native";
-import HomeHeader from "./HomeHeader";
-import FeedList from "./FeedList";
+import HomeHeader from "../HomeHeader";
+import FeedList from "../FeedList";
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
   const [scroll, setScroll] = useState(0);
   const scrollHandler = useCallback((e) => {
     setScroll(e.nativeEvent.contentOffset.y);
@@ -11,7 +11,7 @@ const HomeScreen = () => {
   return (
     <>
       <HomeHeader scroll={scroll} />
-      <FeedList scrollHandler={scrollHandler} />
+      <FeedList navigation={navigation} scrollHandler={scrollHandler} />
     </>
   );
 };

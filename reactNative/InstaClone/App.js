@@ -1,4 +1,5 @@
 import "react-native-gesture-handler";
+import "react-native-console-time-polyfill";
 import { LogBox } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import { Image, StatusBar } from "react-native";
@@ -8,13 +9,12 @@ import { AntDesign, Ionicons, FontAwesome } from "@expo/vector-icons";
 import inAppMessaging from "@react-native-firebase/in-app-messaging";
 
 //screens
-import HomeScreen from "./components/HomeScreen";
+import HomeScreenStack from "./components/HomeScreenStack";
 import SearchScreen from "./components/SearchScreen";
 import ReelsScreen from "./components/ReelsScreen";
 import ActivityScreen from "./components/ActivityScreen";
 import ProfileScreen from "./components/ProfileScreen";
 import colors from "./constants/colors";
-import "react-native-console-time-polyfill";
 
 import storage from "@react-native-firebase/storage";
 import Analytics from "@react-native-firebase/analytics";
@@ -37,7 +37,7 @@ export default function App() {
         test: "someDefaultValue",
       })
       .then(() => remoteConfig().fetchAndActivate())
-      .then(
+      .then(() =>
         console.log(
           "Remote Config Value = ",
           remoteConfig().getValue("test").asString()
@@ -96,11 +96,11 @@ export default function App() {
         }}
       >
         <Tab.Navigator
-          initialRouteName="Home"
+          initialRouteName="HomeStack"
           screenOptions={({ route }) => ({
             tabBarIcon: ({ focused }) => {
               switch (route.name) {
-                case "Home":
+                case "HomeStack":
                   return focused ? (
                     <Ionicons name="home-sharp" size={24} color="black" />
                   ) : (
@@ -172,7 +172,7 @@ export default function App() {
               screen == "Reels" ? colors.black : colors.white,
           }}
         >
-          <Tab.Screen name="Home" component={HomeScreen} />
+          <Tab.Screen name="HomeStack" component={HomeScreenStack} />
           <Tab.Screen name="Search" component={SearchScreen} />
           <Tab.Screen name="Reels" component={ReelsScreen} />
           <Tab.Screen name="Activity" component={ActivityScreen} />
