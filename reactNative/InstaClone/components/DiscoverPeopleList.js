@@ -10,6 +10,7 @@ import DiscoverPeopleCard from "./DiscoverPeopleCard";
 
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 const DiscoverPeopleList = () => {
   const isMounted = useRef(true);
@@ -22,8 +23,16 @@ const DiscoverPeopleList = () => {
   const [discoverPeopleData, setDiscoverPeopleData] = useState([]);
   useEffect(() => {
     (async () => {
-      let docs = await firestore().collection("discoverPeople").get();
-      let data = docs.docs.map((doc) => doc.data());
+      let docs,
+        data = [];
+      crashlytics().log("Fetching Discover People Data");
+      try {
+        docs = await firestore().collection("discoverPeople").get();
+        data = docs.docs.map((doc) => doc.data());
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
+      crashlytics().log("Resolving Discover People Image URLS");
       data.forEach((doc) => {
         storage()
           .refFromURL(doc.image)
@@ -37,7 +46,8 @@ const DiscoverPeopleList = () => {
                   image: uri,
                 },
               ]);
-          });
+          })
+          .catch((err) => crashlytics().recordError(err));
       });
     })();
   }, []);

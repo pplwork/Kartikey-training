@@ -17,8 +17,6 @@ import {
 } from "@expo/vector-icons";
 import colors from "../constants/colors";
 
-import Analytics from "@react-native-firebase/analytics";
-
 const win = Dimensions.get("window");
 
 const Reel = ({
@@ -32,9 +30,6 @@ const Reel = ({
   curItem,
   index,
 }) => {
-  useEffect(() => {
-    Analytics().logEvent("ReelLoaded");
-  }, []);
   const [isLiked, setIsLiked] = useState(false);
   const screenIsFocused = useIsFocused();
   const videoRef = useRef(null);

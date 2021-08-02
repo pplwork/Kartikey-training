@@ -16,33 +16,70 @@ import colors from "./constants/colors";
 import "react-native-console-time-polyfill";
 
 import storage from "@react-native-firebase/storage";
+import Analytics from "@react-native-firebase/analytics";
+import messaging from "@react-native-firebase/messaging";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 LogBox.ignoreLogs(["Setting a timer", "Constants.installationId"]);
 
 export default function App() {
   const isMounted = useRef(true);
-  const [screen, setScreen] = useState(0);
+  const navRef = useRef(null);
+  const [screen, setScreen] = useState("Home");
   const [pfpURI, setPfpURI] = useState(null);
   useEffect(() => {
+    crashlytics().log("App Mounted");
+    // check for initial notification
+    messaging()
+      .getInitialNotification()
+      .then((msg) => {
+        if (msg) console.log(msg);
+      })
+      .catch((err) => crashlytics().recordError(err));
     return () => {
       isMounted.current = false;
     };
   }, []);
   useEffect(() => {
+    messaging().onNotificationOpenedApp((msg) => {
+      if (msg) console.log(msg);
+    });
+  });
+  useEffect(() => {
     (async () => {
-      let uri = await storage()
-        .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/pfp.jpg")
-        .getDownloadURL();
-      if (isMounted.current) setPfpURI(uri);
+      let uri;
+      try {
+        uri = await storage()
+          .refFromURL(
+            "gs://instaclone-b124e.appspot.com/images/profiles/pfp.jpg"
+          )
+          .getDownloadURL();
+        if (isMounted.current) setPfpURI(uri);
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
     })();
   }, []);
   return (
     <>
       <StatusBar
-        barStyle={screen == 2 ? "light-content" : "dark-content"}
-        backgroundColor={screen == 2 ? colors.black : colors.white}
+        barStyle={screen == "Reels" ? "light-content" : "dark-content"}
+        backgroundColor={screen == "Reels" ? colors.black : colors.white}
       />
-      <NavigationContainer onStateChange={(e) => setScreen(e.index)}>
+      <NavigationContainer
+        ref={navRef}
+        onStateChange={(e) => {
+          const prevRoute = screen;
+          const curRoute = navRef.current.getCurrentRoute().name;
+          if (prevRoute != curRoute) {
+            Analytics().logScreenView({
+              screen_class: curRoute,
+              screen_name: curRoute,
+            });
+            setScreen(navRef.current.getCurrentRoute().name);
+          }
+        }}
+      >
         <Tab.Navigator
           initialRouteName="Home"
           screenOptions={({ route }) => ({
@@ -55,7 +92,7 @@ export default function App() {
                     <Ionicons
                       name="home-outline"
                       size={24}
-                      color={screen == 2 ? "white" : "black"}
+                      color={screen == "Reels" ? "white" : "black"}
                     />
                   );
                 case "Search":
@@ -65,7 +102,7 @@ export default function App() {
                     <AntDesign
                       name="search1"
                       size={24}
-                      color={screen == 2 ? "white" : "black"}
+                      color={screen == "Reels" ? "white" : "black"}
                     />
                   );
                 case "Reels":
@@ -93,7 +130,7 @@ export default function App() {
                     <AntDesign
                       name="hearto"
                       size={24}
-                      color={screen == 2 ? "white" : "black"}
+                      color={screen == "Reels" ? "white" : "black"}
                     />
                   );
                 case "Profile":
@@ -114,8 +151,10 @@ export default function App() {
           })}
           tabBarOptions={{
             showLabel: false,
-            inactiveBackgroundColor: screen == 2 ? colors.black : colors.white,
-            activeBackgroundColor: screen == 2 ? colors.black : colors.white,
+            inactiveBackgroundColor:
+              screen == "Reels" ? colors.black : colors.white,
+            activeBackgroundColor:
+              screen == "Reels" ? colors.black : colors.white,
           }}
         >
           <Tab.Screen name="Home" component={HomeScreen} />

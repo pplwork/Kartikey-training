@@ -6,11 +6,9 @@ import InstaGrid from "./InstaGrid";
 import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 const SearchScreen = () => {
-  useEffect(() => {
-    Analytics().logEvent("SearchScreenLoaded");
-  }, []);
   const isMounted = useRef(true);
   const [gridData, setGridData] = useState(Array(12).fill("notLoaded"));
   useEffect(() => {
@@ -20,21 +18,33 @@ const SearchScreen = () => {
   }, []);
   useEffect(() => {
     (async () => {
-      let docs = await firestore().collection("explore").get();
-      let data = docs.docs.map((doc) => doc.data());
+      let docs,
+        data = [];
+      crashlytics().log("Fetching explore screen image url refs");
+      try {
+        docs = await firestore().collection("explore").get();
+        data = docs.docs.map((doc) => doc.data());
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
       let promiseArray = [];
       data.forEach((doc) => {
         promiseArray.push(storage().refFromURL(doc.source).getDownloadURL());
       });
-      Promise.all(promiseArray).then((URIArray) => {
-        let gData = data.map((doc, index) => {
-          return {
-            ...doc,
-            source: URIArray[index],
-          };
+      crashlytics().log("Resolving explore screen image urls");
+      Promise.all(promiseArray)
+        .then((URIArray) => {
+          let gData = data.map((doc, index) => {
+            return {
+              ...doc,
+              source: URIArray[index],
+            };
+          });
+          if (isMounted.current) setGridData(gData);
+        })
+        .catch((err) => {
+          crashlytics().recordError(err);
         });
-        if (isMounted.current) setGridData(gData);
-      });
     })();
   }, []);
   return (

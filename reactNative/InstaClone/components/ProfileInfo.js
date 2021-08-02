@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, Image } from "react-native";
 
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
+
 import colors from "../constants/colors";
 
 const parseThis = (num) => {
@@ -25,14 +27,25 @@ const ProfileInfo = ({ username }) => {
   const [user, setUser] = useState({});
   useEffect(() => {
     (async () => {
-      let docs = await firestore()
-        .collection("user")
-        .where("Username", "==", username)
-        .get();
-      let data = docs.docs[0].data();
-      data.Photo = await storage().refFromURL(data.Photo).getDownloadURL();
-      if (isMounted.current) setUser(data);
-    })();
+      let docs, data;
+      crashlytics().log("Fetching user profile info");
+      try {
+        docs = await firestore()
+          .collection("user")
+          .where("Username", "==", username)
+          .get();
+        data = docs.docs[0].data();
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
+      crashlytics().log("Resolving User Display Picture");
+      try {
+        data.Photo = await storage().refFromURL(data.Photo).getDownloadURL();
+        if (isMounted.current) setUser(data);
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
+    })().catch((err) => crashlytics().recordError(err));
   }, []);
   useEffect(() => {
     const unsubscribe = firestore()

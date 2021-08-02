@@ -5,6 +5,8 @@ import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import colors from "../constants/colors";
 
+import crashlytics from "@react-native-firebase/crashlytics";
+
 const ProfileStories = () => {
   const isMounted = useRef(true);
 
@@ -16,8 +18,16 @@ const ProfileStories = () => {
   const [stories, setStories] = useState([]);
   useEffect(() => {
     (async () => {
-      let docs = await firestore().collection("profileStories").get();
-      let data = docs.docs.map((doc) => doc.data());
+      let docs,
+        data = [];
+      crashlytics().log("Fetching Profile stories data");
+      try {
+        docs = await firestore().collection("profileStories").get();
+        data = docs.docs.map((doc) => doc.data());
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
+      crashlytics().log("Resolving Profile Story image urls");
       data.forEach((doc) => {
         storage()
           .refFromURL(doc.photo)
@@ -31,9 +41,12 @@ const ProfileStories = () => {
                   photo: uri,
                 },
               ]);
+          })
+          .catch((err) => {
+            crashlytics.recordError(err);
           });
       });
-    })();
+    })().catch((err) => crashlytics().recordError(err));
   }, []);
   const keyExtractor = useCallback((item) => item.id.toString(), []);
   const renderItem = useCallback((itemData) => {

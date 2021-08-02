@@ -6,6 +6,7 @@ import * as _ from "lodash";
 import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 const win = Dimensions.get("window");
 
@@ -20,24 +21,36 @@ const ProfileGrid = () => {
 
   useEffect(() => {
     (async () => {
-      let docs = await firestore().collection("profileGrid").get();
-      let data = docs.docs.map((doc) => doc.data());
-      data.forEach((doc) => {
-        storage()
-          .refFromURL(doc.source)
-          .getDownloadURL()
-          .then((uri) => {
-            if (isMounted.current)
-              setGridContent((prev) => [
-                ...prev,
-                {
-                  ...doc,
-                  source: uri,
-                },
-              ]);
-          });
-      });
-    })();
+      let docs,
+        data = [];
+      crashlytics().log("fetching profile grid data");
+      try {
+        docs = await firestore().collection("profileGrid").get();
+        data = docs.docs.map((doc) => doc.data());
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
+      crashlytics().log("resolving profile grid image urls");
+      data
+        .forEach((doc) => {
+          storage()
+            .refFromURL(doc.source)
+            .getDownloadURL()
+            .then((uri) => {
+              if (isMounted.current)
+                setGridContent((prev) => [
+                  ...prev,
+                  {
+                    ...doc,
+                    source: uri,
+                  },
+                ]);
+            });
+        })
+        .catch((err) => {
+          crashlytics().recordError(err);
+        });
+    })().catch((err) => crashlytics().recordError(err));
   }, []);
 
   const logImageOpened = useCallback(() => {

@@ -9,9 +9,9 @@ import {
 } from "react-native";
 import colors from "../constants/colors";
 
-import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 const ActivityItem = React.memo(
   ({ user, sub, comment, userPic, postPic, age, index }) => {
@@ -54,9 +54,7 @@ const ActivityItem = React.memo(
 
 const ActivityScreen = () => {
   const isMounted = useRef(true);
-  useEffect(() => {
-    Analytics().logEvent("ActivityScreenLoaded");
-  }, []);
+
   const [activities, setActivities] = useState([]);
   const [requestUser, setRequestUser] = useState(null);
   useEffect(() => {
@@ -67,31 +65,44 @@ const ActivityScreen = () => {
   useEffect(() => {
     (async () => {
       let uri;
-      uri = await storage()
-        .refFromURL(
-          "gs://instaclone-b124e.appspot.com/images/profiles/Anuv-Jain.jpg"
-        )
-        .getDownloadURL();
-      if (isMounted.current) setRequestUser(uri);
+      try {
+        uri = await storage()
+          .refFromURL(
+            "gs://instaclone-b124e.appspot.com/images/profiles/Anuv-Jain.jpg"
+          )
+          .getDownloadURL();
+        if (isMounted.current) setRequestUser(uri);
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
     })();
     (async () => {
-      let docs = await firestore().collection("activities").get();
-      let data = docs.docs.map((doc) => doc.data());
+      let docs,
+        data = [];
+      crashlytics().log("Fetching activity page data");
+      try {
+        docs = await firestore().collection("activities").get();
+        data = docs.docs.map((doc) => doc.data());
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
       data.forEach((doc) => {
         Promise.all([
           storage().refFromURL(doc.postPic).getDownloadURL(),
           storage().refFromURL(doc.userPic).getDownloadURL(),
-        ]).then((URIArray) => {
-          if (isMounted.current)
-            setActivities((prev) => [
-              ...prev,
-              {
-                ...doc,
-                postPic: URIArray[0],
-                userPic: URIArray[1],
-              },
-            ]);
-        });
+        ])
+          .then((URIArray) => {
+            if (isMounted.current)
+              setActivities((prev) => [
+                ...prev,
+                {
+                  ...doc,
+                  postPic: URIArray[0],
+                  userPic: URIArray[1],
+                },
+              ]);
+          })
+          .catch((err) => crashlytics().recordError(err));
       });
     })();
   }, []);

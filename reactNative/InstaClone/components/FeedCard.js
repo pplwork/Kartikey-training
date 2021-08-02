@@ -23,6 +23,7 @@ import { Video } from "expo-av";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 import storage from "@react-native-firebase/storage";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 const win = Dimensions.get("window");
 
@@ -91,14 +92,23 @@ const FeedCard = ({
     let lemon = storage()
       .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/lemon.jpg")
       .getDownloadURL();
-    Promise.all([camilla, shawn, lemon]).then((data) => {
-      if (isMounted.current) setLikeUsers([data[0], data[1], data[2]]);
-    });
+    crashlytics().log("Fetching and resolving likeusers images in feedcard");
+    Promise.all([camilla, shawn, lemon])
+      .then((data) => {
+        if (isMounted.current) setLikeUsers([data[0], data[1], data[2]]);
+      })
+      .catch((err) => {
+        crashlytics().recordError(err);
+      });
+    crashlytics().log("resolving user pfp feedcard");
     storage()
       .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/pfp.jpg")
       .getDownloadURL()
       .then((uri) => {
         if (isMounted.current) setUser(uri);
+      })
+      .catch((err) => {
+        crashlytics().recordError(err);
       });
   }, []);
   const keyExtractor = useCallback((item, index) => index.toString(), []);

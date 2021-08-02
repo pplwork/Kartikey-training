@@ -3,12 +3,7 @@ import { StyleSheet } from "react-native";
 import HomeHeader from "./HomeHeader";
 import FeedList from "./FeedList";
 
-import Analytics from "@react-native-firebase/analytics";
-
 const HomeScreen = () => {
-  useEffect(() => {
-    Analytics().logEvent("HomeScreenLoaded");
-  }, []);
   const [scroll, setScroll] = useState(0);
   const scrollHandler = useCallback((e) => {
     setScroll(e.nativeEvent.contentOffset.y);

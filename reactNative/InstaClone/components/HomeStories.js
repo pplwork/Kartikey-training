@@ -13,6 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 import colors from "../constants/colors";
 
@@ -28,6 +29,7 @@ const HomeStories = () => {
     };
   }, []);
   useEffect(() => {
+    crashlytics().log("Fetching User Photo on home screen");
     firestore()
       .collection("user")
       .where("Username", "==", "benbenabraham")
@@ -39,29 +41,47 @@ const HomeStories = () => {
           .getDownloadURL()
           .then((uri) => {
             if (isMounted.current) setUserIMG(uri);
-          });
+          })
+          .catch((err) => crashlytics().recordError(err));
+      })
+      .catch((err) => {
+        crashlytics().recordError(err);
       });
     (async () => {
-      let docs = await firestore().collection("stories").get();
-      let str = docs.docs.map((doc) => doc.data());
-      str.unshift();
+      let docs,
+        str = [];
+      crashlytics().log("Fetching stories on home page");
+      try {
+        docs = await firestore().collection("stories").get();
+        str = docs.docs.map((doc) => doc.data());
+        str.unshift();
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
+      crashlytics().log("Resolving story image urls home screen");
       // start all requeests and set states as data keeps coming in
-      str.forEach((story) => {
-        storage()
-          .refFromURL(story.photo)
-          .getDownloadURL()
-          .then((url) => {
-            if (isMounted.current)
-              setStories((prev) => [
-                ...prev,
-                {
-                  ...story,
-                  photo: url,
-                },
-              ]);
-          });
-      });
-    })();
+      str
+        .forEach((story) => {
+          storage()
+            .refFromURL(story.photo)
+            .getDownloadURL()
+            .then((url) => {
+              if (isMounted.current)
+                setStories((prev) => [
+                  ...prev,
+                  {
+                    ...story,
+                    photo: url,
+                  },
+                ]);
+            });
+        })
+        .catch((err) => {
+          crashlytics().recordError(err);
+        });
+    })().catch((err) => {
+      crashlytics().recordError(err);
+    });
   }, []);
   const logStoryImageOpened = useCallback(
     () => Analytics().logEvent("StoryOpened"),

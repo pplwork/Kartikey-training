@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  createRef,
+} from "react";
 import {
   StyleSheet,
   Dimensions,
@@ -14,6 +20,7 @@ import colors from "../constants/colors";
 import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 const win = Dimensions.get("window");
 
@@ -28,18 +35,32 @@ const EditProfileModal = ({ setVisible, username }) => {
   }, []);
   useEffect(() => {
     (async () => {
-      let docs = await firestore()
-        .collection("user")
-        .where("Username", "==", username)
-        .get();
+      let docs;
+      crashlytics().log("Fetching User Profile Data");
+      try {
+        docs = await firestore()
+          .collection("user")
+          .where("Username", "==", username)
+          .get();
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
       let data = docs.docs[0].data();
-      data.Photo = await storage().refFromURL(data.Photo).getDownloadURL();
+      crashlytics().log("Resolving User Profile Image on profile page");
+      try {
+        data.Photo = await storage().refFromURL(data.Photo).getDownloadURL();
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
       if (isMounted.current) userId.current = docs.docs[0].id;
       if (isMounted.current) setUser(data);
-    })();
+    })().catch((err) => {
+      crashlytics().recordError(err);
+    });
   }, []);
 
   const saveUpdates = useCallback(() => {
+    crashlytics().log("Updating User");
     firestore()
       .collection("user")
       .doc(userId.current)
@@ -47,21 +68,30 @@ const EditProfileModal = ({ setVisible, username }) => {
       .then(() => {
         Analytics().logEvent("ProfileUpdated");
         setVisible(false);
+      })
+      .catch((err) => {
+        crashlytics().recordError(err);
       });
   }, [user]);
 
   useEffect(() => {
+    crashlytics().log("Updating User Profile Page data");
     const unsubscribe = firestore()
       .collection("user")
       .where("Username", "==", username)
-      .onSnapshot((snapshot) => {
-        const data = snapshot.docs[0].data();
-        if (isMounted.current)
-          setUser((prev) => ({
-            ...data,
-            Photo: prev.Photo,
-          }));
-      });
+      .onSnapshot(
+        (snapshot) => {
+          const data = snapshot.docs[0].data();
+          if (isMounted.current)
+            setUser((prev) => ({
+              ...data,
+              Photo: prev.Photo,
+            }));
+        },
+        (err) => {
+          crashlytics().recordError(err);
+        }
+      );
     return () => unsubscribe();
   }, []);
 

@@ -15,8 +15,6 @@ import {
   SafeAreaView,
 } from "react-native";
 
-import Analytics from "@react-native-firebase/analytics";
-
 import { Entypo } from "@expo/vector-icons";
 
 import colors from "../constants/colors";
@@ -31,9 +29,6 @@ import ProfileGrid from "./ProfileGrid";
 import DiscoverPeopleList from "./DiscoverPeopleList";
 
 const ProfileScreen = ({ navigation }) => {
-  useEffect(() => {
-    Analytics().logEvent("ProfileScreenLoaded");
-  }, []);
   const username = useRef("benbenabraham");
   const [modalVisible, setModalVisible] = useState(false);
   useLayoutEffect(() => {

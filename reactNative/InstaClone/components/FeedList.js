@@ -7,6 +7,7 @@ import HomeStories from "./HomeStories";
 
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 const FeedList = ({ scrollHandler }) => {
   const isMounted = useRef(true);
@@ -18,32 +19,44 @@ const FeedList = ({ scrollHandler }) => {
   }, []);
   useEffect(() => {
     (async () => {
-      let home_feed = await firestore().collection("homeFeed").get();
-      let data = home_feed.docs.map((doc) => doc.data());
-      data.forEach((item) => {
-        let logoContentPromises = [
-          storage().refFromURL(item.logo).getDownloadURL(),
-        ];
-        item.content.forEach((obj) => {
-          logoContentPromises.push(
-            storage().refFromURL(obj.source).getDownloadURL()
-          );
+      let home_feed,
+        data = [];
+      crashlytics().log("Fetching homefeed data");
+      try {
+        home_feed = await firestore().collection("homeFeed").get();
+        data = home_feed.docs.map((doc) => doc.data());
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
+      crashlytics().log("Resolving FeedCard Asset Urls");
+      data
+        .forEach((item) => {
+          let logoContentPromises = [
+            storage().refFromURL(item.logo).getDownloadURL(),
+          ];
+          item.content.forEach((obj) => {
+            logoContentPromises.push(
+              storage().refFromURL(obj.source).getDownloadURL()
+            );
+          });
+          Promise.all(logoContentPromises).then((URIArray) => {
+            for (let i = 1; i < URIArray.length; ++i)
+              item.content[i - 1].source = URIArray[i];
+            if (isMounted.current)
+              setFeed((prev) => [
+                ...prev,
+                {
+                  ...item,
+                  logo: URIArray[0],
+                  content: item.content,
+                },
+              ]);
+          });
+        })
+        .catch((err) => {
+          crashlytics().recordError(err);
         });
-        Promise.all(logoContentPromises).then((URIArray) => {
-          for (let i = 1; i < URIArray.length; ++i)
-            item.content[i - 1].source = URIArray[i];
-          if (isMounted.current)
-            setFeed((prev) => [
-              ...prev,
-              {
-                ...item,
-                logo: URIArray[0],
-                content: item.content,
-              },
-            ]);
-        });
-      });
-    })();
+    })().catch((err) => crashlytics().recordError(err));
   }, []);
 
   const viewabilityConfig = useRef({
