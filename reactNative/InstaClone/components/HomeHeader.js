@@ -4,7 +4,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import colors from "../constants/colors";
 
-const HomeHeader = ({ scroll, navigation }) => {
+const HomeHeader = ({ scroll }) => {
   const [loaded] = useFonts({
     InstagramRegular: require("../assets/fonts/regular.otf"),
     InstagramBold: require("../assets/fonts/bold.otf"),
@@ -25,12 +25,7 @@ const HomeHeader = ({ scroll, navigation }) => {
           justifyContent: "center",
         }}
       >
-        <FontAwesome
-          name="plus-square-o"
-          size={24}
-          color="black"
-          onPress={() => navigation.navigate("Camera")}
-        />
+        <FontAwesome name="plus-square-o" size={24} color="black" />
       </View>
       <View
         style={{
