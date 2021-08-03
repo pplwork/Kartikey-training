@@ -3,15 +3,19 @@ import { createStackNavigator } from "@react-navigation/stack";
 import HomeScreen from "./HomeScreenStack/HomeScreen";
 import CameraScreen from "./HomeScreenStack/CameraScreen";
 
-const HomeScreenStack = () => {
+const HomeScreenStack = ({ navigation }) => {
   return (
     <Stack.Navigator
       initialRouteName="Home"
       headerMode="none"
       screenOptions={{ animationEnabled: false }}
     >
-      <Stack.Screen name="Home" component={HomeScreen}></Stack.Screen>
-      <Stack.Screen name="Camera" component={CameraScreen}></Stack.Screen>
+      <Stack.Screen name="Home">
+        {(props) => <HomeScreen {...props} tabNavigator={navigation} />}
+      </Stack.Screen>
+      <Stack.Screen name="Camera">
+        {(props) => <CameraScreen {...props} tabNavigator={navigation} />}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 };

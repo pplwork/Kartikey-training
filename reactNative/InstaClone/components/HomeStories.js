@@ -86,14 +86,61 @@ const HomeStories = ({ navigation }) => {
       crashlytics().recordError(err);
     });
   }, []);
-  const logStoryImageOpened = useCallback((index) => {
-    if (index == 0) {
-      navigation.navigate("Camera");
-      Analytics().logEvent("CameraOpened");
-    } else Analytics().logEvent("StoryOpened");
-  }, []);
+  const logStoryImageOpened = useCallback(
+    (index) => {
+      if (index == 0) {
+        navigation.navigate("Camera");
+        Analytics().logEvent("CameraOpened");
+      } else Analytics().logEvent("StoryOpened");
+    },
+    [navigation]
+  );
   const keyExtractor = useCallback((item) => item.id.toString(), []);
   const renderItem = useCallback((itemData) => {
+    if (itemData.index == 0) {
+      return (
+        <View style={styles.storyImgLabelContainer}>
+          <Pressable onPress={() => logStoryImageOpened(itemData.index)}>
+            <View style={styles.imageContainer}>
+              <Image
+                source={{ uri: itemData.item.photo }}
+                style={{
+                  ...styles.storyImage,
+                  transform: [{ rotateZ: "0deg" }],
+                }}
+              />
+              <View
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 20,
+                  position: "absolute",
+                  backgroundColor: colors.blue,
+                  bottom: 5,
+                  right: 0,
+                  borderWidth: 2,
+                  borderColor: colors.white,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: colors.white,
+                  }}
+                >
+                  +
+                </Text>
+              </View>
+            </View>
+          </Pressable>
+          <Text ellipsizeMode="tail" numberOfLines={1} style={{ fontSize: 12 }}>
+            {itemData.item.name}
+          </Text>
+        </View>
+      );
+    }
     return (
       <View style={styles.storyImgLabelContainer}>
         <Pressable onPress={() => logStoryImageOpened(itemData.index)}>
