@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>android__</name>
+	<name>SwitchApp</name>
 	<comment>Project android__ created by Buildship.</comment>
 	<projects>
 	</projects>
@@ -16,7 +16,7 @@
 	</natures>
 	<filteredResources>
 		<filter>
-			<id>1628066266933</id>
+			<id>0</id>
 			<name></name>
 			<type>30</type>
 			<matcher>
