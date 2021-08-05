@@ -1,0 +1,41 @@
+version: 2.1
+
+workflows:
+  test-deploy:
+    # sets up triggers for the jobs
+    triggers:
+      # sets up automatic job execution
+      - schedule:
+          # this is some posix syntax for time idk
+          cron: "0 * * * *"
+          # setting up filters so only main branch is used
+          filters:
+            branches:
+              only:
+                - main
+    # specify the job/jobs to run
+    jobs:
+      - test
+      # for 1 job after another workflow, skipping requires will make them run parallely
+      # - job2:
+      #     requires:
+      #       - test
+
+jobs:
+  test:
+    docker:
+      - image: cimg/node:16.6.0
+      - environment:
+          # setting enviroment variables for docker
+          TEST_ENV_VARIABLE: ramesh
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: npm install
+          # setting environment variables for the step
+          environment:
+            TEST_ENVIRON_VARIABLE: ramesh
+      - run:
+          name: Run Tests
+          command: npm run test
