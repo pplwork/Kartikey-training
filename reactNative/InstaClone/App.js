@@ -21,6 +21,10 @@ import Analytics from "@react-native-firebase/analytics";
 import messaging from "@react-native-firebase/messaging";
 import crashlytics from "@react-native-firebase/crashlytics";
 import remoteConfig from "@react-native-firebase/remote-config";
+import auth from "@react-native-firebase/auth";
+import Login from "./Auth/Login";
+import Signup from "./Auth/Signup";
+import SignupDetails from "./Auth/SignupDetails";
 
 LogBox.ignoreLogs(["Setting a timer", "Constants.installationId"]);
 
@@ -29,6 +33,16 @@ export default function App() {
   const navRef = useRef(null);
   const [screen, setScreen] = useState("Home");
   const [pfpURI, setPfpURI] = useState(null);
+  const [initializing, setInitializing] = useState(true);
+  const [user, setUser] = useState();
+  const onAuthStateChanged = (user) => {
+    setUser(user);
+    if (initializing) setInitializing(false);
+  };
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber; // unsubscribe on unmount
+  }, []);
   useEffect(() => {
     crashlytics().log("App Mounted");
     inAppMessaging().setMessagesDisplaySuppressed(false);
@@ -75,13 +89,17 @@ export default function App() {
       }
     })();
   }, []);
+  if (initializing) return null;
   return (
     <>
       <StatusBar
         barStyle={screen == "Reels" ? "light-content" : "dark-content"}
         backgroundColor={screen == "Reels" ? colors.black : colors.white}
       />
-      <NavigationContainer
+      <Login />
+      {/* <Signup /> */}
+      {/* <SignupDetails /> */}
+      {/* <NavigationContainer
         ref={navRef}
         onStateChange={(e) => {
           const prevRoute = screen;
@@ -178,7 +196,7 @@ export default function App() {
           <Tab.Screen name="Activity" component={ActivityScreen} />
           <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
-      </NavigationContainer>
+      </NavigationContainer> */}
     </>
   );
 }
