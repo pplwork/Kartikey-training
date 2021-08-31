@@ -5,15 +5,21 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Modal,
+  Pressable,
 } from "react-native";
 import { useFonts } from "expo-font";
 import { FontAwesome5, Entypo } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 
-const Login = () => {
+const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [wrongPasswordModalVisible, setWrongPasswordModalVisible] =
+    useState(false);
+  const [userNotFoundModalVisible, setUserNotFoundModalVisible] =
+    useState(false);
   const [loaded] = useFonts({
     InstagramRegular: require("../assets/fonts/regular.otf"),
     InstagramBold: require("../assets/fonts/bold.otf"),
@@ -21,11 +27,116 @@ const Login = () => {
   const login = () => {
     auth()
       .signInWithEmailAndPassword(email, password)
-      .then((e) => console.log(e));
+      .then((e) => console.log("thenblock", e))
+      .catch((err) => {
+        switch (err.code) {
+          case "auth/wrong-password":
+            setWrongPasswordModalVisible(true);
+            break;
+          case "auth/invalid-email":
+          case "auth/user-not-found":
+            setUserNotFoundModalVisible(true);
+            break;
+          default:
+            return null;
+        }
+      });
   };
   if (!loaded) return null;
   return (
     <View style={styles.container}>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={userNotFoundModalVisible}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.popup}>
+            <View style={styles.modalText}>
+              <Text style={styles.modalTextHeading}>Can't Find Account</Text>
+              <Text style={styles.modalTextDescription}>
+                We can't find an account with {email}. Try another phone number
+                or email, or if you don't have an instagram account, you can
+                sign up.
+              </Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => {
+                if (pressed)
+                  return {
+                    ...styles.modalBtn,
+                    backgroundColor: "rgba(0,0,0,0.1)",
+                  };
+                return styles.modalBtn;
+              }}
+              onPress={() => setUserNotFoundModalVisible(false)}
+            >
+              <Text style={styles.modalBtnBlue}>Try Again</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => {
+                if (pressed)
+                  return {
+                    ...styles.modalBtn,
+                    backgroundColor: "rgba(0,0,0,0.1)",
+                    borderBottomLeftRadius: 20,
+                    borderBottomRightRadius: 20,
+                  };
+                return styles.modalBtn;
+              }}
+              onPress={() => navigation.navigate("Signup")}
+            >
+              <Text style={styles.modalBtnBlack}>Sign Up</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={wrongPasswordModalVisible}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.popup}>
+            <View style={styles.modalText}>
+              <Text style={styles.modalTextHeading}>
+                Forgotten password for {email}?
+              </Text>
+              <Text style={styles.modalTextDescription}>
+                You can log in with your linked Facebook account.
+              </Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => {
+                if (pressed)
+                  return {
+                    ...styles.modalBtn,
+                    backgroundColor: "rgba(0,0,0,0.1)",
+                  };
+                return styles.modalBtn;
+              }}
+              onPress={() => setWrongPasswordModalVisible(false)}
+            >
+              <Text style={styles.modalBtnBlue}>Use Facebook</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => {
+                if (pressed)
+                  return {
+                    ...styles.modalBtn,
+                    backgroundColor: "rgba(0,0,0,0.1)",
+                    borderBottomLeftRadius: 20,
+                    borderBottomRightRadius: 20,
+                  };
+                return styles.modalBtn;
+              }}
+              onPress={() => setWrongPasswordModalVisible(false)}
+            >
+              <Text style={styles.modalBtnBlack}>Try Again</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <View style={styles.header}>
         <Text style={styles.detailText}>English (United States)</Text>
         <Entypo name="chevron-down" size={16} color="rgba(0,0,0,0.4)" />
@@ -60,7 +171,10 @@ const Login = () => {
         <TouchableOpacity style={styles.button} onPress={() => login()}>
           <Text style={styles.buttonText}>Log In</Text>
         </TouchableOpacity>
-        <Text style={styles.detailText}>
+        <Text
+          style={styles.detailText}
+          onPress={() => navigation.navigate("LoginHelp")}
+        >
           Forgot your login details?{" "}
           <Text style={styles.highlight}>Get help logging in.</Text>
         </Text>
@@ -77,8 +191,12 @@ const Login = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.footer}>
-        <Text style={styles.detailText}>
-          Don't have an account?<Text style={styles.highlight}> Sign up.</Text>
+        <Text
+          style={styles.detailText}
+          onPress={() => navigation.navigate("Signup")}
+        >
+          Don't have an account?
+          <Text style={styles.highlight}> Sign up.</Text>
         </Text>
       </View>
     </View>
@@ -142,7 +260,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
   },
-  bar: { borderWidth: 0.5, flex: 1, borderColor: "rgba(0,0,0,0.4)" },
+  bar: { borderWidth: 0.5, flex: 1, borderColor: "rgba(0,0,0,0.2)" },
   dividerText: {
     color: "rgba(0,0,0,0.4)",
     fontWeight: "bold",
@@ -163,5 +281,46 @@ const styles = StyleSheet.create({
     padding: 10,
     flexDirection: "row",
     alignItems: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  modalText: {
+    padding: 35,
+    alignItems: "center",
+  },
+  modalTextHeading: {
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 22,
+    marginBottom: 24,
+  },
+  modalTextDescription: {
+    textAlign: "center",
+    color: "rgba(0,0,0,0.6)",
+    lineHeight: 18,
+    fontSize: 14,
+  },
+  modalBtn: {
+    alignItems: "center",
+    padding: 15,
+    borderTopWidth: 0.5,
+    borderColor: "rgba(0,0,0,0.2)",
+  },
+  modalBtnBlue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1890ff",
+  },
+  modalBtnBlack: {
+    fontSize: 16,
+  },
+  popup: {
+    backgroundColor: "#fff",
+    width: "75%",
+    borderRadius: 20,
   },
 });

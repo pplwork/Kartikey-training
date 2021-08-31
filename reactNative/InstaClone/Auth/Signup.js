@@ -4,7 +4,7 @@ import { useFonts } from "expo-font";
 import { Entypo, FontAwesome5 } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 
-const Signup = () => {
+const Signup = ({ navigation }) => {
   const [loaded] = useFonts({
     InstagramRegular: require("../assets/fonts/regular.otf"),
     InstagramBold: require("../assets/fonts/bold.otf"),
@@ -28,12 +28,21 @@ const Signup = () => {
           <View style={styles.bar}></View>
         </View>
         <View style={styles.signupView}>
-          <Text style={styles.signup}>Sign up with email</Text>
+          <Text
+            style={styles.signup}
+            onPress={() => navigation.navigate("SignupDetails")}
+          >
+            Sign up with email
+          </Text>
         </View>
       </View>
       <View style={styles.footer}>
-        <Text style={styles.detailText}>
-          Don't have an account?<Text style={styles.highlight}> Sign up.</Text>
+        <Text
+          style={styles.detailText}
+          onPress={() => navigation.navigate("Login")}
+        >
+          Already have an account?
+          <Text style={styles.highlight}> Log in.</Text>
         </Text>
       </View>
     </View>
@@ -83,7 +92,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
   },
-  bar: { borderWidth: 0.5, flex: 1, borderColor: "rgba(0,0,0,0.4)" },
+  bar: { borderWidth: 0.5, flex: 1, borderColor: "rgba(0,0,0,0.2)" },
   dividerText: {
     color: "rgba(0,0,0,0.4)",
     fontWeight: "bold",

@@ -5,21 +5,83 @@ import {
   View,
   TextInput,
   TouchableOpacity,
+  Modal,
+  Pressable,
 } from "react-native";
 import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
+import { useDispatch } from "react-redux";
 
-const SignupDetails = () => {
+const SignupDetails = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalDescription, setModalDescription] = useState("");
+  const dispatch = useDispatch();
   const signup = () => {
     auth()
       .createUserWithEmailAndPassword(email, password)
-      .then((e) => console.log(e));
+      .then((e) => {
+        dispatch({ type: "SET_USER", action: e.user });
+        navigation.navigate("Login");
+      })
+      .catch((err) => {
+        switch (err.code) {
+          case "auth/email-already-in-use":
+            setModalTitle("This Email is on Another Account");
+            setModalDescription(
+              "You can log into the account associated with that email or you can use that email to make a new account"
+            );
+            setModalVisible(true);
+            break;
+          case "auth/invalid-email":
+            setModalTitle("Invalid Email");
+            setModalDescription("Please enter a valid email address");
+            setModalVisible(true);
+            break;
+          case "auth/weak-password":
+            setModalTitle("Weak Password");
+            setModalDescription(
+              "Please enter a strong password (use mixed upper,lower,number,special characters)"
+            );
+            setModalVisible(true);
+            break;
+          default:
+            return null;
+        }
+      });
   };
   return (
     <View style={styles.container}>
+      <Modal animationType="fade" transparent={true} visible={modalVisible}>
+        <View style={styles.modalContainer}>
+          <View style={styles.popup}>
+            <View style={styles.modalText}>
+              <Text style={styles.modalTextHeading}>{modalTitle}</Text>
+              <Text style={styles.modalTextDescription}>
+                {modalDescription}
+              </Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => {
+                if (pressed)
+                  return {
+                    ...styles.modalBtn,
+                    backgroundColor: "rgba(0,0,0,0.1)",
+                    borderBottomLeftRadius: 20,
+                    borderBottomRightRadius: 20,
+                  };
+                return styles.modalBtn;
+              }}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.modalBtnBlack}>Try Again</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <View></View>
       <View style={styles.content}>
         <View style={styles.avatar}>
@@ -68,8 +130,11 @@ const SignupDetails = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.footer}>
-        <Text style={styles.detailText}>
-          Don't have an account?<Text style={styles.highlight}> Sign up.</Text>
+        <Text
+          style={styles.detailText}
+          onPress={() => navigation.navigate("Login")}
+        >
+          Already have an account?<Text style={styles.highlight}> Log in.</Text>
         </Text>
       </View>
     </View>
@@ -143,7 +208,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
   },
-  bar: { borderWidth: 0.5, flex: 1, borderColor: "rgba(0,0,0,0.4)" },
+  bar: { borderWidth: 0.5, flex: 1, borderColor: "rgba(0,0,0,0.2)" },
   dividerText: {
     color: "rgba(0,0,0,0.4)",
     fontWeight: "bold",
@@ -163,4 +228,45 @@ const styles = StyleSheet.create({
     color: "rgba(0,0,0,0.4)",
   },
   highlight: { color: "darkblue" },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  modalText: {
+    padding: 35,
+    alignItems: "center",
+  },
+  modalTextHeading: {
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 22,
+    marginBottom: 24,
+  },
+  modalTextDescription: {
+    textAlign: "center",
+    color: "rgba(0,0,0,0.6)",
+    lineHeight: 18,
+    fontSize: 14,
+  },
+  modalBtn: {
+    alignItems: "center",
+    padding: 15,
+    borderTopWidth: 0.5,
+    borderColor: "rgba(0,0,0,0.2)",
+  },
+  modalBtnBlue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1890ff",
+  },
+  modalBtnBlack: {
+    fontSize: 16,
+  },
+  popup: {
+    backgroundColor: "#fff",
+    width: "75%",
+    borderRadius: 20,
+  },
 });
