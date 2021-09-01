@@ -27,7 +27,6 @@ const Login = ({ navigation }) => {
   const login = () => {
     auth()
       .signInWithEmailAndPassword(email, password)
-      .then((e) => console.log("thenblock", e))
       .catch((err) => {
         switch (err.code) {
           case "auth/wrong-password":

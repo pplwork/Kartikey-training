@@ -1,47 +1,98 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
   TextInput,
   View,
   TouchableOpacity,
+  Modal,
+  Pressable,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
+import firestore from "@react-native-firebase/firestore";
 
 const LoginHelp = ({ navigation, helpUser, setHelpUser }) => {
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const checkAndRedirect = async () => {
+    let user = await firestore()
+      .collection("users")
+      .where("Email", "==", helpUser)
+      .get();
+    if (user.empty) setErrorModalVisible(true);
+    else {
+      setHelpUser(user.docs[0].data());
+      navigation.navigate("AccessAccount");
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.main}>
-        <Text style={styles.h1}>Find Your Account</Text>
-        <Text style={styles.h2}>
-          Enter your username or the email or phone number linked to your
-          account.
-        </Text>
-        <View style={styles.input}>
-          <TextInput value={helpUser} onChangeText={(e) => setHelpUser(e)} />
+    <>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={errorModalVisible}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.popup}>
+            <View style={styles.modalText}>
+              <Text style={styles.modalTextHeading}>User Not Found!</Text>
+              <Text style={styles.modalTextDescription}>
+                Please check the entered email address.
+              </Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => {
+                if (pressed)
+                  return {
+                    ...styles.modalBtn,
+                    backgroundColor: "rgba(0,0,0,0.1)",
+                    borderBottomLeftRadius: 20,
+                    borderBottomRightRadius: 20,
+                  };
+                return styles.modalBtn;
+              }}
+              onPress={() => setErrorModalVisible(false)}
+            >
+              <Text style={styles.modalBtnBlack}>Try Again</Text>
+            </Pressable>
+          </View>
         </View>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("AccessAccount")}
-        >
-          <Text style={{ ...styles.buttonText, fontWeight: "bold" }}>Next</Text>
-        </TouchableOpacity>
-        <View style={styles.divider}>
-          <View style={styles.bar}></View>
-          <Text style={styles.dividerText}>OR</Text>
-          <View style={styles.bar}></View>
+      </Modal>
+      <View style={styles.container}>
+        <View style={styles.main}>
+          <Text style={styles.h1}>Find Your Account</Text>
+          <Text style={styles.h2}>
+            Enter your email linked to your account.
+          </Text>
+          <View style={styles.input}>
+            <TextInput
+              value={helpUser}
+              placeholder="Enter Email"
+              onChangeText={(e) => setHelpUser(e)}
+            />
+          </View>
+          <TouchableOpacity style={styles.button} onPress={checkAndRedirect}>
+            <Text style={{ ...styles.buttonText, fontWeight: "bold" }}>
+              Next
+            </Text>
+          </TouchableOpacity>
+          <View style={styles.divider}>
+            <View style={styles.bar}></View>
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.bar}></View>
+          </View>
+          <View style={styles.loginWithFacebook}>
+            <FontAwesome5 name="facebook" size={24} color="#1890ff" />
+            <Text style={styles.blueText}>Login with Facebook</Text>
+          </View>
         </View>
-        <View style={styles.loginWithFacebook}>
-          <FontAwesome5 name="facebook" size={24} color="#1890ff" />
-          <Text style={styles.blueText}>Login with Facebook</Text>
+        <View style={styles.bottom}>
+          <Text style={{ ...styles.blueText, fontWeight: "400", fontSize: 14 }}>
+            Need more help?
+          </Text>
         </View>
       </View>
-      <View style={styles.bottom}>
-        <Text style={{ ...styles.blueText, fontWeight: "400", fontSize: 14 }}>
-          Need more help?
-        </Text>
-      </View>
-    </View>
+    </>
   );
 };
 
@@ -120,5 +171,46 @@ const styles = StyleSheet.create({
     color: "#1890ff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  modalText: {
+    padding: 35,
+    alignItems: "center",
+  },
+  modalTextHeading: {
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 22,
+    marginBottom: 24,
+  },
+  modalTextDescription: {
+    textAlign: "center",
+    color: "rgba(0,0,0,0.6)",
+    lineHeight: 18,
+    fontSize: 14,
+  },
+  modalBtn: {
+    alignItems: "center",
+    padding: 15,
+    borderTopWidth: 0.5,
+    borderColor: "rgba(0,0,0,0.2)",
+  },
+  modalBtnBlue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1890ff",
+  },
+  modalBtnBlack: {
+    fontSize: 16,
+  },
+  popup: {
+    backgroundColor: "#fff",
+    width: "75%",
+    borderRadius: 20,
   },
 });

@@ -6,30 +6,38 @@ import SignupDetails from "./SignupDetails";
 import Login from "./Login";
 import LoginHelp from "./LoginHelp";
 import AccessAccount from "./AccessAccount";
-import auth from "@react-native-firebase/auth";
 import { useDispatch, useSelector } from "react-redux";
+import Analytics from "@react-native-firebase/analytics";
+
 const AuthStack = () => {
   const isMounted = useRef(true);
+  const navRef = useRef(null);
   useEffect(() => {
     return () => (isMounted.current = false);
   });
-  const { user, isLoggedIn, screen } = useSelector((state) => state);
+  const { screen } = useSelector((state) => state);
   const [helpUser, setHelpUser] = useState("");
-  const [initializing, setInitializing] = useState(true);
 
   const dispatch = useDispatch();
-  const onAuthStateChanged = (user) => {
-    console.log("authstatechanged", user);
-    dispatch({ type: "SET_USER", payload: user });
-    if (initializing) setInitializing(false);
-  };
-  useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    return subscriber; // unsubscribe on unmount
-  }, []);
-  if (initializing) return null;
+
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      ref={navRef}
+      onStateChange={(e) => {
+        const prevRoute = screen;
+        const curRoute = navRef.current.getCurrentRoute().name;
+        if (prevRoute != curRoute) {
+          Analytics().logScreenView({
+            screen_class: curRoute,
+            screen_name: curRoute,
+          });
+          dispatch({
+            type: "SET_SCREEN",
+            payload: navRef.current.getCurrentRoute().name,
+          });
+        }
+      }}
+    >
       <Stack.Navigator
         initialRouteName="Login"
         screenOptions={({ route }) => ({

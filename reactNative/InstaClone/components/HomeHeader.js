@@ -4,7 +4,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import colors from "../constants/colors";
 
-const HomeHeader = ({ scroll }) => {
+const HomeHeader = ({ scroll, navigation }) => {
   const [loaded] = useFonts({
     InstagramRegular: require("../assets/fonts/regular.otf"),
     InstagramBold: require("../assets/fonts/bold.otf"),

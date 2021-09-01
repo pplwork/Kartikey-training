@@ -1,16 +1,40 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import React, { useEffect, useState, useRef } from "react";
+import { StyleSheet, Text, View, Image } from "react-native";
+import {
+  MaterialCommunityIcons,
+  MaterialIcons,
+  AntDesign,
+} from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
+import storage from "@react-native-firebase/storage";
 const AccessAccount = ({ navigation, helpUser, setHelpUser }) => {
+  const isMounted = useRef(true);
+  useEffect(() => {
+    return () => (isMounted.current = false);
+  }, []);
+  const [mailSent, setMailSent] = useState(false);
   const sendResetEmail = () => {
-    auth().sendPasswordResetEmail(helpUser);
+    auth()
+      .sendPasswordResetEmail(helpUser.Email)
+      .then(() => setMailSent(true));
   };
+  const [pfpURI, setPfpURI] = useState("");
+  useEffect(() => {
+    console.log(helpUser);
+    storage()
+      .refFromURL(helpUser.Photo)
+      .getDownloadURL()
+      .then((url) => setPfpURI(url));
+  }, [helpUser]);
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <View style={styles.photo}></View>
-        <Text style={styles.username}>{helpUser}</Text>
+        <View style={styles.photo}>
+          {pfpURI !== "" && (
+            <Image style={styles.photo} source={{ uri: pfpURI }} />
+          )}
+        </View>
+        <Text style={styles.username}>{helpUser.Username}</Text>
         <View style={styles.listItem}>
           <MaterialCommunityIcons
             name="email-outline"
@@ -20,11 +44,19 @@ const AccessAccount = ({ navigation, helpUser, setHelpUser }) => {
           <Text style={styles.listDescription} onPress={() => sendResetEmail()}>
             Send an Email
           </Text>
+          {mailSent && (
+            <AntDesign
+              name="checkcircle"
+              size={24}
+              color="green"
+              style={{ marginLeft: "auto" }}
+            />
+          )}
         </View>
-        <View style={styles.listItem}>
+        {/* <View style={styles.listItem}>
           <MaterialIcons name="smartphone" size={24} color="black" />
           <Text style={styles.listDescription}>Send a SMS</Text>
-        </View>
+        </View> */}
         <View style={styles.listItem}>
           <MaterialCommunityIcons name="facebook" size={24} color="black" />
           <Text style={styles.listDescription}>Log in with Facebook</Text>
@@ -46,10 +78,11 @@ const styles = StyleSheet.create({
   photo: {
     height: 100,
     width: 100,
-    backgroundColor: "#189099",
+    backgroundColor: "#DFDFDF",
     borderRadius: 100,
     marginVertical: 10,
     alignSelf: "center",
+    justifyContent: "center",
   },
   username: {
     textTransform: "uppercase",

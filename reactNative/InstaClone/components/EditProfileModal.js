@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  createRef,
-} from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   Dimensions,
@@ -21,50 +15,27 @@ import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
+import auth from "@react-native-firebase/auth";
+import { useSelector } from "react-redux";
 
 const win = Dimensions.get("window");
 
-const EditProfileModal = ({ setVisible, username }) => {
+const EditProfileModal = ({ setVisible }) => {
   const isMounted = useRef(true);
-  const [user, setUser] = useState({});
-  const userId = useRef(null);
+  const { user } = useSelector((state) => state);
+  const [newDetails, setNewDetails] = useState(user);
   useEffect(() => {
     return () => {
       isMounted.current = false;
     };
   }, []);
-  useEffect(() => {
-    (async () => {
-      let docs;
-      crashlytics().log("Fetching User Profile Data");
-      try {
-        docs = await firestore()
-          .collection("user")
-          .where("Username", "==", username)
-          .get();
-      } catch (err) {
-        crashlytics().recordError(err);
-      }
-      let data = docs.docs[0].data();
-      crashlytics().log("Resolving User Profile Image on profile page");
-      try {
-        data.Photo = await storage().refFromURL(data.Photo).getDownloadURL();
-      } catch (err) {
-        crashlytics().recordError(err);
-      }
-      if (isMounted.current) userId.current = docs.docs[0].id;
-      if (isMounted.current) setUser(data);
-    })().catch((err) => {
-      crashlytics().recordError(err);
-    });
-  }, []);
 
   const saveUpdates = useCallback(() => {
     crashlytics().log("Updating User");
     firestore()
-      .collection("user")
-      .doc(userId.current)
-      .update(user)
+      .collection("users")
+      .doc(user.uid)
+      .update(newDetails)
       .then(() => {
         Analytics().logEvent("ProfileUpdated");
         setVisible(false);
@@ -72,20 +43,21 @@ const EditProfileModal = ({ setVisible, username }) => {
       .catch((err) => {
         crashlytics().recordError(err);
       });
-  }, [user]);
+  }, [newDetails, user]);
 
   useEffect(() => {
     crashlytics().log("Updating User Profile Page data");
     const unsubscribe = firestore()
-      .collection("user")
-      .where("Username", "==", username)
+      .collection("users")
+      .doc(user.uid)
       .onSnapshot(
-        (snapshot) => {
-          const data = snapshot.docs[0].data();
+        (doc) => {
+          const data = doc.data();
           if (isMounted.current)
-            setUser((prev) => ({
+            setNewDetails((prev) => ({
               ...data,
-              Photo: prev.Photo,
+              Photo: user.Photo,
+              uid: user.uid,
             }));
         },
         (err) => {
@@ -132,7 +104,9 @@ const EditProfileModal = ({ setVisible, username }) => {
             },
           }}
         >
-          {(props) => <EditProfile {...props} user={user} setUser={setUser} />}
+          {(props) => (
+            <EditProfile {...props} user={newDetails} setUser={setNewDetails} />
+          )}
         </Stack.Screen>
         <Stack.Screen
           name="personal"
@@ -144,7 +118,13 @@ const EditProfileModal = ({ setVisible, username }) => {
             },
           }}
         >
-          {(props) => <EditPersonal {...props} user={user} setUser={setUser} />}
+          {(props) => (
+            <EditPersonal
+              {...props}
+              user={newDetails}
+              setUser={setNewDetails}
+            />
+          )}
         </Stack.Screen>
       </Stack.Navigator>
     </SafeAreaView>

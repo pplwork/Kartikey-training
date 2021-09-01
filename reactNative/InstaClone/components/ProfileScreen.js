@@ -47,9 +47,9 @@ const ProfileScreen = ({ navigation }) => {
   return (
     <>
       <SafeAreaView style={styles.container}>
-        <ProfileHeader username={username.current} />
+        <ProfileHeader />
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <ProfileInfo username={username.current} />
+          <ProfileInfo />
           <View
             style={{
               width: "95%",
@@ -92,18 +92,11 @@ const ProfileScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
           {showDiscoverPeople ? <DiscoverPeopleList /> : false}
-          <ProfileStories username={username.current} />
+          <ProfileStories />
           <ProfileGrid />
         </ScrollView>
       </SafeAreaView>
-      {modalVisible ? (
-        <EditProfileModal
-          setVisible={setModalVisible}
-          username={username.current}
-        />
-      ) : (
-        false
-      )}
+      {modalVisible ? <EditProfileModal setVisible={setModalVisible} /> : false}
     </>
   );
 };

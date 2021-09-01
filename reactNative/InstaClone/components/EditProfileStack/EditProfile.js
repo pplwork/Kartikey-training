@@ -30,6 +30,13 @@ const EditProfile = ({ navigation, user, setUser }) => {
     }));
   }, []);
 
+  const usernameHandler = useCallback((e) => {
+    setUser((prev) => ({
+      ...prev,
+      Username: e,
+    }));
+  });
+
   const goToPersonal = useCallback(() => navigation.navigate("personal"), []);
   return (
     <View style={styles.container}>
@@ -67,10 +74,9 @@ const EditProfile = ({ navigation, user, setUser }) => {
         <View style={styles.formGroup}>
           <Text style={styles.formLabel}>Username</Text>
           <TextInput
-            editable={false}
-            selectTextOnFocus={false}
             value={user.Username}
             style={styles.formInput}
+            onChangeText={usernameHandler}
           />
         </View>
         <View style={styles.formGroup}>

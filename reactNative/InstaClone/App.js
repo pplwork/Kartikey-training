@@ -1,24 +1,74 @@
 import "react-native-gesture-handler";
 import "react-native-console-time-polyfill";
 import { LogBox } from "react-native";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { store, persistedStore } from "./store";
 import { PersistGate } from "redux-persist/integration/react";
-import { Provider } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { StatusBar } from "react-native";
 
-import AppTabs from "./Main/AppTabs";
 import AuthStack from "./Auth/AuthStack";
-
-import inAppMessaging from "@react-native-firebase/in-app-messaging";
-
+import MainStack from "./Main/MainStack";
 import colors from "./constants/colors";
 
+import auth from "@react-native-firebase/auth";
+import inAppMessaging from "@react-native-firebase/in-app-messaging";
 import messaging from "@react-native-firebase/messaging";
 import crashlytics from "@react-native-firebase/crashlytics";
 import remoteConfig from "@react-native-firebase/remote-config";
+import firestore from "@react-native-firebase/firestore";
+import storage from "@react-native-firebase/storage";
 
 LogBox.ignoreLogs(["Setting a timer", "Constants.installationId"]);
+
+const ScreenSelector = () => {
+  const [initializing, setInitializing] = useState(true);
+  const { screen, user } = useSelector((state) => state);
+  console.log(
+    "  Lorem ipsum dolor sit amet consectetur adipisicing elit. Architecto voluptate quasi magni labore natus quis earum cupiditate nisi ipsa obcaecati nostrum non iure eveniet dignissimos, laudantium fugit provident ipsam quisquam!",
+    user
+  );
+  const dispatch = useDispatch();
+  const onAuthStateChanged = (user) => {
+    if (user) {
+      firestore()
+        .collection("users")
+        .doc(user.uid)
+        .get()
+        .then((doc) => {
+          let data = doc.data();
+          storage()
+            .refFromURL(data.Photo)
+            .getDownloadURL()
+            .then((url) => {
+              data.Photo = url;
+              dispatch({
+                type: "SET_USER",
+                payload: { ...data, uid: user.uid },
+              });
+            })
+            .catch(console.log);
+        })
+        .catch(console.log);
+    } else dispatch({ type: "SIGNOUT" });
+    if (initializing) setInitializing(false);
+  };
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber; // unsubscribe on unmount
+  }, []);
+  if (initializing) return null;
+  return (
+    <>
+      <StatusBar
+        barStyle={screen == "Reels" ? "light-content" : "dark-content"}
+        backgroundColor={screen == "Reels" ? colors.black : colors.white}
+      />
+      {!auth().currentUser && <AuthStack />}
+      {auth().currentUser && <MainStack />}
+    </>
+  );
+};
 
 export default function App() {
   const isMounted = useRef(true);
@@ -63,12 +113,7 @@ export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistedStore}>
-        <StatusBar
-        // barStyle={screen == "Reels" ? "light-content" : "dark-content"}
-        // backgroundColor={screen == "Reels" ? colors.black : colors.white}
-        />
-        {!store.getState().isLoggedIn && <AuthStack />}
-        {store.getState().isLoggedIn && <AppTabs />}
+        <ScreenSelector />
       </PersistGate>
     </Provider>
   );

@@ -21,6 +21,12 @@ const EditPersonal = ({ user, setUser }) => {
       Gender: e,
     }));
   }, []);
+  const birthdayHandler = useCallback((e) => {
+    setUser((prev) => ({
+      ...prev,
+      Birthday: e,
+    }));
+  });
   return (
     <View style={styles.container}>
       <View style={styles.form}>
@@ -60,8 +66,7 @@ const EditPersonal = ({ user, setUser }) => {
           <TextInput
             value={user.Birthday}
             style={styles.formInput}
-            editable={false}
-            selectTextOnFocus={false}
+            onChangeText={birthdayHandler}
           />
         </View>
       </View>

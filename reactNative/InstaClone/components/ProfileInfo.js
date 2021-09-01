@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
 
-import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
-import crashlytics from "@react-native-firebase/crashlytics";
+import auth from "@react-native-firebase/auth";
 
 import colors from "../constants/colors";
+import { useDispatch, useSelector } from "react-redux";
 
 const parseThis = (num) => {
   if (num == undefined) return 0;
@@ -16,48 +16,25 @@ const parseThis = (num) => {
   else return `${(num / 1000).toFixed(1)}K`;
 };
 
-const ProfileInfo = ({ username }) => {
+const ProfileInfo = () => {
   const isMounted = useRef(true);
-
   useEffect(() => {
     return () => {
       isMounted.current = false;
     };
   }, []);
-  const [user, setUser] = useState({});
-  useEffect(() => {
-    (async () => {
-      let docs, data;
-      crashlytics().log("Fetching user profile info");
-      try {
-        docs = await firestore()
-          .collection("user")
-          .where("Username", "==", username)
-          .get();
-        data = docs.docs[0].data();
-      } catch (err) {
-        crashlytics().recordError(err);
-      }
-      crashlytics().log("Resolving User Display Picture");
-      try {
-        data.Photo = await storage().refFromURL(data.Photo).getDownloadURL();
-        if (isMounted.current) setUser(data);
-      } catch (err) {
-        crashlytics().recordError(err);
-      }
-    })().catch((err) => crashlytics().recordError(err));
-  }, []);
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state);
   useEffect(() => {
     const unsubscribe = firestore()
-      .collection("user")
-      .where("Username", "==", username)
-      .onSnapshot((snapshot) => {
-        const data = snapshot.docs[0].data();
-        if (isMounted.current)
-          setUser((prev) => ({
-            ...data,
-            Photo: prev.Photo,
-          }));
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .onSnapshot((doc) => {
+        const data = doc.data();
+        dispatch({
+          type: "SET_USER",
+          payload: { ...data, Photo: user.Photo, uid: auth().currentUser.uid },
+        });
       });
     return () => unsubscribe();
   }, []);
@@ -76,19 +53,19 @@ const ProfileInfo = ({ username }) => {
         <View style={styles.profileRight}>
           <View style={styles.statsContainer}>
             <Text style={{ fontWeight: "bold", fontSize: 18 }}>
-              {parseThis(user.Posts)}
+              {parseThis(user.Posts.length)}
             </Text>
             <Text>Posts</Text>
           </View>
           <View style={styles.statsContainer}>
             <Text style={{ fontWeight: "bold", fontSize: 18 }}>
-              {parseThis(user.Followers)}
+              {parseThis(user.Followers.length)}
             </Text>
             <Text>Followers</Text>
           </View>
           <View style={styles.statsContainer}>
             <Text style={{ fontWeight: "bold", fontSize: 18 }}>
-              {parseThis(user.Following)}
+              {parseThis(user.Following.length)}
             </Text>
             <Text>Following</Text>
           </View>

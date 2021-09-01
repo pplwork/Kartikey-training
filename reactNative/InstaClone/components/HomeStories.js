@@ -17,13 +17,14 @@ import crashlytics from "@react-native-firebase/crashlytics";
 import perf from "@react-native-firebase/perf";
 
 import colors from "../constants/colors";
+import { useSelector } from "react-redux";
 
 const win = Dimensions.get("window");
 
 const HomeStories = ({ navigation }) => {
   const isMounted = useRef(true);
-  const [userIMG, setUserIMG] = useState();
   const [stories, setStories] = useState([]);
+  const { user } = useSelector((state) => state);
   useEffect(() => {
     return () => {
       isMounted.current = false;
@@ -31,23 +32,6 @@ const HomeStories = ({ navigation }) => {
   }, []);
   useEffect(() => {
     crashlytics().log("Fetching User Photo on home screen");
-    firestore()
-      .collection("user")
-      .where("Username", "==", "benbenabraham")
-      .get()
-      .then((snapshot) => {
-        let doc = snapshot.docs[0].data();
-        storage()
-          .refFromURL(doc.Photo)
-          .getDownloadURL()
-          .then((uri) => {
-            if (isMounted.current) setUserIMG(uri);
-          })
-          .catch((err) => crashlytics().recordError(err));
-      })
-      .catch((err) => {
-        crashlytics().recordError(err);
-      });
     (async () => {
       let docs,
         str = [];
@@ -89,8 +73,8 @@ const HomeStories = ({ navigation }) => {
   const logStoryImageOpened = useCallback(
     (index) => {
       if (index == 0) {
-        navigation.navigate("Camera");
-        Analytics().logEvent("CameraOpened");
+        navigation.navigate("AddStoryScreen");
+        Analytics().logEvent("AddStoryOpened");
       } else Analytics().logEvent("StoryOpened");
     },
     [navigation]
@@ -168,7 +152,7 @@ const HomeStories = ({ navigation }) => {
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
         horizontal={true}
-        data={[{ id: 1, name: "Your Story", photo: userIMG }, ...stories]}
+        data={[{ id: 1, name: "Your Story", photo: user.Photo }, ...stories]}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
       />

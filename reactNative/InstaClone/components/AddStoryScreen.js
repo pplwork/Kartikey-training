@@ -24,7 +24,7 @@ import {
   Feather,
   Entypo,
 } from "@expo/vector-icons";
-import colors from "../../constants/colors";
+import colors from "../constants/colors";
 
 const flashIcons = {
   [Camera.Constants.FlashMode.off]: "md-flash-off",
@@ -33,7 +33,7 @@ const flashIcons = {
   [Camera.Constants.FlashMode.torch]: "flashlight",
 };
 
-const CameraScreen = ({ navigation, tabNavigator }) => {
+const AddStoryScreen = ({ navigation, tabNavigator }) => {
   const isFocused = useIsFocused();
   const isMounted = useRef(true);
   const cameraRef = useRef(null);
@@ -51,11 +51,6 @@ const CameraScreen = ({ navigation, tabNavigator }) => {
       isMounted.current = false;
     };
   }, []);
-  useEffect(() => {
-    tabNavigator.setOptions({
-      tabBarVisible: false,
-    });
-  });
   const showTextHandler = useCallback(() => {
     setShowText(true);
     setTimeout(() => {
@@ -186,7 +181,7 @@ const CameraScreen = ({ navigation, tabNavigator }) => {
           >
             <View style={{ flex: 1, justifyContent: "center" }}>
               <Image
-                source={require("../../assets/favicon.png")}
+                source={require("../assets/favicon.png")}
                 style={{
                   height: 32,
                   width: 32,
@@ -252,7 +247,7 @@ const CameraScreen = ({ navigation, tabNavigator }) => {
   );
 };
 
-export default React.memo(CameraScreen);
+export default React.memo(AddStoryScreen);
 
 const styles = StyleSheet.create({
   container: {

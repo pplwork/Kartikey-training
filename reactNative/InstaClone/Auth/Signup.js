@@ -2,7 +2,6 @@ import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { useFonts } from "expo-font";
 import { Entypo, FontAwesome5 } from "@expo/vector-icons";
-import auth from "@react-native-firebase/auth";
 
 const Signup = ({ navigation }) => {
   const [loaded] = useFonts({

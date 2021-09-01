@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 import { useDispatch } from "react-redux";
 
 const SignupDetails = ({ navigation }) => {
@@ -24,8 +25,27 @@ const SignupDetails = ({ navigation }) => {
     auth()
       .createUserWithEmailAndPassword(email, password)
       .then((e) => {
-        dispatch({ type: "SET_USER", action: e.user });
-        navigation.navigate("Login");
+        firestore()
+          .collection("users")
+          .doc(e.user.uid)
+          .set({
+            Username: "",
+            Email: email,
+            Bio: "",
+            Birthday: "",
+            Followers: [],
+            Following: [],
+            Gender: "",
+            Name: "",
+            Phone: "",
+            Photo:
+              "gs://instaclone-b124e.appspot.com/images/profiles/default.jpg",
+            Posts: [],
+            Website: "",
+          })
+          .then(() => {
+            auth().signInWithEmailAndPassword(email, password);
+          });
       })
       .catch((err) => {
         switch (err.code) {
