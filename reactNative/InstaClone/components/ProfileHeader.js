@@ -1,62 +1,96 @@
-import React, { useRef } from "react";
+import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Ionicons, FontAwesome, Entypo } from "@expo/vector-icons";
+import {
+  Ionicons,
+  FontAwesome,
+  Entypo,
+  MaterialCommunityIcons,
+  AntDesign,
+} from "@expo/vector-icons";
+
+import { useDispatch, useSelector } from "react-redux";
+
 import auth from "@react-native-firebase/auth";
 
-import Modal from "react-native-modalbox";
-import { useSelector } from "react-redux";
-
 const ProfileHeader = () => {
-  const modalRef = useRef(null);
   const { user } = useSelector((state) => state);
+  const dispatch = useDispatch();
   return (
-    <>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Ionicons name="md-lock-closed-outline" size={20} color="black" />
-          <Text style={{ fontSize: 22, fontWeight: "bold", marginLeft: 5 }}>
-            {user.Username}
-          </Text>
-          <Entypo
-            name="chevron-small-down"
-            size={24}
-            color="black"
-            style={{ alignSelf: "flex-end" }}
-          />
-        </View>
-        <View style={styles.headerRight}>
-          <FontAwesome
-            name="plus-square-o"
-            size={24}
-            color="black"
-            style={{ marginHorizontal: 20 }}
-          />
-          <FontAwesome
-            name="bars"
-            size={24}
-            color="black"
-            onPress={() => modalRef.current.open()}
-          />
-        </View>
+    <View style={styles.header}>
+      <View style={styles.headerLeft}>
+        <Ionicons name="md-lock-closed-outline" size={20} color="black" />
+        <Text style={{ fontSize: 22, fontWeight: "bold", marginLeft: 5 }}>
+          {user.Username}
+        </Text>
+        <Entypo
+          name="chevron-small-down"
+          size={24}
+          color="black"
+          style={{ alignSelf: "flex-end" }}
+        />
       </View>
-      <Modal
-        ref={modalRef}
-        swipeToClose={true}
-        position="bottom"
-        backdropPressToClose={true}
-        backdropColor="black"
-        backdropOpacity={0.2}
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          height: 100,
-        }}
-      >
-        <View style={{ backgroundColor: "red" }}>
-          <Text onPress={() => auth().signOut()}>Logout</Text>
-        </View>
-      </Modal>
-    </>
+      <View style={styles.headerRight}>
+        <FontAwesome
+          name="plus-square-o"
+          size={24}
+          color="black"
+          style={{ marginHorizontal: 20 }}
+        />
+        <FontAwesome
+          name="bars"
+          size={24}
+          color="black"
+          onPress={() => {
+            dispatch({
+              type: "SET_DRAWER",
+              payload: [
+                {
+                  icon: {
+                    library: "Ionicons",
+                    name: "settings-outline",
+                    size: 24,
+                    color: "black",
+                  },
+                  item: "Settings",
+                  action: null,
+                },
+                {
+                  icon: {
+                    library: "Entypo",
+                    name: "back-in-time",
+                    size: 24,
+                    color: "black",
+                  },
+                  item: "Archive",
+                  action: null,
+                },
+                {
+                  icon: {
+                    library: "MaterialCommunityIcons",
+                    name: "progress-clock",
+                    size: 24,
+                    color: "black",
+                  },
+                  item: "Your Activity",
+                  action: null,
+                },
+                {
+                  icon: {
+                    library: "AntDesign",
+                    name: "logout",
+                    size: 24,
+                    color: "black",
+                  },
+                  item: "Signout",
+                  action: () => auth().signOut(),
+                },
+              ],
+            });
+            dispatch({ type: "OPEN_DRAWER" });
+          }}
+        />
+      </View>
+    </View>
   );
 };
 

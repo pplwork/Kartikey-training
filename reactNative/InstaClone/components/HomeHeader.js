@@ -25,7 +25,12 @@ const HomeHeader = ({ scroll, navigation }) => {
           justifyContent: "center",
         }}
       >
-        <FontAwesome name="plus-square-o" size={24} color="black" />
+        <FontAwesome
+          name="plus-square-o"
+          size={24}
+          color="black"
+          onPress={() => navigation.navigate("AddPostScreen")}
+        />
       </View>
       <View
         style={{

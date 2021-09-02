@@ -11,7 +11,6 @@ import {
 import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
-import { useDispatch } from "react-redux";
 
 const SignupDetails = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -20,10 +19,9 @@ const SignupDetails = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalDescription, setModalDescription] = useState("");
-  const dispatch = useDispatch();
   const signup = () => {
     auth()
-      .createUserWithEmailAndPassword(email, password)
+      .createUserWithEmailAndPassword(email.toLowerCase().trim(), password)
       .then((e) => {
         firestore()
           .collection("users")
@@ -44,7 +42,10 @@ const SignupDetails = ({ navigation }) => {
             Website: "",
           })
           .then(() => {
-            auth().signInWithEmailAndPassword(email, password);
+            auth().signInWithEmailAndPassword(
+              email.toLowerCase().trim(),
+              password
+            );
           });
       })
       .catch((err) => {

@@ -26,7 +26,7 @@ const Login = ({ navigation }) => {
   });
   const login = () => {
     auth()
-      .signInWithEmailAndPassword(email, password)
+      .signInWithEmailAndPassword(email.toLowerCase().trim(), password)
       .catch((err) => {
         switch (err.code) {
           case "auth/wrong-password":

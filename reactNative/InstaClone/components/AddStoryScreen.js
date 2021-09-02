@@ -1,11 +1,4 @@
-import React, {
-  useLayoutEffect,
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-} from "react";
-import { useIsFocused } from "@react-navigation/native";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -27,14 +20,13 @@ import {
 import colors from "../constants/colors";
 
 const flashIcons = {
-  [Camera.Constants.FlashMode.off]: "md-flash-off",
-  [Camera.Constants.FlashMode.on]: "md-flash",
-  [Camera.Constants.FlashMode.auto]: "md-flash",
+  [Camera.Constants.FlashMode.off]: "flash-off",
+  [Camera.Constants.FlashMode.on]: "flash",
+  [Camera.Constants.FlashMode.auto]: "flash-auto",
   [Camera.Constants.FlashMode.torch]: "flashlight",
 };
 
 const AddStoryScreen = ({ navigation, tabNavigator }) => {
-  const isFocused = useIsFocused();
   const isMounted = useRef(true);
   const cameraRef = useRef(null);
   const [hasPermission, setHasPermission] = useState(null);
@@ -60,9 +52,7 @@ const AddStoryScreen = ({ navigation, tabNavigator }) => {
 
   const takePic = async () => {
     if (cameraRef) {
-      let photo = await cameraRef.current.takePictureAsync({
-        base64: true,
-      });
+      let photo = await cameraRef.current.takePictureAsync();
       console.log(photo);
     }
   };
@@ -77,99 +67,99 @@ const AddStoryScreen = ({ navigation, tabNavigator }) => {
     <>
       <StatusBar backgroundColor={colors.black} barStyle="light-content" />
       <View style={styles.container}>
-        {isFocused && (
-          <Camera
-            style={styles.camera}
-            type={type}
-            flashMode={flash}
-            ref={cameraRef}
-          >
-            <View style={styles.header}>
-              <Octicons name="gear" size={32} color={colors.white} />
-              <Ionicons
-                name={flashIcons[flash]}
+        <Camera
+          style={styles.camera}
+          type={type}
+          flashMode={flash}
+          ref={cameraRef}
+          ratio="16:9"
+        >
+          <View style={styles.header}>
+            <Octicons name="gear" size={32} color={colors.white} />
+            <MaterialCommunityIcons
+              name={flashIcons[flash]}
+              size={32}
+              color={colors.white}
+              onPress={() => {
+                setFlash((prev) => {
+                  switch (prev) {
+                    case Camera.Constants.FlashMode.off:
+                      return Camera.Constants.FlashMode.on;
+                    case Camera.Constants.FlashMode.on:
+                      return Camera.Constants.FlashMode.auto;
+                    case Camera.Constants.FlashMode.auto:
+                      return Camera.Constants.FlashMode.torch;
+                    case Camera.Constants.FlashMode.torch:
+                      return Camera.Constants.FlashMode.off;
+                  }
+                });
+              }}
+            />
+
+            <AntDesign
+              name="close"
+              size={32}
+              color={colors.white}
+              onPress={() => navigation.navigate("Home")}
+            />
+          </View>
+          <View style={styles.leftControls}>
+            <View style={styles.controlGroup}>
+              <MaterialCommunityIcons
+                name="format-letter-case-upper"
                 size={32}
                 color={colors.white}
-                onPress={() => {
-                  setFlash((prev) => {
-                    switch (prev) {
-                      case Camera.Constants.FlashMode.off:
-                        return Camera.Constants.FlashMode.on;
-                      case Camera.Constants.FlashMode.on:
-                        return Camera.Constants.FlashMode.auto;
-                      case Camera.Constants.FlashMode.auto:
-                        return Camera.Constants.FlashMode.torch;
-                      case Camera.Constants.FlashMode.torch:
-                        return Camera.Constants.FlashMode.off;
-                    }
-                  });
+                onPress={showTextHandler}
+              />
+              <Text
+                style={{
+                  ...styles.controlText,
+                  display: showText ? "flex" : "none",
                 }}
-              />
-              <AntDesign
-                name="close"
+              >
+                Create
+              </Text>
+            </View>
+            <View style={styles.controlGroup}>
+              <MaterialCommunityIcons
+                name="infinity"
                 size={32}
                 color={colors.white}
-                onPress={() => navigation.navigate("Home")}
+                onPress={showTextHandler}
               />
+              <Text
+                style={{
+                  ...styles.controlText,
+                  display: showText ? "flex" : "none",
+                }}
+              >
+                Boomerang
+              </Text>
             </View>
-            <View style={styles.leftControls}>
-              <View style={styles.controlGroup}>
-                <MaterialCommunityIcons
-                  name="format-letter-case-upper"
-                  size={32}
-                  color={colors.white}
-                  onPress={showTextHandler}
-                />
-                <Text
-                  style={{
-                    ...styles.controlText,
-                    display: showText ? "flex" : "none",
-                  }}
-                >
-                  Create
-                </Text>
-              </View>
-              <View style={styles.controlGroup}>
-                <MaterialCommunityIcons
-                  name="infinity"
-                  size={32}
-                  color={colors.white}
-                  onPress={showTextHandler}
-                />
-                <Text
-                  style={{
-                    ...styles.controlText,
-                    display: showText ? "flex" : "none",
-                  }}
-                >
-                  Boomerang
-                </Text>
-              </View>
-              <View style={styles.controlGroup}>
-                <Feather
-                  name="layout"
-                  size={32}
-                  color={colors.white}
-                  onPress={showTextHandler}
-                />
-                <Text
-                  style={{
-                    ...styles.controlText,
-                    display: showText ? "flex" : "none",
-                  }}
-                >
-                  Layout
-                </Text>
-              </View>
-              <View style={styles.controlGroup}>
-                <Entypo name="chevron-down" size={32} color={colors.white} />
-              </View>
+            <View style={styles.controlGroup}>
+              <Feather
+                name="layout"
+                size={32}
+                color={colors.white}
+                onPress={showTextHandler}
+              />
+              <Text
+                style={{
+                  ...styles.controlText,
+                  display: showText ? "flex" : "none",
+                }}
+              >
+                Layout
+              </Text>
             </View>
-            <TouchableOpacity style={styles.button} onPress={takePic}>
-              <View style={styles.innerButton}></View>
-            </TouchableOpacity>
-          </Camera>
-        )}
+            <View style={styles.controlGroup}>
+              <Entypo name="chevron-down" size={32} color={colors.white} />
+            </View>
+          </View>
+          <TouchableOpacity style={styles.button} onPress={takePic}>
+            <View style={styles.innerButton}></View>
+          </TouchableOpacity>
+        </Camera>
         <View style={styles.controls}>
           <View
             style={{

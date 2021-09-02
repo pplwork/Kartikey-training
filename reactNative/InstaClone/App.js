@@ -23,12 +23,11 @@ LogBox.ignoreLogs(["Setting a timer", "Constants.installationId"]);
 
 const ScreenSelector = () => {
   const [initializing, setInitializing] = useState(true);
-  const { screen, user } = useSelector((state) => state);
-  console.log(
-    "  Lorem ipsum dolor sit amet consectetur adipisicing elit. Architecto voluptate quasi magni labore natus quis earum cupiditate nisi ipsa obcaecati nostrum non iure eveniet dignissimos, laudantium fugit provident ipsam quisquam!",
-    user
-  );
+  const { screen } = useSelector((state) => state);
   const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch({ type: "CLOSE_DRAWER" });
+  }, []);
   const onAuthStateChanged = (user) => {
     if (user) {
       firestore()
@@ -44,7 +43,7 @@ const ScreenSelector = () => {
               data.Photo = url;
               dispatch({
                 type: "SET_USER",
-                payload: { ...data, uid: user.uid },
+                payload: data,
               });
             })
             .catch(console.log);

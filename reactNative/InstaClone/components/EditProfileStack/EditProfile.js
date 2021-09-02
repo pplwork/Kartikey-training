@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import colors from "../../constants/colors";
+import { launchImageLibrary } from "react-native-image-picker";
 
 const EditProfile = ({ navigation, user, setUser }) => {
   const nameHandler = useCallback((e) => {
@@ -38,6 +39,19 @@ const EditProfile = ({ navigation, user, setUser }) => {
   });
 
   const goToPersonal = useCallback(() => navigation.navigate("personal"), []);
+  const changePic = () => {
+    launchImageLibrary(
+      { mediaType: "photo", maxWidth: 512, maxHeight: 512 },
+      (res) => {
+        if (res.didCancel || res.errorCode) return null;
+        const fileUrl = res.assets[0].uri;
+        setUser((prev) => ({
+          ...prev,
+          Photo: fileUrl,
+        }));
+      }
+    );
+  };
   return (
     <View style={styles.container}>
       <View style={styles.imgLabelContainer}>
@@ -50,7 +64,7 @@ const EditProfile = ({ navigation, user, setUser }) => {
             resizeMode: "cover",
           }}
         />
-        <TouchableOpacity>
+        <TouchableOpacity onPress={changePic}>
           <Text
             style={{
               color: colors.blue,

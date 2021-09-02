@@ -12,10 +12,10 @@ import { EvilIcons, AntDesign } from "@expo/vector-icons";
 import colors from "../constants/colors";
 
 import Analytics from "@react-native-firebase/analytics";
-import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
 import auth from "@react-native-firebase/auth";
+import storage from "@react-native-firebase/storage";
 import { useSelector } from "react-redux";
 
 const win = Dimensions.get("window");
@@ -32,40 +32,54 @@ const EditProfileModal = ({ setVisible }) => {
 
   const saveUpdates = useCallback(() => {
     crashlytics().log("Updating User");
-    firestore()
-      .collection("users")
-      .doc(user.uid)
-      .update(newDetails)
-      .then(() => {
-        Analytics().logEvent("ProfileUpdated");
-        setVisible(false);
-      })
-      .catch((err) => {
-        crashlytics().recordError(err);
-      });
-  }, [newDetails, user]);
-
-  useEffect(() => {
-    crashlytics().log("Updating User Profile Page data");
-    const unsubscribe = firestore()
-      .collection("users")
-      .doc(user.uid)
-      .onSnapshot(
-        (doc) => {
-          const data = doc.data();
-          if (isMounted.current)
-            setNewDetails((prev) => ({
-              ...data,
-              Photo: user.Photo,
-              uid: user.uid,
-            }));
-        },
-        (err) => {
-          crashlytics().recordError(err);
-        }
+    // if we uploaded a photo
+    if (user.Photo != newDetails.Photo) {
+      // get extension
+      let extension;
+      try {
+        extension = newDetails.Photo.match(/.*(jpg|png|jpeg|jfif)/)[1];
+      } catch (err) {
+        return null;
+      }
+      //create reference
+      let ref = storage().refFromURL(
+        `gs://instaclone-b124e.appspot.com/images/profiles/${
+          auth().currentUser.uid
+        }.${extension}`
       );
-    return () => unsubscribe();
-  }, []);
+      // put file
+      ref.putFile(newDetails.Photo).then((res) => {
+        firestore()
+          .collection("users")
+          .doc(auth().currentUser.uid)
+          .update({
+            ...newDetails,
+            Photo: `gs://instaclone-b124e.appspot.com/images/profiles/${
+              auth().currentUser.uid
+            }.${extension}`,
+          })
+          .then(() => {
+            Analytics().logEvent("ProfileUpdated");
+            setVisible(false);
+          })
+          .catch((err) => {
+            crashlytics().recordError(err);
+          });
+      });
+    } else {
+      firestore()
+        .collection("users")
+        .doc(auth().currentUser.uid)
+        .update(newDetails)
+        .then(() => {
+          Analytics().logEvent("ProfileUpdated");
+          setVisible(false);
+        })
+        .catch((err) => {
+          crashlytics().recordError(err);
+        });
+    }
+  }, [newDetails, user]);
 
   return (
     <SafeAreaView style={styles.modalContainer}>
