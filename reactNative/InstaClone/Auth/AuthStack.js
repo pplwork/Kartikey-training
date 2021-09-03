@@ -14,7 +14,7 @@ const AuthStack = () => {
   const navRef = useRef(null);
   useEffect(() => {
     return () => (isMounted.current = false);
-  });
+  }, []);
   const { screen } = useSelector((state) => state);
   const [helpUser, setHelpUser] = useState("");
 

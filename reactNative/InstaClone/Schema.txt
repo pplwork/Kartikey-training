@@ -1,0 +1,51 @@
+Collection('users')
+
+User : {
+    Bio:"",
+    Birthday:"",
+    Email:"",
+    Followers:UserID[],
+    Following:UserID[],
+    Gender:"",
+    Name:"",
+    Phone:"",
+    Photo:"",
+    Posts:PostID[],
+    Story:StoryID[],
+    Reels:ReelID[],
+    Username:"",
+    Website:""
+}
+
+Post : {
+    author:UserID,
+    caption:"",
+    comments:Comment[],
+    content:{source:"gs://",type:"video/image"}[],
+    createdAt:TimeStamp(),
+    likes:UserID[]
+}
+
+Story : {
+    author:UserID,
+    content:{source:"gs://",type:"video/image"}[],
+    createdAt:TimeStamp(),
+}
+
+Reel : {
+    author:UserID,
+    music:"",
+    caption:"",
+    comments:Comment[],
+    likes:UserID[],
+    content:{source:"gs://"},
+    createdAt:TimeStamp(),
+}
+
+Comment:{
+    author:UserID,
+    content:"",
+    replies:Comment[]
+    createdAt:TimeStamp(),
+    likes:UserID[],
+}

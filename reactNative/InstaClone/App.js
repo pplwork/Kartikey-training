@@ -29,6 +29,7 @@ const ScreenSelector = () => {
     dispatch({ type: "LAUNCH_RESET" });
   }, []);
   const onAuthStateChanged = (user) => {
+    // if user logged in
     if (user) {
       firestore()
         .collection("users")
@@ -46,9 +47,15 @@ const ScreenSelector = () => {
                 payload: data,
               });
             })
-            .catch(console.log);
+            .catch((err) => {
+              dispatch({
+                type: "SET_USER",
+                payload: data,
+              });
+              crashlytics().recordError(err);
+            });
         })
-        .catch(console.log);
+        .catch(crashlytics().recordError);
     } else dispatch({ type: "SIGNOUT" });
     if (initializing) setInitializing(false);
   };

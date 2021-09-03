@@ -13,66 +13,79 @@ import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 
 const SignupDetails = ({ navigation }) => {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalDescription, setModalDescription] = useState("");
-  const signup = () => {
-    auth()
-      .createUserWithEmailAndPassword(email.toLowerCase().trim(), password)
-      .then((e) => {
-        firestore()
-          .collection("users")
-          .doc(e.user.uid)
-          .set({
-            Username: "",
-            Email: email,
-            Bio: "",
-            Birthday: "",
-            Followers: [],
-            Following: [],
-            Gender: "",
-            Name: "",
-            Phone: "",
-            Photo:
-              "gs://instaclone-b124e.appspot.com/images/profiles/default.jpg",
-            Posts: [],
-            Website: "",
-          })
-          .then(() => {
-            auth().signInWithEmailAndPassword(
-              email.toLowerCase().trim(),
-              password
-            );
-          });
-      })
-      .catch((err) => {
-        switch (err.code) {
-          case "auth/email-already-in-use":
-            setModalTitle("This Email is on Another Account");
-            setModalDescription(
-              "You can log into the account associated with that email or you can use that email to make a new account"
-            );
-            setModalVisible(true);
-            break;
-          case "auth/invalid-email":
-            setModalTitle("Invalid Email");
-            setModalDescription("Please enter a valid email address");
-            setModalVisible(true);
-            break;
-          case "auth/weak-password":
-            setModalTitle("Weak Password");
-            setModalDescription(
-              "Please enter a strong password (use mixed upper,lower,number,special characters)"
-            );
-            setModalVisible(true);
-            break;
-          default:
-            return null;
-        }
-      });
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const signup = async () => {
+    setButtonDisabled(true);
+    let existing = await firestore()
+      .collection("users")
+      .where("Username", "==", username)
+      .get();
+    if (existing.empty) {
+      auth()
+        .createUserWithEmailAndPassword(email, password)
+        .then((e) => {
+          firestore()
+            .collection("users")
+            .doc(e.user.uid)
+            .set({
+              Username: username,
+              Email: email,
+              Bio: "",
+              Birthday: "",
+              Followers: [],
+              Following: [],
+              Gender: "",
+              Name: "",
+              Phone: "",
+              Photo:
+                "gs://instaclone-b124e.appspot.com/images/profiles/default.jpg",
+              Posts: [],
+              Website: "",
+            })
+            .then(() => {
+              auth().signInWithEmailAndPassword(email, password);
+              setButtonDisabled(false);
+            });
+        })
+        .catch((err) => {
+          setButtonDisabled(false);
+          switch (err.code) {
+            case "auth/email-already-in-use":
+              setModalTitle("Email Already In Use");
+              setModalDescription(
+                "You can log into the account associated with that email or you can use that email to make a new account"
+              );
+              setModalVisible(true);
+              break;
+            case "auth/invalid-email":
+              setModalTitle("Invalid Email");
+              setModalDescription("Please enter a valid email address");
+              setModalVisible(true);
+              break;
+            case "auth/weak-password":
+              setModalTitle("Weak Password");
+              setModalDescription(
+                "Please enter a strong password (use mixed upper,lower,number,special characters)"
+              );
+              setModalVisible(true);
+              break;
+            default:
+              return null;
+          }
+        });
+    } else {
+      setModalTitle("Username already taken");
+      setModalDescription("Please try another username");
+      setModalVisible(true);
+      setButtonDisabled(false);
+    }
   };
   return (
     <View style={styles.container}>
@@ -106,13 +119,20 @@ const SignupDetails = ({ navigation }) => {
       <View></View>
       <View style={styles.content}>
         <View style={styles.avatar}>
-          <AntDesign name="user" size={128} color="black" />
+          <AntDesign name="user" size={96} color="black" />
+        </View>
+        <View style={styles.inputField}>
+          <TextInput
+            value={username}
+            placeholder="Username"
+            onChangeText={(e) => setUsername(e.toLowerCase().trim())}
+          />
         </View>
         <View style={styles.inputField}>
           <TextInput
             placeholder="Email"
             value={email}
-            onChangeText={(e) => setEmail(e)}
+            onChangeText={(e) => setEmail(e.toLowerCase().trim())}
           />
         </View>
         <View style={styles.inputField}>
@@ -133,7 +153,11 @@ const SignupDetails = ({ navigation }) => {
             }}
           />
         </View>
-        <TouchableOpacity style={styles.button} onPress={() => signup()}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => signup()}
+          disabled={buttonDisabled}
+        >
           <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
         <View style={styles.divider}>
@@ -177,7 +201,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   avatar: {
-    padding: 50,
+    padding: 40,
     borderRadius: 1000,
     borderWidth: 2,
     alignSelf: "center",

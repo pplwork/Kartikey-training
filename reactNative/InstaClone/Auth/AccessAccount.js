@@ -1,13 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
-import {
-  MaterialCommunityIcons,
-  MaterialIcons,
-  AntDesign,
-} from "@expo/vector-icons";
+import { MaterialCommunityIcons, AntDesign } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
-const AccessAccount = ({ navigation, helpUser, setHelpUser }) => {
+import crashlytics from "@react-native-firebase/crashlytics";
+const AccessAccount = ({ helpUser }) => {
   const isMounted = useRef(true);
   useEffect(() => {
     return () => (isMounted.current = false);
@@ -16,15 +13,16 @@ const AccessAccount = ({ navigation, helpUser, setHelpUser }) => {
   const sendResetEmail = () => {
     auth()
       .sendPasswordResetEmail(helpUser.Email)
-      .then(() => setMailSent(true));
+      .then(() => setMailSent(true))
+      .catch(crashlytics().recordError);
   };
   const [pfpURI, setPfpURI] = useState("");
   useEffect(() => {
-    console.log(helpUser);
     storage()
       .refFromURL(helpUser.Photo)
       .getDownloadURL()
-      .then((url) => setPfpURI(url));
+      .then((url) => setPfpURI(url))
+      .catch(crashlytics().recordError);
   }, [helpUser]);
   return (
     <View style={styles.container}>

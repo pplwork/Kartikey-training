@@ -13,6 +13,7 @@ import {
 import { Video } from "expo-av";
 import CameraRoll from "@react-native-community/cameraroll";
 import { useDispatch, useSelector } from "react-redux";
+import crashlytics from "@react-native-firebase/crashlytics";
 const win = Dimensions.get("window");
 const AddPostScreen = () => {
   const [photos, setPhotos] = useState([]);
@@ -48,9 +49,9 @@ const AddPostScreen = () => {
   };
 
   const loadPhotos = () => {
-    console.log(lastCursor.current);
+    crashlytics().log("Fetching Images From Users CameraRoll");
     CameraRoll.getPhotos({
-      first: 50,
+      first: 100,
       assetType: "All",
       after: lastCursor.current,
     })
@@ -68,7 +69,9 @@ const AddPostScreen = () => {
         }
         lastCursor.current = r.page_info.end_cursor;
       })
-      .catch((err) => console.log);
+      .catch((err) => {
+        crashlytics().recordError(err);
+      });
   };
   useEffect(() => {
     askPermission();
@@ -76,23 +79,31 @@ const AddPostScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={{ width: "100%", height: win.height / 2 }}>
-        {selected &&
-        selected.match(/.*\.(jpg|jpeg|jfif|png|mp4)/)[1] == "mp4" ? (
-          <Video
-            isLooping
-            shouldPlay
-            source={{ uri: selected }}
-            style={{ flex: 1 }}
-            resizeMode="contain"
-            isMuted
-          />
-        ) : (
-          <Image
-            source={{ uri: selected }}
-            style={{ flex: 1, resizeMode: "contain" }}
-          />
-        )}
+      <View
+        style={{
+          width: "100%",
+          height: win.height / 2,
+          backgroundColor: "#dfdfdf",
+        }}
+      >
+        {selected != "" &&
+          (["m4a", "mp4", "flv", "mkv", "wmv", "mov"].includes(
+            selected.match(/.*\.(.+)$/)[1].trim()
+          ) ? (
+            <Video
+              isLooping
+              shouldPlay
+              source={{ uri: selected }}
+              style={{ flex: 1 }}
+              resizeMode="contain"
+              isMuted
+            />
+          ) : (
+            <Image
+              source={{ uri: selected }}
+              style={{ flex: 1, resizeMode: "contain" }}
+            />
+          ))}
       </View>
       <View
         style={{

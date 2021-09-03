@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   createStackNavigator,
   CardStyleInterpolators,
@@ -24,6 +24,7 @@ const MainStack = () => {
   const navRef = useRef(null);
   const dispatch = useDispatch();
   const modalRef = useRef(null);
+  const [progress, setProgress] = useState(100);
   const {
     screen,
     bottomDrawer,
@@ -33,10 +34,6 @@ const MainStack = () => {
     caption,
   } = useSelector((state) => state);
   const savePost = async () => {
-    // create post
-    // first upload the files to respective directories
-    // add links of uploaded files to firestore post
-
     //create post and get postid
     let post = await firestore().collection("posts").add({
       caption,
@@ -49,14 +46,19 @@ const MainStack = () => {
 
     //check if single file upload or multifile
     if (enableMultiselect) {
+      // create a promise array that will let us know when all files have been uploaded using Promise.All
       let promiseArray = [];
+      // for each file create a reference, upload and push to content array in post
       for (let i = 0; i < multiSelected.length; ++i) {
         // check file type
         let extension = multiSelected[i].match(/.*\.(.+)$/)[1];
         //create ref for video file
         let ref;
+        // to store type [image/video]
         let type;
-        if (["m4a", "mp4", "flv", "mkv", "wmv", "mov"].includes(extension)) {
+        if (
+          ["m4a", "mp4", "flv", "mkv", "wmv", "mov"].includes(extension.trim())
+        ) {
           ref = storage().ref(
             `videos/posts/${auth().currentUser.uid}/${
               post.id
@@ -71,36 +73,50 @@ const MainStack = () => {
           );
           type = "image";
         }
+        let uploadTask = ref.putFile(multiSelected[i]);
+        uploadTask.on("state_changed", (snapshot) => {
+          setProgress((prev) =>
+            Math.min(
+              prev,
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            )
+          );
+        });
         promiseArray.push(
-          ref
-            .putFile(selected)
-            .then(() => {
-              post.update({
-                content: [
-                  {
-                    type,
-                    source: ref.toString(),
-                  },
-                ],
-              });
-            })
-            .then(() => {
-              // add link to post content
-              firestore()
-                .collection("users")
-                .doc(auth().currentUser.uid)
-                .update({
-                  Posts: firestore.FieldValue.arrayUnion(post.id),
-                });
-            })
+          uploadTask.then(() => {
+            crashlytics().log("Updating Content Array");
+            post
+              .update({
+                content: firestore.FieldValue.arrayUnion({
+                  type: type,
+                  source: ref.toString(),
+                }),
+              })
+              .then(() => {
+                // add link to post content
+                crashlytics().log(
+                  "Updating User's Posts array With the uploaded post"
+                );
+                firestore()
+                  .collection("users")
+                  .doc(auth().currentUser.uid)
+                  .update({
+                    Posts: firestore.FieldValue.arrayUnion(post.id),
+                  })
+                  .catch((err) => crashlytics().recordError(err));
+              })
+              .catch((err) => crashlytics().recordError(err));
+          })
         );
       }
+      crashlytics().log("Uploading Post Data");
       await Promise.all([...promiseArray]);
     } else {
       // check file type
       let extension = selected.match(/.*\.(.+)$/)[1];
       //create ref for video file
       let ref;
+      // type of file
       let type;
       if (["m4a", "mp4", "flv", "mkv", "wmv", "mov"].includes(extension)) {
         ref = storage().ref(
@@ -114,22 +130,46 @@ const MainStack = () => {
         type = "image";
       }
       // upload file
-      await ref.putFile(selected);
-      // add link to post content
-      await post.update({
-        content: [
-          {
-            type,
-            source: ref.toString(),
-          },
-        ],
+      let uploadTask = ref.putFile(selected);
+      uploadTask.on("state_changed", (snapshot) => {
+        setProgress((prev) =>
+          Math.min(
+            prev,
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          )
+        );
       });
-      await firestore()
-        .collection("users")
-        .doc(auth().currentUser.uid)
-        .update({
-          Posts: firestore.FieldValue.arrayUnion(post.id),
+      crashlytics().log("Uploading Post Data");
+      try {
+        await uploadTask;
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
+      // add link to post content
+      try {
+        crashlytics().log("Updating Content Array");
+        await post.update({
+          content: [
+            {
+              type,
+              source: ref.toString(),
+            },
+          ],
         });
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
+      try {
+        crashlytics().log("Updating User's Posts array With the uploaded post");
+        await firestore()
+          .collection("users")
+          .doc(auth().currentUser.uid)
+          .update({
+            Posts: firestore.FieldValue.arrayUnion(post.id),
+          });
+      } catch (err) {
+        crashlytics().recordError(err);
+      }
     }
   };
 
@@ -203,7 +243,15 @@ const MainStack = () => {
               headerShown: true,
               title: "New Post",
               headerBackImage: () => (
-                <AntDesign name="close" size={32} color="black" />
+                <AntDesign
+                  name="close"
+                  size={32}
+                  color="black"
+                  onPress={() => {
+                    dispatch({ type: "SET_ENABLEMULTISELECT", payload: false });
+                    navigation.goBack();
+                  }}
+                />
               ),
               headerRight: () => (
                 <AntDesign
@@ -211,7 +259,11 @@ const MainStack = () => {
                   size={32}
                   color="#1890ff"
                   onPress={() => {
-                    if (selected != "") navigation.navigate("AddPostFinalize");
+                    if (
+                      selected != "" &&
+                      !(enableMultiselect && multiSelected.length == 0)
+                    )
+                      navigation.navigate("AddPostFinalize");
                   }}
                 />
               ),
@@ -233,7 +285,13 @@ const MainStack = () => {
               headerRight: () => (
                 <Pressable
                   onPress={() =>
-                    savePost().then(() => navigation.navigate("AppTabs"))
+                    savePost().then(() => {
+                      dispatch({
+                        type: "SET_ENABLEMULTISELECT",
+                        payload: false,
+                      });
+                      navigation.navigate("AppTabs");
+                    })
                   }
                   style={({ pressed }) => {
                     if (pressed)
