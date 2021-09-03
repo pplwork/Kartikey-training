@@ -24,7 +24,114 @@ const MainStack = () => {
   const navRef = useRef(null);
   const dispatch = useDispatch();
   const modalRef = useRef(null);
-  const { screen, bottomDrawer } = useSelector((state) => state);
+  const {
+    screen,
+    bottomDrawer,
+    selected,
+    enableMultiselect,
+    multiSelected,
+    caption,
+  } = useSelector((state) => state);
+  const savePost = async () => {
+    // create post
+    // first upload the files to respective directories
+    // add links of uploaded files to firestore post
+
+    //create post and get postid
+    let post = await firestore().collection("posts").add({
+      caption,
+      comments: [],
+      content: [],
+      likes: [],
+      author: auth().currentUser.uid,
+      createdAt: firestore.FieldValue.serverTimestamp(),
+    });
+
+    //check if single file upload or multifile
+    if (enableMultiselect) {
+      let promiseArray = [];
+      for (let i = 0; i < multiSelected.length; ++i) {
+        // check file type
+        let extension = multiSelected[i].match(/.*\.(.+)$/)[1];
+        //create ref for video file
+        let ref;
+        let type;
+        if (["m4a", "mp4", "flv", "mkv", "wmv", "mov"].includes(extension)) {
+          ref = storage().ref(
+            `videos/posts/${auth().currentUser.uid}/${
+              post.id
+            }/${i}.${extension}`
+          );
+          type = "video";
+        } else {
+          ref = storage().ref(
+            `images/posts/${auth().currentUser.uid}/${
+              post.id
+            }/${i}.${extension}`
+          );
+          type = "image";
+        }
+        promiseArray.push(
+          ref
+            .putFile(selected)
+            .then(() => {
+              post.update({
+                content: [
+                  {
+                    type,
+                    source: ref.toString(),
+                  },
+                ],
+              });
+            })
+            .then(() => {
+              // add link to post content
+              firestore()
+                .collection("users")
+                .doc(auth().currentUser.uid)
+                .update({
+                  Posts: firestore.FieldValue.arrayUnion(post.id),
+                });
+            })
+        );
+      }
+      await Promise.all([...promiseArray]);
+    } else {
+      // check file type
+      let extension = selected.match(/.*\.(.+)$/)[1];
+      //create ref for video file
+      let ref;
+      let type;
+      if (["m4a", "mp4", "flv", "mkv", "wmv", "mov"].includes(extension)) {
+        ref = storage().ref(
+          `videos/posts/${auth().currentUser.uid}/${post.id}/0.${extension}`
+        );
+        type = "video";
+      } else {
+        ref = storage().ref(
+          `images/posts/${auth().currentUser.uid}/${post.id}/0.${extension}`
+        );
+        type = "image";
+      }
+      // upload file
+      await ref.putFile(selected);
+      // add link to post content
+      await post.update({
+        content: [
+          {
+            type,
+            source: ref.toString(),
+          },
+        ],
+      });
+      await firestore()
+        .collection("users")
+        .doc(auth().currentUser.uid)
+        .update({
+          Posts: firestore.FieldValue.arrayUnion(post.id),
+        });
+    }
+  };
 
   useEffect(() => {
     crashlytics().log("Updating User Data from Server");
@@ -103,7 +210,9 @@ const MainStack = () => {
                   name="arrowright"
                   size={32}
                   color="#1890ff"
-                  onPress={() => navigation.navigate("AddPostFinalize")}
+                  onPress={() => {
+                    if (selected != "") navigation.navigate("AddPostFinalize");
+                  }}
                 />
               ),
               headerRightContainerStyle: {
@@ -118,11 +227,34 @@ const MainStack = () => {
           <Stack.Screen
             name="AddPostFinalize"
             component={AddPostFinalize}
-            options={{
+            options={({ navigation }) => ({
               headerShown: true,
               title: "New Post",
-              headerRight: ({ navigation }) => (
-                <AntDesign name="check" size={32} color="#1890ff" />
+              headerRight: () => (
+                <Pressable
+                  onPress={() =>
+                    savePost().then(() => navigation.navigate("AppTabs"))
+                  }
+                  style={({ pressed }) => {
+                    if (pressed)
+                      return {
+                        backgroundColor: "#DFDFDF",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        borderRadius: 100,
+                        padding: 5,
+                      };
+                    return {
+                      backgroundColor: "#FFF",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: 100,
+                      padding: 5,
+                    };
+                  }}
+                >
+                  <AntDesign name="check" size={32} color="#1890ff" />
+                </Pressable>
               ),
               headerRightContainerStyle: {
                 paddingRight: 10,
@@ -131,7 +263,7 @@ const MainStack = () => {
                 elevation: 0,
                 shadowOpacity: 0,
               },
-            }}
+            })}
           />
         </Stack.Navigator>
       </NavigationContainer>

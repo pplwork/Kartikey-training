@@ -26,7 +26,7 @@ const ScreenSelector = () => {
   const { screen } = useSelector((state) => state);
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch({ type: "CLOSE_DRAWER" });
+    dispatch({ type: "LAUNCH_RESET" });
   }, []);
   const onAuthStateChanged = (user) => {
     if (user) {

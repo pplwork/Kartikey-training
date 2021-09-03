@@ -2,6 +2,10 @@ const initialState = {
   user: {},
   screen: "",
   bottomDrawer: { visible: false, content: [] },
+  selected: "",
+  multiSelected: [],
+  enableMultiselect: false,
+  caption: "",
 };
 
 const rootreducer = (state = initialState, action) => {
@@ -40,6 +44,40 @@ const rootreducer = (state = initialState, action) => {
           visible: false,
           content: state.bottomDrawer.content,
         },
+      };
+    }
+    case "SET_SELECTED": {
+      return {
+        ...state,
+        selected: action.payload,
+      };
+    }
+    case "SET_MULTISELECTED": {
+      return {
+        ...state,
+        multiSelected: action.payload,
+      };
+    }
+    case "SET_ENABLEMULTISELECT": {
+      return {
+        ...state,
+        enableMultiselect: action.payload,
+      };
+    }
+    case "SET_CAPTION": {
+      return {
+        ...state,
+        caption: action.payload,
+      };
+    }
+    case "LAUNCH_RESET": {
+      return {
+        ...state,
+        bottomDrawer: { visible: false, content: [] },
+        selected: "",
+        multiSelected: [],
+        enableMultiselect: false,
+        caption: "",
       };
     }
     default:

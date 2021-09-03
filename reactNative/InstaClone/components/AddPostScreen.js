@@ -12,13 +12,21 @@ import {
 } from "react-native";
 import { Video } from "expo-av";
 import CameraRoll from "@react-native-community/cameraroll";
+import { useDispatch, useSelector } from "react-redux";
 const win = Dimensions.get("window");
 const AddPostScreen = () => {
   const [photos, setPhotos] = useState([]);
   const lastCursor = useRef(undefined);
-  const [selected, setSelected] = useState(null);
-  const [multiSelected, setMultiSelected] = useState([]);
-  const [enableMultiselect, setEnableMultiselect] = useState(null);
+  const { selected, multiSelected, enableMultiselect } = useSelector(
+    (state) => state
+  );
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch({ type: "SET_SELECTED", payload: "" });
+    dispatch({ type: "SET_ENABLEMUTLISELECT", payload: false });
+    dispatch({ type: "SET_MULTISELECTED", payload: [] });
+    dispatch({ type: "SET_CAPTION", payload: "" });
+  }, []);
   const askPermission = async () => {
     if (Platform.OS === "android") {
       const result = await PermissionsAndroid.request(
@@ -51,9 +59,12 @@ const AddPostScreen = () => {
         // setPhotos((prev) => [...prev, ...r.edges]);
         setPhotos(r.edges);
         if (selected == null) {
-          setSelected(
-            photos.length ? photos[0].node.image.uri : r.edges[0].node.image.uri
-          );
+          dispatch({
+            type: "SET_SELECTED",
+            payload: photos.length
+              ? photos[0].node.image.uri
+              : r.edges[0].node.image.uri,
+          });
         }
         lastCursor.current = r.page_info.end_cursor;
       })
@@ -62,9 +73,6 @@ const AddPostScreen = () => {
   useEffect(() => {
     askPermission();
   }, []);
-  useEffect(() => {
-    console.log(selected);
-  });
 
   return (
     <View style={{ flex: 1 }}>
@@ -77,6 +85,7 @@ const AddPostScreen = () => {
             source={{ uri: selected }}
             style={{ flex: 1 }}
             resizeMode="contain"
+            isMuted
           />
         ) : (
           <Image
@@ -103,7 +112,12 @@ const AddPostScreen = () => {
             borderRadius: 5,
             backgroundColor: enableMultiselect ? "#000" : "#fff",
           }}
-          onPress={() => setEnableMultiselect((prev) => !prev)}
+          onPress={() =>
+            dispatch({
+              type: "SET_ENABLEMULTISELECT",
+              payload: !enableMultiselect,
+            })
+          }
         >
           <Text style={{ color: enableMultiselect ? "#fff" : "#000" }}>
             Multiselect
@@ -127,7 +141,7 @@ const AddPostScreen = () => {
               opacity: selected == item.node.image.uri ? 0.6 : 1,
             }}
             onPress={() => {
-              setSelected(item.node.image.uri);
+              dispatch({ type: "SET_SELECTED", payload: item.node.image.uri });
             }}
           >
             <Image
@@ -137,13 +151,22 @@ const AddPostScreen = () => {
             {enableMultiselect && (
               <Pressable
                 onPress={() => {
-                  setSelected(item.node.image.uri);
+                  dispatch({
+                    type: "SET_SELECTED",
+                    payload: item.node.image.uri,
+                  });
                   if (multiSelected.includes(item.node.image.uri))
-                    setMultiSelected((prev) =>
-                      prev.filter((val) => val != item.node.image.uri)
-                    );
+                    dispatch({
+                      type: "SET_MULTISELECTED",
+                      payload: multiSelected.filter(
+                        (val) => val != item.node.image.uri
+                      ),
+                    });
                   else
-                    setMultiSelected((prev) => [...prev, item.node.image.uri]);
+                    dispatch({
+                      type: "SET_MULTISELECTED",
+                      payload: [...multiSelected, item.node.image.uri],
+                    });
                 }}
                 style={{
                   position: "absolute",
@@ -158,8 +181,17 @@ const AddPostScreen = () => {
                   backgroundColor: multiSelected.includes(item.node.image.uri)
                     ? "#1890ff"
                     : "transparent",
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
-              />
+              >
+                <Text style={{ color: "#fff" }}>
+                  {multiSelected.includes(item.node.image.uri) &&
+                    multiSelected.findIndex(
+                      (val) => val == item.node.image.uri
+                    ) + 1}
+                </Text>
+              </Pressable>
             )}
           </Pressable>
         )}
