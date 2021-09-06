@@ -30,46 +30,46 @@ const HomeStories = ({ navigation }) => {
       isMounted.current = false;
     };
   }, []);
-  useEffect(() => {
-    crashlytics().log("Fetching User Photo on home screen");
-    (async () => {
-      let docs,
-        str = [];
-      const trace = await perf().startTrace("Fetching Stories on home page");
-      crashlytics().log("Fetching stories on home page");
-      try {
-        docs = await firestore().collection("stories").get();
-        str = docs.docs.map((doc) => doc.data());
-        str.unshift();
-      } catch (err) {
-        crashlytics().recordError(err);
-      }
-      crashlytics().log("Resolving story image urls home screen");
-      // start all requests and set states as data keeps coming in
-      str
-        .forEach((story) => {
-          storage()
-            .refFromURL(story.photo)
-            .getDownloadURL()
-            .then((url) => {
-              if (isMounted.current)
-                setStories((prev) => [
-                  ...prev,
-                  {
-                    ...story,
-                    photo: url,
-                  },
-                ]);
-            });
-        })
-        .catch((err) => {
-          crashlytics().recordError(err);
-        });
-      await trace.stop();
-    })().catch((err) => {
-      crashlytics().recordError(err);
-    });
-  }, []);
+  // useEffect(() => {
+  //   crashlytics().log("Fetching User Photo on home screen");
+  //   (async () => {
+  //     let docs,
+  //       str = [];
+  //     const trace = await perf().startTrace("Fetching Stories on home page");
+  //     crashlytics().log("Fetching stories on home page");
+  //     try {
+  //       docs = await firestore().collection("stories").get();
+  //       str = docs.docs.map((doc) => doc.data());
+  //       str.unshift();
+  //     } catch (err) {
+  //       crashlytics().recordError(err);
+  //     }
+  //     crashlytics().log("Resolving story image urls home screen");
+  //     // start all requests and set states as data keeps coming in
+  //     str
+  //       .forEach((story) => {
+  //         storage()
+  //           .refFromURL(story.photo)
+  //           .getDownloadURL()
+  //           .then((url) => {
+  //             if (isMounted.current)
+  //               setStories((prev) => [
+  //                 ...prev,
+  //                 {
+  //                   ...story,
+  //                   photo: url,
+  //                 },
+  //               ]);
+  //           });
+  //       })
+  //       .catch((err) => {
+  //         crashlytics().recordError(err);
+  //       });
+  //     await trace.stop();
+  //   })().catch((err) => {
+  //     crashlytics().recordError(err);
+  //   });
+  // }, []);
   const logStoryImageOpened = useCallback(
     (index) => {
       if (index == 0) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Image } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AntDesign, Ionicons, FontAwesome } from "@expo/vector-icons";
@@ -13,8 +13,6 @@ import ProfileScreen from "../components/ProfileScreen";
 import { useSelector } from "react-redux";
 
 import colors from "../constants/colors";
-
-import storage from "@react-native-firebase/storage";
 
 const AppTabs = () => {
   const isMounted = useRef(true);

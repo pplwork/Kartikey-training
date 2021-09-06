@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,9 +10,30 @@ import {
 import { EvilIcons } from "@expo/vector-icons";
 import colors from "../constants/colors";
 
+import firestore from "@react-native-firebase/firestore";
+import auth from "@react-native-firebase/auth";
+
 const win = Dimensions.get("window");
 
-const DiscoverPeopleCard = ({ image, name, mutual }) => {
+const DiscoverPeopleCard = ({ image, name, mutual, uid }) => {
+  const [disabled, setDisabled] = useState(false);
+  const followUser = () => {
+    setDisabled(true);
+    Promise.all([
+      firestore()
+        .collection("users")
+        .doc(auth().currentUser.uid)
+        .update({
+          Following: firestore.FieldValue.arrayUnion(uid),
+        }),
+      firestore()
+        .collection("users")
+        .doc(uid)
+        .update({
+          Followers: firestore.FieldValue.arrayUnion(auth().currentUser.uid),
+        }),
+    ]).catch(() => setDisabled(false));
+  };
   return (
     <View style={styles.cardContainer}>
       <View style={styles.imageContainer}>
@@ -25,11 +46,24 @@ const DiscoverPeopleCard = ({ image, name, mutual }) => {
       >
         {name}
       </Text>
-      <Text style={styles.followText}>Followed by</Text>
-      <Text ellipsizeMode="tail" numberOfLines={1} style={styles.followText}>
-        {mutual[0]} {mutual.length > 1 ? `+ ${mutual.length - 1} more` : false}
-      </Text>
-      <TouchableOpacity style={styles.buttonContainer}>
+      {mutual.length > 0 ? (
+        <>
+          <Text style={styles.followText}>Followed by</Text>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={styles.followText}
+          >
+            {mutual[0]}{" "}
+            {mutual.length > 1 ? `+ ${mutual.length - 1} more` : false}
+          </Text>
+        </>
+      ) : null}
+      <TouchableOpacity
+        style={styles.buttonContainer}
+        onPress={followUser}
+        disabled={disabled}
+      >
         <Text style={{ color: colors.white, fontWeight: "bold" }}>Follow</Text>
       </TouchableOpacity>
       <View style={styles.cross}>

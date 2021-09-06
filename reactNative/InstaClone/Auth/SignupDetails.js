@@ -126,6 +126,9 @@ const SignupDetails = ({ navigation }) => {
             value={username}
             placeholder="Username"
             onChangeText={(e) => setUsername(e.toLowerCase().trim())}
+            autoCapitalize="none"
+            secureTextEntry={true}
+            keyboardType="visible-password"
           />
         </View>
         <View style={styles.inputField}>
@@ -133,6 +136,9 @@ const SignupDetails = ({ navigation }) => {
             placeholder="Email"
             value={email}
             onChangeText={(e) => setEmail(e.toLowerCase().trim())}
+            autoCapitalize="none"
+            secureTextEntry={true}
+            keyboardType="visible-password"
           />
         </View>
         <View style={styles.inputField}>

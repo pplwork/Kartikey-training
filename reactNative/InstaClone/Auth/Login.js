@@ -20,14 +20,19 @@ const Login = ({ navigation }) => {
     useState(false);
   const [userNotFoundModalVisible, setUserNotFoundModalVisible] =
     useState(false);
+  const [disabled, setDisabled] = useState(false);
   const [loaded] = useFonts({
     InstagramRegular: require("../assets/fonts/regular.otf"),
     InstagramBold: require("../assets/fonts/bold.otf"),
   });
   const login = () => {
+    if (email.toLowerCase().trim() == "" || password.toLowerCase().trim() == "")
+      return;
+    setDisabled(true);
     auth()
       .signInWithEmailAndPassword(email.toLowerCase().trim(), password)
       .catch((err) => {
+        setDisabled(false);
         switch (err.code) {
           case "auth/wrong-password":
             setWrongPasswordModalVisible(true);
@@ -167,7 +172,11 @@ const Login = ({ navigation }) => {
             }}
           />
         </View>
-        <TouchableOpacity style={styles.button} onPress={() => login()}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => login()}
+          disabled={disabled}
+        >
           <Text style={styles.buttonText}>Log In</Text>
         </TouchableOpacity>
         <Text

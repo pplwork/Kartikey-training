@@ -85,7 +85,7 @@ const MainStack = () => {
         promiseArray.push(
           uploadTask.then(() => {
             crashlytics().log("Updating Content Array");
-            post
+            return post
               .update({
                 content: firestore.FieldValue.arrayUnion({
                   type: type,
@@ -97,12 +97,13 @@ const MainStack = () => {
                 crashlytics().log(
                   "Updating User's Posts array With the uploaded post"
                 );
-                firestore()
+                return firestore()
                   .collection("users")
                   .doc(auth().currentUser.uid)
                   .update({
                     Posts: firestore.FieldValue.arrayUnion(post.id),
                   })
+                  .then((e) => e)
                   .catch((err) => crashlytics().recordError(err));
               })
               .catch((err) => crashlytics().recordError(err));

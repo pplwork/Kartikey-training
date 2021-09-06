@@ -24,29 +24,32 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 import storage from "@react-native-firebase/storage";
 import crashlytics from "@react-native-firebase/crashlytics";
+import { useSelector } from "react-redux";
 
 const win = Dimensions.get("window");
 
 const FeedCard = ({
-  logo,
-  title,
-  content,
-  comments,
+  author,
   caption,
+  comments,
+  content,
+  createdAt,
   likes,
   index, // index of the card itself
   curIndex, // index of the current item in the feedlist
   isFocused,
 }) => {
-  const [user, setUser] = useState(null);
+  console.log(content);
+  const { user } = useSelector((state) => state);
   const isMounted = useRef(true);
   const [likeUsers, setLikeUsers] = useState([]);
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
-  const [curItem, setCurItem] = useState(1);
+  const [curItem, setCurItem] = useState(0);
   const videoRefs = useRef({}); //format {source:ref}
   const videoIndex = useRef({}); //format {source:index}
   const [heightScaled, setHeightScaled] = useState(1.77);
+  const [heightItem, setHeightItem] = useState(200);
   const [isMuted, setIsMuted] = useState({}); //format {index:boolean}
   useEffect(() => {
     return () => {
@@ -96,16 +99,6 @@ const FeedCard = ({
     Promise.all([camilla, shawn, lemon])
       .then((data) => {
         if (isMounted.current) setLikeUsers([data[0], data[1], data[2]]);
-      })
-      .catch((err) => {
-        crashlytics().recordError(err);
-      });
-    crashlytics().log("resolving user pfp feedcard");
-    storage()
-      .refFromURL("gs://instaclone-b124e.appspot.com/images/profiles/pfp.jpg")
-      .getDownloadURL()
-      .then((uri) => {
-        if (isMounted.current) setUser(uri);
       })
       .catch((err) => {
         crashlytics().recordError(err);
@@ -178,7 +171,13 @@ const FeedCard = ({
   const viewabilityConfig = useRef({
     viewAreaCoveragePercentThreshold: 10,
   });
-  const setItem = useCallback((e) => setCurItem(e.viewableItems[0].index), []);
+  const setItem = useCallback(({ viewableItems }) => {
+    setCurItem(viewableItems[0].index);
+    if (viewableItems[0].item.type == "image")
+      Image.getSize(viewableItems[0].item.source, (width, height) => {
+        setHeightItem(win.width * (height / width));
+      });
+  }, []);
   return (
     <SafeAreaView style={styles.cardContainer}>
       <View style={styles.header}>
@@ -188,10 +187,13 @@ const FeedCard = ({
             style={styles.outlineGradient}
           >
             <View style={styles.imageContainer}>
-              <Image source={{ uri: logo }} style={styles.headerImage} />
+              <Image
+                source={{ uri: author.Photo }}
+                style={styles.headerImage}
+              />
             </View>
           </LinearGradient>
-          <Text style={styles.headerText}>{title}</Text>
+          <Text style={styles.headerText}>{author.Username}</Text>
         </View>
         <MaterialCommunityIcons name="dots-vertical" size={24} color="black" />
       </View>
@@ -210,6 +212,10 @@ const FeedCard = ({
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
+          style={{
+            height:
+              content[curItem].type == "image" ? heightItem : heightScaled,
+          }}
         />
         {content.length > 1 ? (
           <View
@@ -253,88 +259,96 @@ const FeedCard = ({
           onPress={bookmarkHandler}
         />
       </View>
-      <View style={styles.likes}>
-        <View
-          style={{
-            borderWidth: 2,
-            borderColor: colors.white,
-            borderRadius: 200,
-            zIndex: 3,
-          }}
-        >
-          <Image
-            source={{ uri: likeUsers[0] }}
+      {likes.length > 0 ? (
+        <View style={styles.likes}>
+          <View
             style={{
-              ...styles.likesPic,
+              borderWidth: 2,
+              borderColor: colors.white,
+              borderRadius: 200,
+              zIndex: 3,
             }}
-          />
-        </View>
-        <View
-          style={{
-            borderWidth: 2,
-            borderColor: colors.white,
-            borderRadius: 200,
-            zIndex: 2,
-            transform: [{ translateX: -10 }],
-          }}
-        >
-          <Image
-            source={{ uri: likeUsers[1] }}
+          >
+            <Image
+              source={{ uri: likeUsers[0] }}
+              style={{
+                ...styles.likesPic,
+              }}
+            />
+          </View>
+          <View
             style={{
-              ...styles.likesPic,
+              borderWidth: 2,
+              borderColor: colors.white,
+              borderRadius: 200,
+              zIndex: 2,
+              transform: [{ translateX: -10 }],
             }}
-          />
-        </View>
-        <View
-          style={{
-            transform: [{ translateX: -20 }],
-            zIndex: 1,
-            borderRadius: 200,
-            borderWidth: 2,
-            borderColor: colors.white,
-          }}
-        >
-          <Image
-            source={{ uri: likeUsers[2] }}
+          >
+            <Image
+              source={{ uri: likeUsers[1] }}
+              style={{
+                ...styles.likesPic,
+              }}
+            />
+          </View>
+          <View
             style={{
-              ...styles.likesPic,
+              transform: [{ translateX: -20 }],
+              zIndex: 1,
+              borderRadius: 200,
+              borderWidth: 2,
+              borderColor: colors.white,
             }}
-          />
-        </View>
-        <Text
-          numberOfLines={2}
-          style={{
-            flexWrap: "wrap",
-            flexShrink: 1,
-            flexGrow: 1,
-            transform: [{ translateX: -10 }],
-          }}
-        >
-          Liked by <Text style={{ fontWeight: "bold" }}>elizabetholsen</Text>{" "}
-          and{" "}
-          <Text style={{ fontWeight: "bold" }}>
-            {likes.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} others
+          >
+            <Image
+              source={{ uri: likeUsers[2] }}
+              style={{
+                ...styles.likesPic,
+              }}
+            />
+          </View>
+          <Text
+            numberOfLines={2}
+            style={{
+              flexWrap: "wrap",
+              flexShrink: 1,
+              flexGrow: 1,
+              transform: [{ translateX: -10 }],
+            }}
+          >
+            Liked by <Text style={{ fontWeight: "bold" }}>elizabetholsen</Text>{" "}
+            and{" "}
+            <Text style={{ fontWeight: "bold" }}>
+              {likes.length.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
+              others
+            </Text>
           </Text>
-        </Text>
-      </View>
+        </View>
+      ) : null}
       <View style={styles.caption}>
         <Text>
-          <Text style={{ fontWeight: "bold" }}>{title + " "}</Text>
+          <Text style={{ fontWeight: "bold" }}>{author.Username + " "}</Text>
           {caption}
         </Text>
       </View>
-      <View style={styles.viewAll}>
-        <Text style={{ color: "rgba(0,0,0,0.3)" }}>
-          View all {comments.length} comments
-        </Text>
-      </View>
-      <View style={styles.comment}>
-        <Text style={{ fontWeight: "bold" }}>{comments[0].user + " "}</Text>
-        <Text>{comments[0].comment}</Text>
-      </View>
+      {comments.length > 1 ? (
+        <View style={styles.viewAll}>
+          <Text style={{ color: "rgba(0,0,0,0.3)" }}>
+            View all {comments.length} comments
+          </Text>
+        </View>
+      ) : null}
+      {comments.length > 0 ? (
+        <View style={styles.comment}>
+          <Text style={{ fontWeight: "bold" }}>{comments[0].user + " "}</Text>
+          <Text>{comments[0].comment}</Text>
+        </View>
+      ) : null}
+
       <View style={styles.inputContainer}>
         <View style={{ flex: 1 }}>
-          <Image source={{ uri: user }} style={styles.inputPhoto} />
+          <Image source={{ uri: user.Photo }} style={styles.inputPhoto} />
         </View>
         <View style={{ flex: 6 }}>
           <TextInput placeholder="Add a comment..." />
@@ -354,7 +368,7 @@ const FeedCard = ({
       </View>
       <View style={styles.age}>
         <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.3)" }}>
-          2 hours ago
+          {Math.floor((Date.now() - createdAt.toDate()) / 3600000)} hours ago
         </Text>
       </View>
     </SafeAreaView>

@@ -9,57 +9,82 @@ import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
 import perf from "@react-native-firebase/perf";
+import auth from "@react-native-firebase/auth";
 
 const FeedList = ({ scrollHandler, navigation }) => {
   const isMounted = useRef(true);
   const [feed, setFeed] = useState([]);
+
   useEffect(() => {
     return () => {
       isMounted.current = false;
     };
   }, []);
   useEffect(() => {
+    // get list of all users that we are following
     (async () => {
-      let home_feed,
-        data = [];
-      const trace = await perf().startTrace("HomeFeedList Initial Load");
-      crashlytics().log("Fetching homefeed data");
-      try {
-        home_feed = await firestore().collection("homeFeed").get();
-        data = home_feed.docs.map((doc) => doc.data());
-      } catch (err) {
-        crashlytics().recordError(err);
+      const { Following } = (
+        await firestore().collection("users").doc(auth().currentUser.uid).get()
+      ).data();
+      let data = [];
+      let promise_array = [];
+      console.log("Following = ", Following);
+      for (const uid of Following) {
+        let pfpuri = await storage()
+          .refFromURL(
+            `gs://instaclone-b124e.appspot.com/images/profiles/${uid}.jpg`
+          )
+          .getDownloadURL();
+        promise_array.push(
+          firestore()
+            .collection("users")
+            .doc(uid)
+            .get()
+            .then((doc) => {
+              const { Posts } = doc.data();
+              console.log("Posts = ", Posts);
+              let post_promise_array = [];
+              Posts.forEach((uid) => {
+                post_promise_array.push(
+                  firestore()
+                    .collection("posts")
+                    .doc(uid)
+                    .get()
+                    .then((post) => {
+                      let stuff = post.data();
+                      stuff.author = {
+                        uid: stuff.author,
+                        Username: doc.data().Username,
+                        Photo: pfpuri,
+                      };
+                      data.push(stuff);
+                    })
+                );
+              });
+              return Promise.all(post_promise_array);
+            })
+        );
       }
-      crashlytics().log("Resolving FeedCard Asset Urls");
-      data
-        .forEach((item) => {
-          let logoContentPromises = [
-            storage().refFromURL(item.logo).getDownloadURL(),
-          ];
-          item.content.forEach((obj) => {
-            logoContentPromises.push(
-              storage().refFromURL(obj.source).getDownloadURL()
-            );
-          });
-          Promise.all(logoContentPromises).then((URIArray) => {
-            for (let i = 1; i < URIArray.length; ++i)
-              item.content[i - 1].source = URIArray[i];
-            if (isMounted.current)
-              setFeed((prev) => [
-                ...prev,
-                {
-                  ...item,
-                  logo: URIArray[0],
-                  content: item.content,
-                },
-              ]);
-          });
+      await Promise.all(promise_array);
+      data.sort((a, b) => {
+        if (a.createdAt.seconds < b.createdAt.seconds) return 1;
+        else return -1;
+      });
+      data = await Promise.all(
+        data.map(async (post) => {
+          let { content } = post;
+          for (let i = 0; i < content.length; ++i)
+            content[i].source = await storage()
+              .refFromURL(content[i].source)
+              .getDownloadURL();
+          return {
+            ...post,
+            content,
+          };
         })
-        .catch((err) => {
-          crashlytics().recordError(err);
-        });
-      await trace.stop();
-    })().catch((err) => crashlytics().recordError(err));
+      );
+      setFeed(data);
+    })();
   }, []);
 
   const viewabilityConfig = useRef({
@@ -67,7 +92,12 @@ const FeedList = ({ scrollHandler, navigation }) => {
   });
   const isFocused = useIsFocused();
   const [curItem, setCurItem] = useState(0);
-  const setItem = useCallback((e) => setCurItem(e.viewableItems[0].index), []);
+  const setItem = useCallback(({ viewableItems }) => {
+    setCurItem((prev) => {
+      if (viewableItems[0]) return viewableItems[0].index;
+      else return prev;
+    });
+  }, []);
   const keyExtractor = useCallback((item, index) => index.toString(), []);
 
   const feedItem = useCallback(

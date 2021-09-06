@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { StyleSheet } from "react-native";
 import HomeHeader from "./HomeHeader";
 import FeedList from "./FeedList";
