@@ -20,7 +20,7 @@ const SearchScreen = () => {
     (async () => {
       let docs,
         data = [];
-      const trace = perf().startTrace("Fetching Explore Images");
+      const trace = await perf().startTrace("Fetching Explore Images");
       crashlytics().log("Fetching explore screen image url refs");
       try {
         docs = await firestore().collection("explore").get();

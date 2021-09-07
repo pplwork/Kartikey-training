@@ -37,7 +37,7 @@ const EditProfileModal = ({ setVisible }) => {
       // get extension
       let extension;
       try {
-        extension = newDetails.Photo.match(/.*(jpg|png|jpeg|jfif)/)[1];
+        extension = newDetails.Photo.match(/.*\.(.+)$/)[1];
       } catch (err) {
         return null;
       }
@@ -60,7 +60,7 @@ const EditProfileModal = ({ setVisible }) => {
           })
           .then(() => {
             Analytics().logEvent("ProfileUpdated");
-            setVisible(false);
+            if (isMounted.current) setVisible(false);
           })
           .catch((err) => {
             crashlytics().recordError(err);
@@ -73,7 +73,7 @@ const EditProfileModal = ({ setVisible }) => {
         .update(newDetails)
         .then(() => {
           Analytics().logEvent("ProfileUpdated");
-          setVisible(false);
+          if (isMounted.current) setVisible(false);
         })
         .catch((err) => {
           crashlytics().recordError(err);

@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import colors from "../constants/colors";
 
+import { useSelector } from "react-redux";
+
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
@@ -54,7 +56,7 @@ const ActivityItem = React.memo(
 
 const ActivityScreen = () => {
   const isMounted = useRef(true);
-
+  const { user } = useSelector((state) => state);
   const [activities, setActivities] = useState([]);
   const [requestUser, setRequestUser] = useState(null);
   useEffect(() => {
@@ -105,7 +107,7 @@ const ActivityScreen = () => {
           .catch((err) => crashlytics().recordError(err));
       });
     })();
-  }, []);
+  }, [user]);
 
   const [scroll, setScroll] = useState(0);
   const scrollHandler = useCallback((e) => {

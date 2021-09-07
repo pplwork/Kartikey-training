@@ -7,17 +7,52 @@ import colors from "../constants/colors";
 
 import crashlytics from "@react-native-firebase/crashlytics";
 import perf from "@react-native-firebase/perf";
+import { useSelector } from "react-redux";
 
 const ProfileStories = () => {
   const isMounted = useRef(true);
-
   useEffect(() => {
     return () => {
       isMounted.current = false;
     };
   }, []);
+  const { user } = useSelector((state) => state.user);
   const [stories, setStories] = useState([]);
   useEffect(() => {
+    // (async () => {
+    //   Promise.all(
+    //     user.Stories.map(async (story) => {
+    //       let Stories = [];
+    //       try {
+    //         Stories = await Promise.all(
+    //           Stories.map(async (story) => {
+    //             let data;
+    //             try {
+    //               data = (
+    //                 await firestore().collection("stories").doc(story).get()
+    //               ).data();
+    //             } catch (err) {
+    //               crashlytics().recordError(err);
+    //             }
+    //             let uri = await storage()
+    //               .refFromURL(data.content.source)
+    //               .getDownloadURL();
+    //             return {
+    //               ...data,
+    //               content: {
+    //                 source: uri,
+    //                 type: data.content.type,
+    //               },
+    //             };
+    //           })
+    //         );
+    //       } catch (err) {
+    //         crashlytics().recordError(err);
+    //       }
+    //     })
+    //   );
+    // })();
+
     (async () => {
       let docs,
         data = [];

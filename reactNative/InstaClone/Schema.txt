@@ -11,7 +11,7 @@ User : {
     Phone:"",
     Photo:"",
     Posts:PostID[],
-    Story:StoryID[],
+    Stories:StoryID[],
     Reels:ReelID[],
     Username:"",
     Website:""

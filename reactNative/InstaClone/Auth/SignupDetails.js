@@ -48,6 +48,8 @@ const SignupDetails = ({ navigation }) => {
                 "gs://instaclone-b124e.appspot.com/images/profiles/default.jpg",
               Posts: [],
               Website: "",
+              Reels: [],
+              Stories: [],
             })
             .then(() => {
               auth().signInWithEmailAndPassword(email, password);

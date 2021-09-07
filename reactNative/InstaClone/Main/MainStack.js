@@ -12,8 +12,8 @@ import AddPostFinalize from "../components/AddPostFinalize";
 import { useDispatch, useSelector } from "react-redux";
 import Analytics from "@react-native-firebase/analytics";
 import auth from "@react-native-firebase/auth";
-import Modal from "react-native-modalbox";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import ModalBox from "react-native-modalbox";
+import { View, Text, StyleSheet, Pressable, Modal } from "react-native";
 import * as Icons from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import crashlytics from "@react-native-firebase/crashlytics";
@@ -21,10 +21,15 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 
 const MainStack = () => {
+  const isMounted = useRef(true);
+  useEffect(() => {
+    return () => (isMounted.current = false);
+  }, []);
   const navRef = useRef(null);
   const dispatch = useDispatch();
   const modalRef = useRef(null);
   const [progress, setProgress] = useState(100);
+  const [modalVisible, setModalVisible] = useState(false);
   const {
     screen,
     bottomDrawer,
@@ -34,6 +39,7 @@ const MainStack = () => {
     caption,
   } = useSelector((state) => state);
   const savePost = async () => {
+    if (isMounted.current) setModalVisible(true);
     //create post and get postid
     let post = await firestore().collection("posts").add({
       caption,
@@ -75,12 +81,13 @@ const MainStack = () => {
         }
         let uploadTask = ref.putFile(multiSelected[i]);
         uploadTask.on("state_changed", (snapshot) => {
-          setProgress((prev) =>
-            Math.min(
-              prev,
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            )
-          );
+          if (isMounted.current)
+            setProgress((prev) =>
+              Math.min(
+                prev,
+                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+              )
+            );
         });
         promiseArray.push(
           uploadTask.then(() => {
@@ -112,6 +119,7 @@ const MainStack = () => {
       }
       crashlytics().log("Uploading Post Data");
       await Promise.all([...promiseArray]);
+      if (isMounted.current) setModalVisible(false);
     } else {
       // check file type
       let extension = selected.match(/.*\.(.+)$/)[1];
@@ -133,12 +141,13 @@ const MainStack = () => {
       // upload file
       let uploadTask = ref.putFile(selected);
       uploadTask.on("state_changed", (snapshot) => {
-        setProgress((prev) =>
-          Math.min(
-            prev,
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          )
-        );
+        if (isMounted.current)
+          setProgress((prev) =>
+            Math.min(
+              prev,
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            )
+          );
       });
       crashlytics().log("Uploading Post Data");
       try {
@@ -171,6 +180,7 @@ const MainStack = () => {
       } catch (err) {
         crashlytics().recordError(err);
       }
+      if (isMounted.current) setModalVisible(false);
     }
   };
 
@@ -326,7 +336,7 @@ const MainStack = () => {
           />
         </Stack.Navigator>
       </NavigationContainer>
-      <Modal
+      <ModalBox
         ref={modalRef}
         swipeToClose={true}
         onClosed={() => dispatch({ type: "CLOSE_DRAWER" })}
@@ -364,6 +374,15 @@ const MainStack = () => {
             );
           })}
         </View>
+      </ModalBox>
+      <Modal animationType="fade" transparent={true} visible={modalVisible}>
+        <View style={styles.modalOriginalContainer}>
+          <View style={styles.popup}>
+            <View style={styles.modalText}>
+              <Text style={styles.modalTextHeading}>{progress}/100</Text>
+            </View>
+          </View>
+        </View>
       </Modal>
     </>
   );
@@ -400,5 +419,46 @@ const styles = StyleSheet.create({
   modalListItemText: {
     marginLeft: 10,
     fontSize: 16,
+  },
+  modalOriginalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  modalText: {
+    padding: 35,
+    alignItems: "center",
+  },
+  modalTextHeading: {
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 22,
+    marginBottom: 24,
+  },
+  modalTextDescription: {
+    textAlign: "center",
+    color: "rgba(0,0,0,0.6)",
+    lineHeight: 18,
+    fontSize: 14,
+  },
+  modalBtn: {
+    alignItems: "center",
+    padding: 15,
+    borderTopWidth: 0.5,
+    borderColor: "rgba(0,0,0,0.2)",
+  },
+  modalBtnBlue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#1890ff",
+  },
+  modalBtnBlack: {
+    fontSize: 16,
+  },
+  popup: {
+    backgroundColor: "#fff",
+    width: "75%",
+    borderRadius: 20,
   },
 });

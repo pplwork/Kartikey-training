@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -12,13 +12,26 @@ import colors from "../constants/colors";
 
 import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
+import crashlytics from "@react-native-firebase/crashlytics";
 
 const win = Dimensions.get("window");
 
 const DiscoverPeopleCard = ({ image, name, mutual, uid }) => {
+  const isMounted = useRef(true);
   const [disabled, setDisabled] = useState(false);
-  const followUser = () => {
-    setDisabled(true);
+  const [firstMutual, setFirstMutual] = useState("");
+  useEffect(() => {
+    if (mutual.length)
+      firestore()
+        .collection("users")
+        .doc(mutual[0])
+        .get()
+        .then((doc) => setFirstMutual(doc.data().Username))
+        .catch((err) => crashlytics().recordErr(err));
+    () => (isMounted.current = false);
+  }, []);
+  const followUser = async () => {
+    if (isMounted.current) setDisabled(true);
     Promise.all([
       firestore()
         .collection("users")
@@ -32,7 +45,9 @@ const DiscoverPeopleCard = ({ image, name, mutual, uid }) => {
         .update({
           Followers: firestore.FieldValue.arrayUnion(auth().currentUser.uid),
         }),
-    ]).catch(() => setDisabled(false));
+    ]).catch(() => {
+      if (isMounted.current) setDisabled(false);
+    });
   };
   return (
     <View style={styles.cardContainer}>
@@ -54,7 +69,7 @@ const DiscoverPeopleCard = ({ image, name, mutual, uid }) => {
             numberOfLines={1}
             style={styles.followText}
           >
-            {mutual[0]}{" "}
+            {firstMutual}{" "}
             {mutual.length > 1 ? `+ ${mutual.length - 1} more` : false}
           </Text>
         </>

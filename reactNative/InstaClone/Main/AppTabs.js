@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Image } from "react-native";
+import { Image, Modal, Text, TextInput } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AntDesign, Ionicons, FontAwesome } from "@expo/vector-icons";
 

@@ -25,8 +25,19 @@ import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import storage from "@react-native-firebase/storage";
 import crashlytics from "@react-native-firebase/crashlytics";
 import { useSelector } from "react-redux";
+import { firebase } from "@react-native-firebase/firestore";
 
 const win = Dimensions.get("window");
+
+const timeFormatter = (createdAt) => {
+  const seconds = Math.floor((Date.now() - createdAt.toDate()) / 1000);
+  if (seconds < 60) return `${seconds} seconds ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minutes ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hours ago`;
+  else return createdAt.toDate().toDateString();
+};
 
 const FeedCard = ({
   author,
@@ -368,7 +379,7 @@ const FeedCard = ({
       </View>
       <View style={styles.age}>
         <Text style={{ fontSize: 10, color: "rgba(0,0,0,0.3)" }}>
-          {Math.floor((Date.now() - createdAt.toDate()) / 3600000)} hours ago
+          {timeFormatter(createdAt)}
         </Text>
       </View>
     </SafeAreaView>

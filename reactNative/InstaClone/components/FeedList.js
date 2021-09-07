@@ -8,12 +8,13 @@ import HomeStories from "./HomeStories";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
-import perf from "@react-native-firebase/perf";
 import auth from "@react-native-firebase/auth";
+import { useSelector } from "react-redux";
 
 const FeedList = ({ scrollHandler, navigation }) => {
   const isMounted = useRef(true);
   const [feed, setFeed] = useState([]);
+  const { user } = useSelector((state) => state);
 
   useEffect(() => {
     return () => {
@@ -23,18 +24,20 @@ const FeedList = ({ scrollHandler, navigation }) => {
   useEffect(() => {
     // get list of all users that we are following
     (async () => {
-      const { Following } = (
-        await firestore().collection("users").doc(auth().currentUser.uid).get()
-      ).data();
+      let { Following } = user;
       let data = [];
       let promise_array = [];
-      console.log("Following = ", Following);
       for (const uid of Following) {
-        let pfpuri = await storage()
-          .refFromURL(
-            `gs://instaclone-b124e.appspot.com/images/profiles/${uid}.jpg`
-          )
-          .getDownloadURL();
+        let pfpuri = "";
+        try {
+          pfpuri = await storage()
+            .refFromURL(
+              `gs://instaclone-b124e.appspot.com/images/profiles/${uid}.jpg`
+            )
+            .getDownloadURL();
+        } catch (err) {
+          crashlytics().recordError(err);
+        }
         promise_array.push(
           firestore()
             .collection("users")
@@ -42,7 +45,6 @@ const FeedList = ({ scrollHandler, navigation }) => {
             .get()
             .then((doc) => {
               const { Posts } = doc.data();
-              console.log("Posts = ", Posts);
               let post_promise_array = [];
               Posts.forEach((uid) => {
                 post_promise_array.push(
@@ -59,10 +61,12 @@ const FeedList = ({ scrollHandler, navigation }) => {
                       };
                       data.push(stuff);
                     })
+                    .catch((err) => crashlytics().recordError(err))
                 );
               });
               return Promise.all(post_promise_array);
             })
+            .catch((err) => crashlytics().recordError(err))
         );
       }
       await Promise.all(promise_array);
@@ -73,10 +77,15 @@ const FeedList = ({ scrollHandler, navigation }) => {
       data = await Promise.all(
         data.map(async (post) => {
           let { content } = post;
-          for (let i = 0; i < content.length; ++i)
-            content[i].source = await storage()
-              .refFromURL(content[i].source)
-              .getDownloadURL();
+          for (let i = 0; i < content.length; ++i) {
+            try {
+              content[i].source = await storage()
+                .refFromURL(content[i].source)
+                .getDownloadURL();
+            } catch (err) {
+              crashlytics().recordError(err);
+            }
+          }
           return {
             ...post,
             content,
@@ -85,7 +94,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
       );
       setFeed(data);
     })();
-  }, []);
+  }, [user]);
 
   const viewabilityConfig = useRef({
     viewAreaCoveragePercentThreshold: 40,

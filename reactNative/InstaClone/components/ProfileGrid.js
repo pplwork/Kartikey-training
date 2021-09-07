@@ -3,17 +3,21 @@ import { StyleSheet, View, Image, Dimensions, Pressable } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import * as _ from "lodash";
 
+import { createThumbnail } from "react-native-create-thumbnail";
+
 import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
 import perf from "@react-native-firebase/perf";
+import { useSelector } from "react-redux";
 
 const win = Dimensions.get("window");
 
 const ProfileGrid = () => {
   const [gridContent, setGridContent] = useState([]);
   const isMounted = useRef(true);
+  const { user } = useSelector((state) => state);
   useEffect(() => {
     return () => {
       isMounted.current = false;
@@ -22,41 +26,29 @@ const ProfileGrid = () => {
 
   useEffect(() => {
     (async () => {
-      let docs,
-        data = [];
-      const trace = await perf().startTrace("Fetching user grid data");
-      crashlytics().log("fetching profile grid data");
-      try {
-        docs = await firestore().collection("profileGrid").get();
-        data = docs.docs.map((doc) => doc.data());
-      } catch (err) {
-        crashlytics().recordError(err);
-      }
-      crashlytics().log("resolving profile grid image urls");
-      data
-        .forEach((doc) => {
-          storage()
-            .refFromURL(doc.source)
-            .getDownloadURL()
-            .then((uri) => {
-              if (isMounted.current)
-                setGridContent((prev) => [
-                  ...prev,
-                  {
-                    ...doc,
-                    source: uri,
-                  },
-                ]);
-            });
+      let posts = await Promise.all(
+        user.Posts.map(async (post_id) => {
+          const data = (
+            await firestore().collection("posts").doc(post_id).get()
+          ).data();
+          const length = data.content.length;
+          let thumbnail = await storage()
+            .refFromURL(data.content[0].source)
+            .getDownloadURL();
+          if (data.content[0].type == "video")
+            thumbnail = (await createThumbnail({ url: thumbnail })).path;
+          const type = length > 1 ? "stack" : data.content[0].type;
+          return {
+            type,
+            source: thumbnail,
+          };
         })
-        .catch((err) => {
-          crashlytics().recordError(err);
-        });
-      await trace.stop();
-    })().catch((err) => crashlytics().recordError(err));
+      );
+      setGridContent(posts);
+    })();
   }, []);
 
-  const logImageOpened = useCallback(() => {
+  const imageOpened = useCallback(() => {
     Analytics().logEvent("UserProfileGridImageOpened");
   }, []);
 
@@ -69,7 +61,7 @@ const ProfileGrid = () => {
           return (
             <View style={styles.gridRow} key={index}>
               <View style={styles.gridImageContainer}>
-                <Pressable onPress={logImageOpened}>
+                <Pressable onPress={imageOpened}>
                   <Image
                     source={{ uri: item[0] && item[0].source }}
                     style={styles.gridImage}
@@ -105,7 +97,7 @@ const ProfileGrid = () => {
                   marginHorizontal: 3,
                 }}
               >
-                <Pressable onPress={logImageOpened}>
+                <Pressable onPress={imageOpened}>
                   <Image
                     source={{ uri: item[1] && item[1].source }}
                     style={styles.gridImage}
@@ -136,7 +128,7 @@ const ProfileGrid = () => {
                 </View>
               </View>
               <View style={styles.gridImageContainer}>
-                <Pressable onPress={logImageOpened}>
+                <Pressable onPress={imageOpened}>
                   <Image
                     source={{ uri: item[2] && item[2].source }}
                     style={styles.gridImage}
