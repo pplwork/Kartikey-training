@@ -39,6 +39,127 @@ const timeFormatter = (createdAt) => {
   else return createdAt.toDate().toDateString();
 };
 
+const StoryRenderItem = ({ item, index, carouselRef }) => {
+  const [curIndex, setCurIndex] = useState(0);
+  const [progressBar, setProgressBar] = useState([]);
+  console.log(item);
+  useEffect(() => {
+    setProgressBar(new Array(item.Stories.length).fill(0));
+  }, []);
+  return (
+    <View style={styles.storyModalContainer}>
+      <Pressable
+        style={{ flex: 1 }}
+        onPress={(e) => {
+          let x = e.nativeEvent.locationX;
+          // tapped on 20% of left side
+          if (x < win.width / 5) {
+            // if i am on first item
+            if (curIndex == 0) return carouselRef.current.snapToPrev();
+            setProgressBar((prev) => {
+              let t = prev;
+              t[curIndex] = 0;
+              t[curIndex - 1] = 0;
+              return t;
+            });
+            setCurIndex((prev) => prev - 1);
+          }
+          // tapped on more than 20% of left side
+          else {
+            // if i am on last item
+            if (curIndex == item.Stories.length - 1)
+              return carouselRef.current.snapToNext();
+            setProgressBar((prev) => {
+              let t = prev;
+              t[curIndex] = 1;
+              return t;
+            });
+            setCurIndex((prev) => prev + 1);
+          }
+        }}
+      >
+        <View style={styles.storyContent}>
+          <View style={styles.mainContent}>
+            {item.Stories[curIndex].content.type == "image" ? (
+              <Image
+                source={{ uri: item.Stories[curIndex].content.source }}
+                resizeMode="contain"
+                style={{ width: "100%", height: "100%" }}
+              />
+            ) : (
+              <Video
+                resizeMode="contain"
+                shouldPlay={true}
+                isLooping={false}
+                isMuted={false}
+                source={{ uri: item.Stories[curIndex].content.source }}
+                style={{ height: "100%", width: "100%" }}
+              />
+            )}
+          </View>
+          <View style={styles.progressBars}>
+            {item.Stories.map((story, index) => {
+              return (
+                <Progress.Bar
+                  key={index}
+                  unfilledColor="#888888"
+                  height={2}
+                  progress={progressBar[index]}
+                  width={win.width / item.Stories.length - 8}
+                  color="#fff"
+                  borderWidth={0}
+                />
+              );
+            })}
+          </View>
+          <View style={styles.userDetails}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Image
+                source={{ uri: item.Photo }}
+                resizeMode="cover"
+                style={{
+                  height: 30,
+                  width: 30,
+                  borderRadius: 30,
+                }}
+              />
+              <Text style={{ color: "#fff", marginLeft: 10 }}>
+                {item.Username}
+              </Text>
+              <Text style={{ color: "#fff", fontSize: 12, marginLeft: 10 }}>
+                {timeFormatter(item.Stories[curIndex].createdAt)}
+              </Text>
+            </View>
+            <MaterialCommunityIcons
+              name="dots-vertical"
+              size={28}
+              color="#fff"
+            />
+          </View>
+        </View>
+      </Pressable>
+      <View style={styles.storyCommentField}>
+        <TextInput
+          multiline
+          placeholder="Send message"
+          placeholderTextColor="#dfdfdf"
+          style={{
+            borderWidth: 1,
+            borderColor: "#fff",
+            color: "#fff",
+            flex: 1,
+            borderRadius: 1000,
+            marginRight: 22,
+            paddingHorizontal: 20,
+            paddingVertical: 5,
+          }}
+        />
+        <Ionicons name="paper-plane-outline" size={28} color="#fff" />
+      </View>
+    </View>
+  );
+};
+
 const HomeStories = ({ navigation }) => {
   const isMounted = useRef(true);
   const carouselRef = useRef(null);
@@ -134,120 +255,6 @@ const HomeStories = ({ navigation }) => {
     },
     [navigation]
   );
-  const storyRenderItem = useCallback(({ item, index }) => {
-    const [curIndex, setCurIndex] = useState(0);
-    const [progressBar, setProgressBar] = useState([]);
-    useEffect(() => {
-      setProgressBar(new Array(item.Stories.length).fill(0));
-    }, []);
-    return (
-      <View style={styles.storyModalContainer}>
-        <Pressable
-          onPress={(e) => {
-            let x = e.nativeEvent.locationX;
-            // tapped on 20% of left side
-            if (x < win.width / 5) {
-              // if i am on first item
-              if (curIndex == 0) return carouselRef.current.snapToPrev();
-              setProgressBar((prev) => {
-                let t = prev;
-                t[curIndex] = 0;
-                t[curIndex - 1] = 0;
-                return t;
-              });
-              setCurIndex((prev) => prev - 1);
-            }
-            // tapped on more than 20% of left side
-            else {
-              // if i am on last item
-              if (curIndex == item.Stories.length - 1)
-                return carouselRef.current.snapToNext();
-              setProgressBar((prev) => {
-                let t = prev;
-                t[curIndex] = 1;
-                return t;
-              });
-              setCurIndex((prev) => prev + 1);
-            }
-          }}
-        >
-          <View style={styles.storyContent}>
-            <View style={styles.mainContent}>
-              {item.Stories[curIndex].content.type == "image" ? (
-                <Image
-                  source={{ uri: item.Stories[curIndex].content.source }}
-                  resizeMode="contain"
-                  style={{ width: win.width }}
-                />
-              ) : (
-                <Video
-                  resizeMode="contain"
-                  shouldPlay={true}
-                  isLooping={false}
-                  isMuted={false}
-                  source={{ uri: item.Stories[curIndex].content.source }}
-                />
-              )}
-            </View>
-            <View style={styles.progressBars}>
-              {item.Stories.map((story, index) => {
-                return (
-                  <Progress.Bar
-                    unfilledColor="#888888"
-                    height={2}
-                    progress={progressBar[index]}
-                    width={win.width / item.Stories.length - 8}
-                    color="#fff"
-                    borderWidth={0}
-                  />
-                );
-              })}
-            </View>
-            <View style={styles.userDetails}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Image
-                  source={{ uri: item.Photo }}
-                  resizeMode="cover"
-                  style={{
-                    height: 30,
-                    width: 30,
-                    borderRadius: 30,
-                  }}
-                />
-                <Text style={{ color: "#fff", marginLeft: 10 }}>
-                  {item.Username}
-                </Text>
-                <Text>{timeFormatter(item.Stories[curIndex].createdAt)}</Text>
-              </View>
-              <MaterialCommunityIcons
-                name="dots-vertical"
-                size={28}
-                color="#fff"
-              />
-            </View>
-          </View>
-        </Pressable>
-        <View style={styles.storyCommentField}>
-          <TextInput
-            multiline
-            placeholder="Send message"
-            placeholderTextColor="#dfdfdf"
-            style={{
-              borderWidth: 1,
-              borderColor: "#fff",
-              color: "#fff",
-              flex: 1,
-              borderRadius: 1000,
-              marginRight: 22,
-              paddingHorizontal: 20,
-              paddingVertical: 5,
-            }}
-          />
-          <Ionicons name="paper-plane-outline" size={28} color="#fff" />
-        </View>
-      </View>
-    );
-  }, []);
 
   const keyExtractor = useCallback((item) => item.Username, []);
   const renderItem = useCallback((itemData) => {
@@ -338,7 +345,9 @@ const HomeStories = ({ navigation }) => {
         <Carousel
           ref={carouselRef}
           data={stories}
-          renderItem={storyRenderItem}
+          renderItem={(props) => (
+            <StoryRenderItem {...props} carouselRef={carouselRef} />
+          )}
           sliderWidth={win.width}
           layout="default"
           itemWidth={win.width}
@@ -403,6 +412,8 @@ const styles = StyleSheet.create({
   storyModal: {
     height: win.height,
     width: win.width,
+    borderWidth: 2,
+    borderColor: "red",
   },
   storyModalContainer: {
     flex: 1,
@@ -422,21 +433,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   progressBars: {
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-evenly",
-    marginTop: 16,
+    position: "absolute",
+    top: 16,
+    left: 0,
   },
   userDetails: {
+    width: "100%",
+    paddingHorizontal: 10,
+    alignSelf: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 10,
-    marginTop: 16,
+    top: 40,
+    position: "absolute",
   },
   mainContent: {
     flex: 1,
-    position: "absolute",
-    top: 0,
-    left: 0,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",

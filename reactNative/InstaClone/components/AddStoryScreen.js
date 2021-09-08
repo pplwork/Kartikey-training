@@ -9,6 +9,9 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
+import firestore from "@react-native-firebase/firestore";
+import auth from "@react-native-firebase/auth";
+import storage from "@react-native-firebase/storage";
 import { Camera } from "expo-camera";
 import {
   Octicons,
@@ -27,24 +30,29 @@ const flashIcons = {
   [Camera.Constants.FlashMode.torch]: "flashlight",
 };
 
-const AddStoryScreen = ({ navigation, tabNavigator }) => {
+const AddStoryScreen = ({ navigation }) => {
   const isMounted = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
   const isFocused = useIsFocused();
   const cameraRef = useRef(null);
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [showText, setShowText] = useState(false);
-
+  const [isRecording, setIsRecording] = useState(true);
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestPermissionsAsync();
-      if (isMounted.current) setHasPermission(status === "granted");
+      if (isMounted.current) {
+        setHasPermission(status === "granted");
+      }
     })();
-    return () => {
-      isMounted.current = false;
-    };
   }, []);
+
   const showTextHandler = useCallback(() => {
     setShowText(true);
     setTimeout(() => {
@@ -54,7 +62,61 @@ const AddStoryScreen = ({ navigation, tabNavigator }) => {
 
   const takePic = async () => {
     if (cameraRef) {
-      let photo = await cameraRef.current.takePictureAsync();
+      let photo = await cameraRef.current.takePictureAsync({
+        quality: 0.5,
+      });
+      let name = photo.uri.match(/\/([\w.-]+\.jpg)$/)[1];
+      let file = storage().ref(`images/stories/${name}`);
+      await file.putFile(photo.uri);
+      let story = await firestore()
+        .collection("stories")
+        .add({
+          author: auth().currentUser.uid,
+          content: {
+            source: file.toString(),
+            type: "image",
+          },
+          createdAt: firestore.FieldValue.serverTimestamp(),
+        });
+      await firestore()
+        .collection("users")
+        .doc(auth().currentUser.uid)
+        .update({
+          Stories: firestore.FieldValue.arrayUnion(story.id),
+        });
+    }
+  };
+  const startRecording = async () => {
+    setIsRecording(true);
+    let video = await cameraRef.current.recordAsync({
+      quality: Camera.Constants.VideoQuality["720p"],
+      maxDuration: 30,
+      maxFileSize: 50000000,
+    });
+    let name = video.uri.match(/\/([\w.-]+\.mp4)$/)[1];
+    let file = storage().ref(`videos/stories/${name}`);
+    await file.putFile(video.uri);
+    let story = await firestore()
+      .collection("stories")
+      .add({
+        author: auth().currentUser.uid,
+        content: {
+          source: file.toString(),
+          type: "video",
+        },
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+    await firestore()
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .update({
+        Stories: firestore.FieldValue.arrayUnion(story.id),
+      });
+  };
+  const stopRecording = async () => {
+    if (isRecording) {
+      setIsRecording(false);
+      cameraRef.current.stopRecording();
     }
   };
   if (hasPermission === null) {
@@ -157,7 +219,13 @@ const AddStoryScreen = ({ navigation, tabNavigator }) => {
                 <Entypo name="chevron-down" size={32} color={colors.white} />
               </View>
             </View>
-            <TouchableOpacity style={styles.button} onPress={takePic}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={takePic}
+              onLongPress={startRecording}
+              onPressOut={stopRecording}
+              delayLongPress={200}
+            >
               <View style={styles.innerButton}></View>
             </TouchableOpacity>
           </Camera>
@@ -184,7 +252,7 @@ const AddStoryScreen = ({ navigation, tabNavigator }) => {
               />
             </View>
             <View style={{ flex: 3, justifyContent: "center" }}>
-              <FlatList
+              {/* <FlatList
                 data={["post", "story", "reels", "live"]}
                 keyExtractor={(item, index) => index.toString()}
                 snapToAlignment="center"
@@ -209,7 +277,7 @@ const AddStoryScreen = ({ navigation, tabNavigator }) => {
                     </View>
                   );
                 }}
-              />
+              /> */}
             </View>
             <View
               style={{

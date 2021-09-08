@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 
 const win = Dimensions.get("window");
 
-const ProfileGrid = () => {
+const ProfileGrid = ({ navigation }) => {
   const [gridContent, setGridContent] = useState([]);
   const isMounted = useRef(true);
   const { user } = useSelector((state) => state);
@@ -41,15 +41,17 @@ const ProfileGrid = () => {
           return {
             type,
             source: thumbnail,
+            id: post_id,
           };
         })
       );
       setGridContent(posts);
     })();
-  }, []);
+  }, [user.Posts]);
 
-  const imageOpened = useCallback(() => {
+  const imageOpened = useCallback((post_id) => {
     Analytics().logEvent("UserProfileGridImageOpened");
+    navigation.dangerouslyGetParent().navigate("Post", { id: post_id });
   }, []);
 
   const rows = _.chunk(gridContent, 3);
@@ -61,7 +63,11 @@ const ProfileGrid = () => {
           return (
             <View style={styles.gridRow} key={index}>
               <View style={styles.gridImageContainer}>
-                <Pressable onPress={imageOpened}>
+                <Pressable
+                  onPress={() => {
+                    imageOpened(item[0].id);
+                  }}
+                >
                   <Image
                     source={{ uri: item[0] && item[0].source }}
                     style={styles.gridImage}
@@ -97,7 +103,11 @@ const ProfileGrid = () => {
                   marginHorizontal: 3,
                 }}
               >
-                <Pressable onPress={imageOpened}>
+                <Pressable
+                  onPress={() => {
+                    imageOpened(item[1].id);
+                  }}
+                >
                   <Image
                     source={{ uri: item[1] && item[1].source }}
                     style={styles.gridImage}
@@ -128,7 +138,7 @@ const ProfileGrid = () => {
                 </View>
               </View>
               <View style={styles.gridImageContainer}>
-                <Pressable onPress={imageOpened}>
+                <Pressable onPress={() => imageOpened(item[2].id)}>
                   <Image
                     source={{ uri: item[2] && item[2].source }}
                     style={styles.gridImage}

@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import auth from "@react-native-firebase/auth";
 
-const ProfileHeader = () => {
+const ProfileHeader = ({ navigation }) => {
   const { user } = useSelector((state) => state);
   const dispatch = useDispatch();
   return (
@@ -31,6 +31,7 @@ const ProfileHeader = () => {
       </View>
       <View style={styles.headerRight}>
         <FontAwesome
+          onPress={() => navigation.navigate("AddPostScreen")}
           name="plus-square-o"
           size={24}
           color="black"

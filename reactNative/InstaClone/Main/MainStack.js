@@ -7,6 +7,7 @@ import {
 import { NavigationContainer } from "@react-navigation/native";
 import AppTabs from "./AppTabs";
 import AddStoryScreen from "../components/AddStoryScreen";
+import Post from "../components/Post";
 import AddPostScreen from "../components/AddPostScreen";
 import AddPostFinalize from "../components/AddPostFinalize";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,6 +16,7 @@ import auth from "@react-native-firebase/auth";
 import ModalBox from "react-native-modalbox";
 import { View, Text, StyleSheet, Pressable, Modal } from "react-native";
 import * as Icons from "@expo/vector-icons";
+import * as Progress from "react-native-progress";
 import { AntDesign } from "@expo/vector-icons";
 import crashlytics from "@react-native-firebase/crashlytics";
 import firestore from "@react-native-firebase/firestore";
@@ -28,7 +30,6 @@ const MainStack = () => {
   const navRef = useRef(null);
   const dispatch = useDispatch();
   const modalRef = useRef(null);
-  const [progress, setProgress] = useState(100);
   const [modalVisible, setModalVisible] = useState(false);
   const {
     screen,
@@ -80,15 +81,7 @@ const MainStack = () => {
           type = "image";
         }
         let uploadTask = ref.putFile(multiSelected[i]);
-        uploadTask.on("state_changed", (snapshot) => {
-          if (isMounted.current)
-            setProgress((prev) =>
-              Math.min(
-                prev,
-                (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-              )
-            );
-        });
+
         promiseArray.push(
           uploadTask.then(() => {
             crashlytics().log("Updating Content Array");
@@ -140,15 +133,6 @@ const MainStack = () => {
       }
       // upload file
       let uploadTask = ref.putFile(selected);
-      uploadTask.on("state_changed", (snapshot) => {
-        if (isMounted.current)
-          setProgress((prev) =>
-            Math.min(
-              prev,
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            )
-          );
-      });
       crashlytics().log("Uploading Post Data");
       try {
         await uploadTask;
@@ -295,15 +279,17 @@ const MainStack = () => {
               title: "New Post",
               headerRight: () => (
                 <Pressable
-                  onPress={() =>
+                  onPress={() => {
+                    setModalVisible(true);
                     savePost().then(() => {
+                      setModalVisible(false);
                       dispatch({
                         type: "SET_ENABLEMULTISELECT",
                         payload: false,
                       });
                       navigation.navigate("AppTabs");
-                    })
-                  }
+                    });
+                  }}
                   style={({ pressed }) => {
                     if (pressed)
                       return {
@@ -334,6 +320,167 @@ const MainStack = () => {
               },
             })}
           />
+          <Stack.Screen
+            name="Post"
+            component={Post}
+            options={({ navigation }) => {
+              return {
+                headerShown: true,
+                headerTitle: "Post",
+                headerStyle: {
+                  elevation: 0,
+                  shadowOpacity: 0,
+                },
+              };
+            }}
+          />
+          {/* <Stack.Screen
+            name="Settings"
+            component={Settings}
+            options={({ navigation }) => ({
+              headerShown: true,
+              title: "New Post",
+              headerRight: () => (
+                <Pressable
+                  onPress={() => {
+                    setModalVisible(true);
+                    savePost().then(() => {
+                      setModalVisible(false);
+                      dispatch({
+                        type: "SET_ENABLEMULTISELECT",
+                        payload: false,
+                      });
+                      navigation.navigate("AppTabs");
+                    });
+                  }}
+                  style={({ pressed }) => {
+                    if (pressed)
+                      return {
+                        backgroundColor: "#DFDFDF",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        borderRadius: 100,
+                        padding: 5,
+                      };
+                    return {
+                      backgroundColor: "#FFF",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: 100,
+                      padding: 5,
+                    };
+                  }}
+                >
+                  <AntDesign name="check" size={32} color="#1890ff" />
+                </Pressable>
+              ),
+              headerRightContainerStyle: {
+                paddingRight: 10,
+              },
+              headerStyle: {
+                elevation: 0,
+                shadowOpacity: 0,
+              },
+            })}
+          />
+          <Stack.Screen
+            name="YourActivity"
+            component={YourActivity}
+            options={({ navigation }) => ({
+              headerShown: true,
+              title: "New Post",
+              headerRight: () => (
+                <Pressable
+                  onPress={() => {
+                    setModalVisible(true);
+                    savePost().then(() => {
+                      setModalVisible(false);
+                      dispatch({
+                        type: "SET_ENABLEMULTISELECT",
+                        payload: false,
+                      });
+                      navigation.navigate("AppTabs");
+                    });
+                  }}
+                  style={({ pressed }) => {
+                    if (pressed)
+                      return {
+                        backgroundColor: "#DFDFDF",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        borderRadius: 100,
+                        padding: 5,
+                      };
+                    return {
+                      backgroundColor: "#FFF",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: 100,
+                      padding: 5,
+                    };
+                  }}
+                >
+                  <AntDesign name="check" size={32} color="#1890ff" />
+                </Pressable>
+              ),
+              headerRightContainerStyle: {
+                paddingRight: 10,
+              },
+              headerStyle: {
+                elevation: 0,
+                shadowOpacity: 0,
+              },
+            })}
+          />
+          <Stack.Screen
+            name="Archive"
+            component={Archive}
+            options={({ navigation }) => ({
+              headerShown: true,
+              title: "New Post",
+              headerRight: () => (
+                <Pressable
+                  onPress={() => {
+                    setModalVisible(true);
+                    savePost().then(() => {
+                      setModalVisible(false);
+                      dispatch({
+                        type: "SET_ENABLEMULTISELECT",
+                        payload: false,
+                      });
+                      navigation.navigate("AppTabs");
+                    });
+                  }}
+                  style={({ pressed }) => {
+                    if (pressed)
+                      return {
+                        backgroundColor: "#DFDFDF",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        borderRadius: 100,
+                        padding: 5,
+                      };
+                    return {
+                      backgroundColor: "#FFF",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: 100,
+                      padding: 5,
+                    };
+                  }}
+                >
+                  <AntDesign name="check" size={32} color="#1890ff" />
+                </Pressable>
+              ),
+              headerRightContainerStyle: {
+                paddingRight: 10,
+              },
+              headerStyle: {
+                elevation: 0,
+                shadowOpacity: 0,
+              },
+            })}
+          /> */}
         </Stack.Navigator>
       </NavigationContainer>
       <ModalBox
@@ -377,10 +524,14 @@ const MainStack = () => {
       </ModalBox>
       <Modal animationType="fade" transparent={true} visible={modalVisible}>
         <View style={styles.modalOriginalContainer}>
-          <View style={styles.popup}>
-            <View style={styles.modalText}>
-              <Text style={styles.modalTextHeading}>{progress}/100</Text>
-            </View>
+          <View
+            style={[
+              styles.popup,
+              { justifyContent: "center", alignItems: "center", padding: 30 },
+            ]}
+          >
+            <Text style={styles.modalTextHeading}>Uploading...</Text>
+            <Progress.CircleSnail />
           </View>
         </View>
       </Modal>

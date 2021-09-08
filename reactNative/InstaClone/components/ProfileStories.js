@@ -19,72 +19,72 @@ const ProfileStories = () => {
   const { user } = useSelector((state) => state.user);
   const [stories, setStories] = useState([]);
   useEffect(() => {
-    // (async () => {
-    //   Promise.all(
-    //     user.Stories.map(async (story) => {
-    //       let Stories = [];
-    //       try {
-    //         Stories = await Promise.all(
-    //           Stories.map(async (story) => {
-    //             let data;
-    //             try {
-    //               data = (
-    //                 await firestore().collection("stories").doc(story).get()
-    //               ).data();
-    //             } catch (err) {
-    //               crashlytics().recordError(err);
-    //             }
-    //             let uri = await storage()
-    //               .refFromURL(data.content.source)
-    //               .getDownloadURL();
-    //             return {
-    //               ...data,
-    //               content: {
-    //                 source: uri,
-    //                 type: data.content.type,
-    //               },
-    //             };
-    //           })
-    //         );
-    //       } catch (err) {
-    //         crashlytics().recordError(err);
-    //       }
-    //     })
-    //   );
-    // })();
-
     (async () => {
-      let docs,
-        data = [];
-      const trace = await perf().startTrace("Fetching Profile Stories Data");
-      crashlytics().log("Fetching Profile stories data");
-      try {
-        docs = await firestore().collection("profileStories").get();
-        data = docs.docs.map((doc) => doc.data());
-      } catch (err) {
-        crashlytics().recordError(err);
-      }
-      crashlytics().log("Resolving Profile Story image urls");
-      data.forEach((doc) => {
-        storage()
-          .refFromURL(doc.photo)
-          .getDownloadURL()
-          .then((uri) => {
-            if (isMounted.current)
-              setStories((prev) => [
-                ...prev,
-                {
-                  ...doc,
-                  photo: uri,
-                },
-              ]);
-          })
-          .catch((err) => {
-            crashlytics.recordError(err);
-          });
-      });
-      await trace.stop();
-    })().catch((err) => crashlytics().recordError(err));
+      Promise.all(
+        user.Stories.map(async (story) => {
+          let Stories = [];
+          try {
+            Stories = await Promise.all(
+              Stories.map(async (story) => {
+                let data;
+                try {
+                  data = (
+                    await firestore().collection("stories").doc(story).get()
+                  ).data();
+                } catch (err) {
+                  crashlytics().recordError(err);
+                }
+                let uri = await storage()
+                  .refFromURL(data.content.source)
+                  .getDownloadURL();
+                return {
+                  ...data,
+                  content: {
+                    source: uri,
+                    type: data.content.type,
+                  },
+                };
+              })
+            );
+          } catch (err) {
+            crashlytics().recordError(err);
+          }
+        })
+      );
+    })();
+
+    // (async () => {
+    //   let docs,
+    //     data = [];
+    //   const trace = await perf().startTrace("Fetching Profile Stories Data");
+    //   crashlytics().log("Fetching Profile stories data");
+    //   try {
+    //     docs = await firestore().collection("profileStories").get();
+    //     data = docs.docs.map((doc) => doc.data());
+    //   } catch (err) {
+    //     crashlytics().recordError(err);
+    //   }
+    //   crashlytics().log("Resolving Profile Story image urls");
+    //   data.forEach((doc) => {
+    //     storage()
+    //       .refFromURL(doc.photo)
+    //       .getDownloadURL()
+    //       .then((uri) => {
+    //         if (isMounted.current)
+    //           setStories((prev) => [
+    //             ...prev,
+    //             {
+    //               ...doc,
+    //               photo: uri,
+    //             },
+    //           ]);
+    //       })
+    //       .catch((err) => {
+    //         crashlytics.recordError(err);
+    //       });
+    //   });
+    //   await trace.stop();
+    // })().catch((err) => crashlytics().recordError(err));
   }, []);
   const keyExtractor = useCallback((item) => item.id.toString(), []);
   const renderItem = useCallback((itemData) => {

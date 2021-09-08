@@ -50,7 +50,6 @@ const FeedCard = ({
   curIndex, // index of the current item in the feedlist
   isFocused,
 }) => {
-  console.log(content);
   const { user } = useSelector((state) => state);
   const isMounted = useRef(true);
   const [likeUsers, setLikeUsers] = useState([]);

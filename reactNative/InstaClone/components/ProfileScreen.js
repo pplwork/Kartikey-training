@@ -29,7 +29,6 @@ import ProfileGrid from "./ProfileGrid";
 import DiscoverPeopleList from "./DiscoverPeopleList";
 
 const ProfileScreen = ({ navigation }) => {
-  const username = useRef("benbenabraham");
   const [modalVisible, setModalVisible] = useState(false);
   useLayoutEffect(() => {
     if (modalVisible)
@@ -47,7 +46,7 @@ const ProfileScreen = ({ navigation }) => {
   return (
     <>
       <SafeAreaView style={styles.container}>
-        <ProfileHeader />
+        <ProfileHeader navigation={navigation} />
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <ProfileInfo />
           <View
@@ -92,8 +91,8 @@ const ProfileScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
           {showDiscoverPeople ? <DiscoverPeopleList /> : false}
-          <ProfileStories />
-          <ProfileGrid />
+          <ProfileStories navigation={navigation} />
+          <ProfileGrid navigation={navigation} />
         </ScrollView>
       </SafeAreaView>
       {modalVisible ? <EditProfileModal setVisible={setModalVisible} /> : false}
