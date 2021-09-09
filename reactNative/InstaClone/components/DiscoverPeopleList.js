@@ -49,29 +49,36 @@ const DiscoverPeopleList = () => {
         );
       } catch (err) {
         crashlytics().recordError(err);
+        return;
       }
 
       // get image, mutuals,name
-      let people = await Promise.all(
-        users.map(async (ele) => {
-          let uri = "";
-          try {
-            uri = await storage().refFromURL(ele.data.Photo).getDownloadURL();
-          } catch (err) {
-            crashlytics().recordError(err);
-          }
-          let mutual = [];
-          for (const follower of ele.data.Followers) {
-            if (user.Following.includes(follower)) mutual.push(follower);
-          }
-          return {
-            name: ele.data.Username,
-            image: uri,
-            mutual,
-            uid: ele.uid,
-          };
-        })
-      );
+      let people;
+      try {
+        people = await Promise.all(
+          users.map(async (ele) => {
+            let uri = "";
+            try {
+              uri = await storage().refFromURL(ele.data.Photo).getDownloadURL();
+            } catch (err) {
+              crashlytics().recordError(err);
+            }
+            let mutual = [];
+            for (const follower of ele.data.Followers) {
+              if (user.Following.includes(follower)) mutual.push(follower);
+            }
+            return {
+              name: ele.data.Username,
+              image: uri,
+              mutual,
+              uid: ele.uid,
+            };
+          })
+        );
+      } catch (err) {
+        crashlytics().recordError(err);
+        return;
+      }
       people.sort((a, b) => {
         if (a.mutual.length > b.mutual.length) return -1;
         else return 1;

@@ -37,7 +37,7 @@ const EditProfileModal = ({ setVisible }) => {
       // get extension
       let extension;
       try {
-        extension = newDetails.Photo.match(/.*\.(.+)$/)[1];
+        extension = newDetails.Photo.match(/.+\.(.+)$/)[1];
       } catch (err) {
         return null;
       }
@@ -45,27 +45,32 @@ const EditProfileModal = ({ setVisible }) => {
       let ref = storage().refFromURL(
         `gs://instaclone-b124e.appspot.com/images/profiles/${
           auth().currentUser.uid
-        }.${extension}`
+        }.jpg`
       );
       // put file
-      ref.putFile(newDetails.Photo).then((res) => {
-        firestore()
-          .collection("users")
-          .doc(auth().currentUser.uid)
-          .update({
-            ...newDetails,
-            Photo: `gs://instaclone-b124e.appspot.com/images/profiles/${
-              auth().currentUser.uid
-            }.${extension}`,
-          })
-          .then(() => {
-            Analytics().logEvent("ProfileUpdated");
-            if (isMounted.current) setVisible(false);
-          })
-          .catch((err) => {
-            crashlytics().recordError(err);
-          });
-      });
+      ref
+        .putFile(newDetails.Photo)
+        .then((res) => {
+          firestore()
+            .collection("users")
+            .doc(auth().currentUser.uid)
+            .update({
+              ...newDetails,
+              Photo: `gs://instaclone-b124e.appspot.com/images/profiles/${
+                auth().currentUser.uid
+              }.jpg`,
+            })
+            .then(() => {
+              Analytics().logEvent("ProfileUpdated");
+              if (isMounted.current) setVisible(false);
+            })
+            .catch((err) => {
+              crashlytics().recordError(err);
+            });
+        })
+        .catch((err) => {
+          crashlytics().recordError(err);
+        });
     } else {
       firestore()
         .collection("users")

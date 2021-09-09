@@ -26,25 +26,48 @@ const ProfileGrid = ({ navigation }) => {
 
   useEffect(() => {
     (async () => {
-      let posts = await Promise.all(
-        user.Posts.map(async (post_id) => {
-          const data = (
-            await firestore().collection("posts").doc(post_id).get()
-          ).data();
-          const length = data.content.length;
-          let thumbnail = await storage()
-            .refFromURL(data.content[0].source)
-            .getDownloadURL();
-          if (data.content[0].type == "video")
-            thumbnail = (await createThumbnail({ url: thumbnail })).path;
-          const type = length > 1 ? "stack" : data.content[0].type;
-          return {
-            type,
-            source: thumbnail,
-            id: post_id,
-          };
-        })
-      );
+      let posts;
+      try {
+        posts = await Promise.all(
+          user.Posts.map(async (post_id) => {
+            let data;
+            try {
+              data = (
+                await firestore().collection("posts").doc(post_id).get()
+              ).data();
+            } catch (err) {
+              crashlytics().recordError(err);
+              return;
+            }
+            const length = data.content.length;
+            let thumbnail;
+            try {
+              thumbnail = await storage()
+                .refFromURL(data.content[0].source)
+                .getDownloadURL();
+            } catch (err) {
+              crashlytics().recordError(err);
+              return;
+            }
+            try {
+              if (data.content[0].type == "video")
+                thumbnail = (await createThumbnail({ url: thumbnail })).path;
+            } catch (err) {
+              crashlytics().recordError(err);
+              return;
+            }
+            const type = length > 1 ? "stack" : data.content[0].type;
+            return {
+              type,
+              source: thumbnail,
+              id: post_id,
+            };
+          })
+        );
+      } catch (err) {
+        crashlytics().recordError(err);
+        return;
+      }
       setGridContent(posts);
     })();
   }, [user.Posts]);

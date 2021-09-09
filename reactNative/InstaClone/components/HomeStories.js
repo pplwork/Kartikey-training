@@ -18,8 +18,6 @@ import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
-import perf from "@react-native-firebase/perf";
-import auth from "@react-native-firebase/auth";
 
 import colors from "../constants/colors";
 import { useSelector } from "react-redux";
@@ -40,9 +38,12 @@ const timeFormatter = (createdAt) => {
 };
 
 const StoryRenderItem = ({ item, index, carouselRef }) => {
+  const isMounted = useRef(true);
+  useEffect(() => {
+    return () => (isMounted.current = false);
+  }, []);
   const [curIndex, setCurIndex] = useState(0);
   const [progressBar, setProgressBar] = useState([]);
-  console.log(item);
   useEffect(() => {
     setProgressBar(new Array(item.Stories.length).fill(0));
   }, []);
@@ -240,6 +241,7 @@ const HomeStories = ({ navigation }) => {
         })
       );
       // storydata = storydata.filter((e) => e.Stories && e.Stories.length > 0);
+      console.log(storydata);
       if (isMounted.current) setStories(storydata);
     })();
   }, [user]);

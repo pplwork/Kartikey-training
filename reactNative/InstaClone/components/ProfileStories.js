@@ -20,37 +20,44 @@ const ProfileStories = () => {
   const [stories, setStories] = useState([]);
   useEffect(() => {
     (async () => {
-      Promise.all(
-        user.Stories.map(async (story) => {
-          let Stories = [];
-          try {
-            Stories = await Promise.all(
-              Stories.map(async (story) => {
-                let data;
-                try {
-                  data = (
-                    await firestore().collection("stories").doc(story).get()
-                  ).data();
-                } catch (err) {
-                  crashlytics().recordError(err);
-                }
-                let uri = await storage()
-                  .refFromURL(data.content.source)
-                  .getDownloadURL();
-                return {
-                  ...data,
-                  content: {
-                    source: uri,
-                    type: data.content.type,
-                  },
-                };
-              })
-            );
-          } catch (err) {
-            crashlytics().recordError(err);
-          }
-        })
-      );
+      try {
+        await Promise.all(
+          user.Stories.map(async (story) => {
+            let Stories = [];
+            try {
+              Stories = await Promise.all(
+                Stories.map(async (story) => {
+                  let data;
+                  try {
+                    data = (
+                      await firestore().collection("stories").doc(story).get()
+                    ).data();
+                  } catch (err) {
+                    crashlytics().recordError(err);
+                    return;
+                  }
+                  let uri = await storage()
+                    .refFromURL(data.content.source)
+                    .getDownloadURL();
+                  return {
+                    ...data,
+                    content: {
+                      source: uri,
+                      type: data.content.type,
+                    },
+                  };
+                })
+              );
+            } catch (err) {
+              crashlytics().recordError(err);
+              return;
+            }
+          })
+        );
+      } catch (err) {
+        crashlytics().recordError(err);
+        return;
+      }
     })();
 
     // (async () => {

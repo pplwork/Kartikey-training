@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -11,6 +11,7 @@ import {
 import { useFonts } from "expo-font";
 import { FontAwesome5, Entypo } from "@expo/vector-icons";
 import auth from "@react-native-firebase/auth";
+import { useDispatch } from "react-redux";
 
 const Login = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -25,6 +26,10 @@ const Login = ({ navigation }) => {
     InstagramRegular: require("../assets/fonts/regular.otf"),
     InstagramBold: require("../assets/fonts/bold.otf"),
   });
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch({ type: "SIGNOUT" });
+  }, []);
   const login = () => {
     if (email.toLowerCase().trim() == "" || password.toLowerCase().trim() == "")
       return;

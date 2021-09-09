@@ -83,7 +83,9 @@ const ProfileHeader = ({ navigation }) => {
                     color: "black",
                   },
                   item: "Signout",
-                  action: () => auth().signOut(),
+                  action: () => {
+                    auth().signOut();
+                  },
                 },
               ],
             });

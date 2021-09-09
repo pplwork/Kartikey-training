@@ -32,6 +32,7 @@ const ReelsScreen = () => {
     (async () => {
       let docs,
         data = [];
+
       const trace = await perf().startTrace("Fetching Reels Data");
       crashlytics().log("Fetching reels data");
       try {
@@ -39,6 +40,7 @@ const ReelsScreen = () => {
         data = docs.docs.map((doc) => doc.data());
       } catch (err) {
         crashlytics().recordError(err);
+        return;
       }
       crashlytics().log("Resolving reels image urls");
       data.forEach((doc) => {

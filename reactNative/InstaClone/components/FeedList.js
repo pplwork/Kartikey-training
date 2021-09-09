@@ -8,7 +8,6 @@ import HomeStories from "./HomeStories";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
-import auth from "@react-native-firebase/auth";
 import { useSelector } from "react-redux";
 
 const FeedList = ({ scrollHandler, navigation }) => {
@@ -37,6 +36,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
             .getDownloadURL();
         } catch (err) {
           crashlytics().recordError(err);
+          return;
         }
         promise_array.push(
           firestore()
@@ -54,6 +54,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
                     .get()
                     .then((post) => {
                       let stuff = post.data();
+                      stuff.id = post.id;
                       stuff.author = {
                         uid: stuff.author,
                         Username: doc.data().Username,
@@ -69,29 +70,39 @@ const FeedList = ({ scrollHandler, navigation }) => {
             .catch((err) => crashlytics().recordError(err))
         );
       }
-      await Promise.all(promise_array);
+      try {
+        await Promise.all(promise_array);
+      } catch (err) {
+        crashlytics().recordError(err);
+        return;
+      }
       data.sort((a, b) => {
         if (a.createdAt.seconds < b.createdAt.seconds) return 1;
         else return -1;
       });
-      data = await Promise.all(
-        data.map(async (post) => {
-          let { content } = post;
-          for (let i = 0; i < content.length; ++i) {
-            try {
-              content[i].source = await storage()
-                .refFromURL(content[i].source)
-                .getDownloadURL();
-            } catch (err) {
-              crashlytics().recordError(err);
+      try {
+        data = await Promise.all(
+          data.map(async (post) => {
+            let { content } = post;
+            for (let i = 0; i < content.length; ++i) {
+              try {
+                content[i].source = await storage()
+                  .refFromURL(content[i].source)
+                  .getDownloadURL();
+              } catch (err) {
+                crashlytics().recordError(err);
+              }
             }
-          }
-          return {
-            ...post,
-            content,
-          };
-        })
-      );
+            return {
+              ...post,
+              content,
+            };
+          })
+        );
+      } catch (err) {
+        crashlytics().recordError(err);
+        return;
+      }
       setFeed(data);
     })();
   }, [user]);

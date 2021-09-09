@@ -46,8 +46,10 @@ const DiscoverPeopleCard = ({ image, name, mutual, uid }) => {
           Followers: firestore.FieldValue.arrayUnion(auth().currentUser.uid),
         }),
     ]).catch(() => {
+      crashlytics().recordError(err);
       if (isMounted.current) setDisabled(false);
     });
+    setDisabled(false);
   };
   return (
     <View style={styles.cardContainer}>

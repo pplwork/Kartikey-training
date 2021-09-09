@@ -22,10 +22,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Video } from "expo-av";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
+import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import crashlytics from "@react-native-firebase/crashlytics";
+import auth from "@react-native-firebase/auth";
 import { useSelector } from "react-redux";
-import { firebase } from "@react-native-firebase/firestore";
 
 const win = Dimensions.get("window");
 
@@ -40,6 +41,7 @@ const timeFormatter = (createdAt) => {
 };
 
 const FeedCard = ({
+  id,
   author,
   caption,
   comments,
@@ -50,6 +52,7 @@ const FeedCard = ({
   curIndex, // index of the current item in the feedlist
   isFocused,
 }) => {
+  const [commonLike, setCommonLike] = useState(null);
   const { user } = useSelector((state) => state);
   const isMounted = useRef(true);
   const [likeUsers, setLikeUsers] = useState([]);
@@ -61,10 +64,32 @@ const FeedCard = ({
   const [heightScaled, setHeightScaled] = useState(1.77);
   const [heightItem, setHeightItem] = useState(200);
   const [isMuted, setIsMuted] = useState({}); //format {index:boolean}
+  const [likesAmount, setLikesAmount] = useState(0);
   useEffect(() => {
+    if (likes.includes(auth().currentUser.uid)) setLiked(true);
     return () => {
       isMounted.current = false;
     };
+  }, []);
+  useEffect(() => {
+    setLikesAmount(liked ? likes.length - 1 : likes.length);
+  }, [likes]);
+  useEffect(() => {
+    (async () => {
+      for (following of user.Following) {
+        if (likes.includes(following)) {
+          try {
+            let { Username } = (
+              await firestore().collection("users").doc(following).get()
+            ).data();
+            if (isMounted.current) setCommonLike(Username);
+          } catch (err) {
+            crashlytics().recordError(err);
+          }
+          return;
+        }
+      }
+    })();
   }, []);
   useEffect(() => {
     // iterate through all videos
@@ -119,7 +144,13 @@ const FeedCard = ({
     ({ item, index }) => {
       if (item.type == "image") {
         return (
-          <AutoHeightImage source={{ uri: item.source }} width={win.width} />
+          <AutoHeightImage
+            source={{ uri: item.source }}
+            width={win.width}
+            maxHeight={400}
+            minHeight={350}
+            resizeMode="cover"
+          />
         );
       } else if (item.type == "video") {
         return (
@@ -141,8 +172,9 @@ const FeedCard = ({
               }}
               source={{ uri: item.source }}
               style={{
-                height: heightScaled,
+                height: Math.max(Math.min(heightScaled, 400), 350),
                 width: win.width,
+                resizeMode: "cover",
               }}
               volume={1}
               resizeMode="cover"
@@ -176,7 +208,24 @@ const FeedCard = ({
     },
     [videoRefs, videoIndex, heightScaled, win.width, isMuted]
   );
-  const likeHandler = useCallback(() => setLiked((prev) => !prev), []);
+  const likeHandler = async () => {
+    // was already liked
+    if (liked)
+      await firestore()
+        .collection("posts")
+        .doc(id)
+        .update({
+          likes: firestore.FieldValue.arrayRemove(auth().currentUser.uid),
+        });
+    else
+      await firestore()
+        .collection("posts")
+        .doc(id)
+        .update({
+          likes: firestore.FieldValue.arrayUnion(auth().currentUser.uid),
+        });
+    setLiked((prev) => !prev);
+  };
   const bookmarkHandler = useCallback(() => setBookmarked((prev) => !prev), []);
   const viewabilityConfig = useRef({
     viewAreaCoveragePercentThreshold: 10,
@@ -222,9 +271,15 @@ const FeedCard = ({
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            alignItems: "center",
+            justifyContent: "center",
+          }}
           style={{
             height:
-              content[curItem].type == "image" ? heightItem : heightScaled,
+              content[curItem].type == "image"
+                ? Math.max(Math.min(heightItem, 400), 350)
+                : Math.max(Math.min(heightScaled, 400), 350),
           }}
         />
         {content.length > 1 ? (
@@ -269,7 +324,7 @@ const FeedCard = ({
           onPress={bookmarkHandler}
         />
       </View>
-      {likes.length > 0 ? (
+      {likesAmount > 0 ? (
         <View style={styles.likes}>
           <View
             style={{
@@ -327,10 +382,15 @@ const FeedCard = ({
               transform: [{ translateX: -10 }],
             }}
           >
-            Liked by <Text style={{ fontWeight: "bold" }}>elizabetholsen</Text>{" "}
-            and{" "}
+            Liked by{" "}
+            {commonLike ? (
+              <>
+                <Text style={{ fontWeight: "bold" }}>`${commonLike} `</Text>
+                and{" "}
+              </>
+            ) : null}
             <Text style={{ fontWeight: "bold" }}>
-              {likes.length.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
+              {likesAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{" "}
               others
             </Text>
           </Text>

@@ -23,6 +23,8 @@ import {
 } from "@expo/vector-icons";
 import colors from "../constants/colors";
 
+import crashlytics from "@react-native-firebase/crashlytics";
+
 const flashIcons = {
   [Camera.Constants.FlashMode.off]: "flash-off",
   [Camera.Constants.FlashMode.on]: "flash",
@@ -62,56 +64,100 @@ const AddStoryScreen = ({ navigation }) => {
 
   const takePic = async () => {
     if (cameraRef) {
-      let photo = await cameraRef.current.takePictureAsync({
-        quality: 0.5,
-      });
-      let name = photo.uri.match(/\/([\w.-]+\.jpg)$/)[1];
+      let photo;
+      try {
+        photo = await cameraRef.current.takePictureAsync({
+          quality: 0.5,
+        });
+      } catch (err) {
+        crashlytics().recordError(err);
+        return;
+      }
+      let name = photo.uri.match(/(\/|\\)([^\/\\]+\.jpg)/)[2];
       let file = storage().ref(`images/stories/${name}`);
-      await file.putFile(photo.uri);
-      let story = await firestore()
+      try {
+        await file.putFile(photo.uri);
+      } catch (err) {
+        crashlytics().recordError(err);
+        return;
+      }
+      let story;
+      try {
+        story = await firestore()
+          .collection("stories")
+          .add({
+            author: auth().currentUser.uid,
+            content: {
+              source: file.toString(),
+              type: "image",
+            },
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          });
+      } catch (err) {
+        crashlytics().recordError(err);
+        return;
+      }
+      try {
+        await firestore()
+          .collection("users")
+          .doc(auth().currentUser.uid)
+          .update({
+            Stories: firestore.FieldValue.arrayUnion(story.id),
+          });
+      } catch (err) {
+        crashlytics().recordError(err);
+        return;
+      }
+    }
+  };
+  const startRecording = async () => {
+    setIsRecording(true);
+    let video;
+    try {
+      video = await cameraRef.current.recordAsync({
+        quality: Camera.Constants.VideoQuality["720p"],
+        maxDuration: 30,
+        maxFileSize: 50000000,
+      });
+    } catch (err) {
+      crashlytics().recordError(err);
+      return;
+    }
+    let name = video.uri.match(/(\/|\\)([^\/\\]+\.mp4)/)[2];
+    let file = storage().ref(`videos/stories/${name}`);
+    try {
+      await file.putFile(video.uri);
+    } catch (err) {
+      crashlytics().recordError(err);
+      return;
+    }
+    let story;
+    try {
+      story = await firestore()
         .collection("stories")
         .add({
           author: auth().currentUser.uid,
           content: {
             source: file.toString(),
-            type: "image",
+            type: "video",
           },
           createdAt: firestore.FieldValue.serverTimestamp(),
         });
+    } catch (err) {
+      crashlytics().recordError(err);
+      return;
+    }
+    try {
       await firestore()
         .collection("users")
         .doc(auth().currentUser.uid)
         .update({
           Stories: firestore.FieldValue.arrayUnion(story.id),
         });
+    } catch (err) {
+      crashlytics().recordError(err);
+      return;
     }
-  };
-  const startRecording = async () => {
-    setIsRecording(true);
-    let video = await cameraRef.current.recordAsync({
-      quality: Camera.Constants.VideoQuality["720p"],
-      maxDuration: 30,
-      maxFileSize: 50000000,
-    });
-    let name = video.uri.match(/\/([\w.-]+\.mp4)$/)[1];
-    let file = storage().ref(`videos/stories/${name}`);
-    await file.putFile(video.uri);
-    let story = await firestore()
-      .collection("stories")
-      .add({
-        author: auth().currentUser.uid,
-        content: {
-          source: file.toString(),
-          type: "video",
-        },
-        createdAt: firestore.FieldValue.serverTimestamp(),
-      });
-    await firestore()
-      .collection("users")
-      .doc(auth().currentUser.uid)
-      .update({
-        Stories: firestore.FieldValue.arrayUnion(story.id),
-      });
   };
   const stopRecording = async () => {
     if (isRecording) {
