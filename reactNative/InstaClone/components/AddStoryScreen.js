@@ -71,6 +71,7 @@ const AddStoryScreen = ({ navigation }) => {
         });
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("AddStoryScreen.js : ", err);
         return;
       }
       let name = photo.uri.match(/(\/|\\)([^\/\\]+\.jpg)/)[2];
@@ -79,6 +80,7 @@ const AddStoryScreen = ({ navigation }) => {
         await file.putFile(photo.uri);
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("AddStoryScreen.js : ", err);
         return;
       }
       let story;
@@ -95,6 +97,7 @@ const AddStoryScreen = ({ navigation }) => {
           });
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("AddStoryScreen.js : ", err);
         return;
       }
       try {
@@ -106,6 +109,7 @@ const AddStoryScreen = ({ navigation }) => {
           });
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("AddStoryScreen.js : ", err);
         return;
       }
     }
@@ -121,6 +125,7 @@ const AddStoryScreen = ({ navigation }) => {
       });
     } catch (err) {
       crashlytics().recordError(err);
+      console.log("AddStoryScreen.js : ", err);
       return;
     }
     let name = video.uri.match(/(\/|\\)([^\/\\]+\.mp4)/)[2];
@@ -129,6 +134,7 @@ const AddStoryScreen = ({ navigation }) => {
       await file.putFile(video.uri);
     } catch (err) {
       crashlytics().recordError(err);
+      console.log("AddStoryScreen.js : ", err);
       return;
     }
     let story;
@@ -145,6 +151,7 @@ const AddStoryScreen = ({ navigation }) => {
         });
     } catch (err) {
       crashlytics().recordError(err);
+      console.log("AddStoryScreen.js : ", err);
       return;
     }
     try {
@@ -156,6 +163,7 @@ const AddStoryScreen = ({ navigation }) => {
         });
     } catch (err) {
       crashlytics().recordError(err);
+      console.log("AddStoryScreen.js : ", err);
       return;
     }
   };

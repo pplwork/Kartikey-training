@@ -40,6 +40,7 @@ const ReelsScreen = () => {
         data = docs.docs.map((doc) => doc.data());
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("ReelsScreen.js : ", err);
         return;
       }
       crashlytics().log("Resolving reels image urls");
@@ -63,6 +64,7 @@ const ReelsScreen = () => {
           })
           .catch((err) => {
             crashlytics().recordError(err);
+            console.log("ReelsScreen.js : ", err);
           });
       });
       await trace.stop();

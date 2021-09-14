@@ -11,7 +11,7 @@ const initialState = {
 const rootreducer = (state = initialState, action) => {
   switch (action.type) {
     case "SET_USER": {
-      return { ...state, user: action.payload, isLoggedIn: true };
+      return { ...state, user: action.payload };
     }
     case "SET_SCREEN": {
       return { ...state, screen: action.payload };

@@ -21,6 +21,7 @@ import { AntDesign } from "@expo/vector-icons";
 import crashlytics from "@react-native-firebase/crashlytics";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
+import UserPage from "../components/UserPage";
 
 const MainStack = () => {
   const isMounted = useRef(true);
@@ -334,153 +335,17 @@ const MainStack = () => {
               };
             }}
           />
-          {/* <Stack.Screen
-            name="Settings"
-            component={Settings}
-            options={({ navigation }) => ({
-              headerShown: true,
-              title: "New Post",
-              headerRight: () => (
-                <Pressable
-                  onPress={() => {
-                    setModalVisible(true);
-                    savePost().then(() => {
-                      setModalVisible(false);
-                      dispatch({
-                        type: "SET_ENABLEMULTISELECT",
-                        payload: false,
-                      });
-                      navigation.navigate("AppTabs");
-                    });
-                  }}
-                  style={({ pressed }) => {
-                    if (pressed)
-                      return {
-                        backgroundColor: "#DFDFDF",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        borderRadius: 100,
-                        padding: 5,
-                      };
-                    return {
-                      backgroundColor: "#FFF",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      borderRadius: 100,
-                      padding: 5,
-                    };
-                  }}
-                >
-                  <AntDesign name="check" size={32} color="#1890ff" />
-                </Pressable>
-              ),
-              headerRightContainerStyle: {
-                paddingRight: 10,
-              },
-              headerStyle: {
-                elevation: 0,
-                shadowOpacity: 0,
-              },
-            })}
-          />
           <Stack.Screen
-            name="YourActivity"
-            component={YourActivity}
-            options={({ navigation }) => ({
-              headerShown: true,
-              title: "New Post",
-              headerRight: () => (
-                <Pressable
-                  onPress={() => {
-                    setModalVisible(true);
-                    savePost().then(() => {
-                      setModalVisible(false);
-                      dispatch({
-                        type: "SET_ENABLEMULTISELECT",
-                        payload: false,
-                      });
-                      navigation.navigate("AppTabs");
-                    });
-                  }}
-                  style={({ pressed }) => {
-                    if (pressed)
-                      return {
-                        backgroundColor: "#DFDFDF",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        borderRadius: 100,
-                        padding: 5,
-                      };
-                    return {
-                      backgroundColor: "#FFF",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      borderRadius: 100,
-                      padding: 5,
-                    };
-                  }}
-                >
-                  <AntDesign name="check" size={32} color="#1890ff" />
-                </Pressable>
-              ),
-              headerRightContainerStyle: {
-                paddingRight: 10,
-              },
-              headerStyle: {
-                elevation: 0,
-                shadowOpacity: 0,
-              },
-            })}
+            name="User"
+            component={UserPage}
+            options={({ navigation }) => {
+              return {
+                headerShown: true,
+                headerTitle: "User",
+                headerStyle: { elevation: 0, shadowOpacity: 0 },
+              };
+            }}
           />
-          <Stack.Screen
-            name="Archive"
-            component={Archive}
-            options={({ navigation }) => ({
-              headerShown: true,
-              title: "New Post",
-              headerRight: () => (
-                <Pressable
-                  onPress={() => {
-                    setModalVisible(true);
-                    savePost().then(() => {
-                      setModalVisible(false);
-                      dispatch({
-                        type: "SET_ENABLEMULTISELECT",
-                        payload: false,
-                      });
-                      navigation.navigate("AppTabs");
-                    });
-                  }}
-                  style={({ pressed }) => {
-                    if (pressed)
-                      return {
-                        backgroundColor: "#DFDFDF",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        borderRadius: 100,
-                        padding: 5,
-                      };
-                    return {
-                      backgroundColor: "#FFF",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      borderRadius: 100,
-                      padding: 5,
-                    };
-                  }}
-                >
-                  <AntDesign name="check" size={32} color="#1890ff" />
-                </Pressable>
-              ),
-              headerRightContainerStyle: {
-                paddingRight: 10,
-              },
-              headerStyle: {
-                elevation: 0,
-                shadowOpacity: 0,
-              },
-            })}
-          /> */}
         </Stack.Navigator>
       </NavigationContainer>
       <ModalBox

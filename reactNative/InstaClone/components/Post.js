@@ -21,6 +21,7 @@ const Post = ({ route, navigation }) => {
         data = (await firestore().collection("posts").doc(id).get()).data();
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("Post.js : ", err);
         return;
       }
 
@@ -31,6 +32,7 @@ const Post = ({ route, navigation }) => {
         ).data();
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("Post.js : ", err);
         return;
       }
 
@@ -39,6 +41,7 @@ const Post = ({ route, navigation }) => {
         pfpuri = await storage().refFromURL(User.Photo).getDownloadURL();
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("Post.js : ", err);
         return;
       }
       data.author = {
@@ -54,6 +57,7 @@ const Post = ({ route, navigation }) => {
             .getDownloadURL();
         } catch (err) {
           crashlytics().recordError(err);
+          console.log("Post.js : ", err);
           return;
         }
       }

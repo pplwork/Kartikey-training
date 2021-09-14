@@ -45,7 +45,8 @@ Reel : {
 Comment:{
     author:UserID,
     content:"",
-    replies:Comment[]
     createdAt:TimeStamp(),
+    replies:Comment[],
     likes:UserID[],
+    post:PostID,
 }

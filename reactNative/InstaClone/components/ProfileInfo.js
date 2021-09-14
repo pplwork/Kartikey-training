@@ -23,21 +23,7 @@ const ProfileInfo = () => {
       isMounted.current = false;
     };
   }, []);
-  const dispatch = useDispatch();
   const { user } = useSelector((state) => state);
-  useEffect(() => {
-    const unsubscribe = firestore()
-      .collection("users")
-      .doc(auth().currentUser.uid)
-      .onSnapshot((doc) => {
-        const data = doc.data();
-        dispatch({
-          type: "SET_USER",
-          payload: { ...data, Photo: user.Photo, uid: auth().currentUser.uid },
-        });
-      });
-    return () => unsubscribe();
-  }, []);
   return (
     <>
       <View style={styles.profile}>

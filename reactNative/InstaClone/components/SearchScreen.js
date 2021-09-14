@@ -27,6 +27,7 @@ const SearchScreen = () => {
         data = docs.docs.map((doc) => doc.data());
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("SearchScreen.js : ", err);
       }
       let promiseArray = [];
       data.forEach((doc) => {
@@ -45,6 +46,7 @@ const SearchScreen = () => {
         })
         .catch((err) => {
           crashlytics().recordError(err);
+          console.log("SearchScreen.js : ", err);
         });
       await trace.stop();
     })();

@@ -71,6 +71,7 @@ const AddPostScreen = () => {
       })
       .catch((err) => {
         crashlytics().recordError(err);
+        console.log("AddPostScreen.js : ", err);
       });
   };
   useEffect(() => {

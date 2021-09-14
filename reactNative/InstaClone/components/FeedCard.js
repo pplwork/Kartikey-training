@@ -51,7 +51,9 @@ const FeedCard = ({
   index, // index of the card itself
   curIndex, // index of the current item in the feedlist
   isFocused,
+  navigation,
 }) => {
+  const commentRef = useRef(null);
   const [commonLike, setCommonLike] = useState(null);
   const { user } = useSelector((state) => state);
   const isMounted = useRef(true);
@@ -65,6 +67,7 @@ const FeedCard = ({
   const [heightItem, setHeightItem] = useState(200);
   const [isMuted, setIsMuted] = useState({}); //format {index:boolean}
   const [likesAmount, setLikesAmount] = useState(0);
+  const [postComments, setPostComments] = useState([]);
   useEffect(() => {
     if (likes.includes(auth().currentUser.uid)) setLiked(true);
     return () => {
@@ -85,6 +88,7 @@ const FeedCard = ({
             if (isMounted.current) setCommonLike(Username);
           } catch (err) {
             crashlytics().recordError(err);
+            console.log("FeedCard.js : ", err);
           }
           return;
         }
@@ -117,6 +121,54 @@ const FeedCard = ({
     }
   }, [isFocused, curIndex, curItem]);
   useEffect(() => {
+    (async () => {
+      let cmts;
+      try {
+        cmts = await Promise.all(
+          comments.map(async (id) => {
+            let cmt;
+            try {
+              cmt = (
+                await firestore().collection("comments").doc(id).get()
+              ).data();
+            } catch (err) {
+              crashlytics().recordError(err);
+              console.log("FeedCard.js : ", err);
+            }
+
+            let author;
+            try {
+              author = (
+                await firestore().collection("users").doc(cmt.author).get()
+              ).data();
+            } catch (err) {
+              crashlytics().recordError(err);
+              console.log("FeedCard.js : ", err);
+            }
+            let pfp;
+            try {
+              pfp = await storage().refFromURL(author.Photo).getDownloadURL();
+            } catch (err) {
+              crashlytics().recordError(err);
+              console.log("FeedCard.js : ", err);
+            }
+            cmt.author = {
+              uid: cmt.author,
+              Username: author.Username,
+              Photo: pfp,
+            };
+            return cmt;
+          })
+        );
+
+        if (isMounted.current) setPostComments(cmts);
+      } catch (err) {
+        crashlytics().recordError(err);
+        console.log("FeedCard.js : ", err);
+      }
+    })();
+  }, [comments]);
+  useEffect(() => {
     let camilla = storage()
       .refFromURL(
         "gs://instaclone-b124e.appspot.com/images/profiles/camilla.jpg"
@@ -137,6 +189,7 @@ const FeedCard = ({
       })
       .catch((err) => {
         crashlytics().recordError(err);
+        console.log("FeedCard.js : ", err);
       });
   }, []);
   const keyExtractor = useCallback((item, index) => index.toString(), []);
@@ -237,6 +290,50 @@ const FeedCard = ({
         setHeightItem(win.width * (height / width));
       });
   }, []);
+  const addComment = async ({ nativeEvent: { text } }) => {
+    let cmnt;
+    try {
+      cmnt = await firestore().collection("comments").add({
+        author: auth().currentUser.uid,
+        content: text,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+        likes: [],
+        replies: [],
+        post: id,
+      });
+    } catch (err) {
+      crashlytics().recordError(err);
+      console.log("FeedCard.js : ", err);
+      return;
+    }
+    let CMNT;
+    try {
+      CMNT = (await cmnt.get()).data();
+    } catch (err) {
+      crashlytics().recordError(err);
+      console.log("FeedCard.js : ", err);
+      return;
+    }
+    CMNT.author = {
+      uid: auth().currentUser.uid,
+      Username: user.Username,
+      Photo: user.Photo,
+    };
+    try {
+      await firestore()
+        .collection("posts")
+        .doc(id)
+        .update({
+          comments: firestore.FieldValue.arrayUnion(cmnt.id),
+        });
+    } catch (err) {
+      crashlytics().recordError(err);
+      console.log("FeedCard.js : ", err);
+      return;
+    }
+    if (isMounted.current) setPostComments((prev) => [...prev, CMNT]);
+    commentRef.current.clear();
+  };
   return (
     <SafeAreaView style={styles.cardContainer}>
       <View style={styles.header}>
@@ -252,7 +349,16 @@ const FeedCard = ({
               />
             </View>
           </LinearGradient>
-          <Text style={styles.headerText}>{author.Username}</Text>
+          <Text
+            style={styles.headerText}
+            onPress={() =>
+              navigation
+                .dangerouslyGetParent()
+                .navigate("User", { id: author.uid })
+            }
+          >
+            {author.Username}
+          </Text>
         </View>
         <MaterialCommunityIcons name="dots-vertical" size={24} color="black" />
       </View>
@@ -385,8 +491,7 @@ const FeedCard = ({
             Liked by{" "}
             {commonLike ? (
               <>
-                <Text style={{ fontWeight: "bold" }}>`${commonLike} `</Text>
-                and{" "}
+                <Text style={{ fontWeight: "bold" }}>{commonLike}</Text> and{" "}
               </>
             ) : null}
             <Text style={{ fontWeight: "bold" }}>
@@ -402,17 +507,19 @@ const FeedCard = ({
           {caption}
         </Text>
       </View>
-      {comments.length > 1 ? (
+      {postComments.length > 1 ? (
         <View style={styles.viewAll}>
           <Text style={{ color: "rgba(0,0,0,0.3)" }}>
-            View all {comments.length} comments
+            View all {postComments.length} comments
           </Text>
         </View>
       ) : null}
-      {comments.length > 0 ? (
+      {postComments.length > 0 ? (
         <View style={styles.comment}>
-          <Text style={{ fontWeight: "bold" }}>{comments[0].user + " "}</Text>
-          <Text>{comments[0].comment}</Text>
+          <Text style={{ fontWeight: "bold" }}>
+            {postComments[0].author.Username + " "}
+          </Text>
+          <Text>{postComments[0].content}</Text>
         </View>
       ) : null}
 
@@ -421,7 +528,11 @@ const FeedCard = ({
           <Image source={{ uri: user.Photo }} style={styles.inputPhoto} />
         </View>
         <View style={{ flex: 6 }}>
-          <TextInput placeholder="Add a comment..." />
+          <TextInput
+            ref={commentRef}
+            placeholder="Add a comment..."
+            onSubmitEditing={(e) => addComment(e)}
+          />
         </View>
         <View
           style={{

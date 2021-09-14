@@ -27,7 +27,10 @@ const DiscoverPeopleCard = ({ image, name, mutual, uid }) => {
         .doc(mutual[0])
         .get()
         .then((doc) => setFirstMutual(doc.data().Username))
-        .catch((err) => crashlytics().recordErr(err));
+        .catch((err) => {
+          console.log("DiscoverPeopleCard.js : ", err);
+          crashlytics().recordErr(err);
+        });
     () => (isMounted.current = false);
   }, []);
   const followUser = async () => {
@@ -47,6 +50,7 @@ const DiscoverPeopleCard = ({ image, name, mutual, uid }) => {
         }),
     ]).catch(() => {
       crashlytics().recordError(err);
+      console.log("DiscoverPeopleCard.js : ", err);
       if (isMounted.current) setDisabled(false);
     });
     setDisabled(false);
@@ -117,6 +121,7 @@ const styles = StyleSheet.create({
   },
   followText: {
     fontSize: 12,
+    fontWeight: "bold",
   },
   buttonContainer: {
     alignSelf: "stretch",

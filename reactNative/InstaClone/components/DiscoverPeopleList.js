@@ -49,6 +49,7 @@ const DiscoverPeopleList = () => {
         );
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("DiscoverPeopleList.js : ", err);
         return;
       }
 
@@ -62,6 +63,8 @@ const DiscoverPeopleList = () => {
               uri = await storage().refFromURL(ele.data.Photo).getDownloadURL();
             } catch (err) {
               crashlytics().recordError(err);
+              console.log("DiscoverPeopleList.js : ", err);
+              return;
             }
             let mutual = [];
             for (const follower of ele.data.Followers) {
@@ -77,6 +80,7 @@ const DiscoverPeopleList = () => {
         );
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("DiscoverPeopleList.js : ", err);
         return;
       }
       people.sort((a, b) => {

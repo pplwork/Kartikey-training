@@ -198,6 +198,7 @@ const HomeStories = ({ navigation }) => {
             Username = userdata.Username;
           } catch (err) {
             crashlytics().recordError(err);
+            console.log("HomeStories.js : ", err);
           }
           try {
             Stories = await Promise.all(
@@ -216,6 +217,7 @@ const HomeStories = ({ navigation }) => {
                     return undefined;
                 } catch (err) {
                   crashlytics().recordError(err);
+                  console.log("HomeStories.js : ", err);
                 }
                 let uri = await storage()
                   .refFromURL(data.content.source)
@@ -232,6 +234,7 @@ const HomeStories = ({ navigation }) => {
             Stories = Stories.filter((story) => story != undefined);
           } catch (err) {
             crashlytics().recordError(err);
+            console.log("HomeStories.js : ", err);
           }
           return {
             Username,
@@ -240,8 +243,7 @@ const HomeStories = ({ navigation }) => {
           };
         })
       );
-      // storydata = storydata.filter((e) => e.Stories && e.Stories.length > 0);
-      console.log(storydata);
+      storydata = storydata.filter((e) => e.Stories.length > 0);
       if (isMounted.current) setStories(storydata);
     })();
   }, [user]);

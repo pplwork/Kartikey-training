@@ -28,14 +28,21 @@ const FeedList = ({ scrollHandler, navigation }) => {
       let promise_array = [];
       for (const uid of Following) {
         let pfpuri = "";
+        let pfplink = "";
         try {
-          pfpuri = await storage()
-            .refFromURL(
-              `gs://instaclone-b124e.appspot.com/images/profiles/${uid}.jpg`
-            )
-            .getDownloadURL();
+          pfplink = (
+            await firestore().collection("users").doc(uid).get()
+          ).data().Photo;
         } catch (err) {
           crashlytics().recordError(err);
+          console.log("FeedList.js : ", err);
+          return;
+        }
+        try {
+          pfpuri = await storage().refFromURL(pfplink).getDownloadURL();
+        } catch (err) {
+          crashlytics().recordError(err);
+          console.log("FeedList.js : ", err);
           return;
         }
         promise_array.push(
@@ -62,18 +69,25 @@ const FeedList = ({ scrollHandler, navigation }) => {
                       };
                       data.push(stuff);
                     })
-                    .catch((err) => crashlytics().recordError(err))
+                    .catch((err) => {
+                      crashlytics().recordError(err);
+                      console.log("FeedList.js : ", err);
+                    })
                 );
               });
               return Promise.all(post_promise_array);
             })
-            .catch((err) => crashlytics().recordError(err))
+            .catch((err) => {
+              crashlytics().recordError(err);
+              console.log("FeedList.js : ", err);
+            })
         );
       }
       try {
         await Promise.all(promise_array);
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("FeedList.js : ", err);
         return;
       }
       data.sort((a, b) => {
@@ -91,6 +105,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
                   .getDownloadURL();
               } catch (err) {
                 crashlytics().recordError(err);
+                console.log("FeedList.js : ", err);
               }
             }
             return {
@@ -101,6 +116,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
         );
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("FeedList.js : ", err);
         return;
       }
       setFeed(data);
@@ -129,6 +145,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
           index={index}
           curIndex={curItem}
           {...item}
+          navigation={navigation}
         />
       );
     },

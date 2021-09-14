@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View, FlatList, Image } from "react-native";
+import { createThumbnail } from "react-native-create-thumbnail";
 
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import colors from "../constants/colors";
 
 import crashlytics from "@react-native-firebase/crashlytics";
-import perf from "@react-native-firebase/perf";
 import { useSelector } from "react-redux";
 
 const ProfileStories = () => {
@@ -16,95 +16,72 @@ const ProfileStories = () => {
       isMounted.current = false;
     };
   }, []);
-  const { user } = useSelector((state) => state.user);
+  const { user } = useSelector((state) => state);
   const [stories, setStories] = useState([]);
   useEffect(() => {
     (async () => {
+      let str = [];
       try {
-        await Promise.all(
+        str = await Promise.all(
           user.Stories.map(async (story) => {
-            let Stories = [];
             try {
-              Stories = await Promise.all(
-                Stories.map(async (story) => {
-                  let data;
-                  try {
-                    data = (
-                      await firestore().collection("stories").doc(story).get()
-                    ).data();
-                  } catch (err) {
-                    crashlytics().recordError(err);
-                    return;
-                  }
-                  let uri = await storage()
-                    .refFromURL(data.content.source)
-                    .getDownloadURL();
-                  return {
-                    ...data,
-                    content: {
-                      source: uri,
-                      type: data.content.type,
-                    },
-                  };
-                })
-              );
+              let data;
+              try {
+                data = (
+                  await firestore().collection("stories").doc(story).get()
+                ).data();
+              } catch (err) {
+                crashlytics().recordError(err);
+                console.log("ProfileStories.js : ", err);
+                return;
+              }
+              let uri;
+              try {
+                uri = await storage()
+                  .refFromURL(data.content.source)
+                  .getDownloadURL();
+              } catch (err) {
+                crashlytics().recordError(err);
+                console.log("ProfileStories.js : ", err);
+                return;
+              }
+              if (data.content.type == "video")
+                uri = (await createThumbnail({ url: uri })).path;
+              return {
+                ...data,
+                content: {
+                  source: uri,
+                  type: data.content.type,
+                },
+              };
             } catch (err) {
               crashlytics().recordError(err);
+              console.log("ProfileStories.js : ", err);
               return;
             }
           })
         );
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("ProfileStories.js : ", err);
         return;
       }
+      console.log(str);
+      if (isMounted.current) setStories(str);
     })();
-
-    // (async () => {
-    //   let docs,
-    //     data = [];
-    //   const trace = await perf().startTrace("Fetching Profile Stories Data");
-    //   crashlytics().log("Fetching Profile stories data");
-    //   try {
-    //     docs = await firestore().collection("profileStories").get();
-    //     data = docs.docs.map((doc) => doc.data());
-    //   } catch (err) {
-    //     crashlytics().recordError(err);
-    //   }
-    //   crashlytics().log("Resolving Profile Story image urls");
-    //   data.forEach((doc) => {
-    //     storage()
-    //       .refFromURL(doc.photo)
-    //       .getDownloadURL()
-    //       .then((uri) => {
-    //         if (isMounted.current)
-    //           setStories((prev) => [
-    //             ...prev,
-    //             {
-    //               ...doc,
-    //               photo: uri,
-    //             },
-    //           ]);
-    //       })
-    //       .catch((err) => {
-    //         crashlytics.recordError(err);
-    //       });
-    //   });
-    //   await trace.stop();
-    // })().catch((err) => crashlytics().recordError(err));
   }, []);
-  const keyExtractor = useCallback((item) => item.id.toString(), []);
-  const renderItem = useCallback((itemData) => {
+  const keyExtractor = useCallback((item, index) => index.toString(), []);
+  const renderItem = useCallback(({ item }) => {
     return (
       <View style={styles.storyImgLabelContainer}>
         <View style={styles.storyImgContainer}>
           <Image
-            source={{ uri: itemData.item.photo }}
+            source={{ uri: item.content.source }}
             style={styles.storyImage}
           />
         </View>
         <Text ellipsizeMode="tail" numberOfLines={1} style={{ fontSize: 12 }}>
-          {itemData.item.name}
+          {item.createdAt.toDate().toLocaleDateString()}
         </Text>
       </View>
     );

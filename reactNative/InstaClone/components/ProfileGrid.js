@@ -9,7 +9,6 @@ import Analytics from "@react-native-firebase/analytics";
 import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
-import perf from "@react-native-firebase/perf";
 import { useSelector } from "react-redux";
 
 const win = Dimensions.get("window");
@@ -37,6 +36,7 @@ const ProfileGrid = ({ navigation }) => {
               ).data();
             } catch (err) {
               crashlytics().recordError(err);
+              console.log("ProfileGrid.js : ", err);
               return;
             }
             const length = data.content.length;
@@ -47,6 +47,7 @@ const ProfileGrid = ({ navigation }) => {
                 .getDownloadURL();
             } catch (err) {
               crashlytics().recordError(err);
+              console.log("ProfileGrid.js : ", err);
               return;
             }
             try {
@@ -54,6 +55,7 @@ const ProfileGrid = ({ navigation }) => {
                 thumbnail = (await createThumbnail({ url: thumbnail })).path;
             } catch (err) {
               crashlytics().recordError(err);
+              console.log("ProfileGrid.js : ", err);
               return;
             }
             const type = length > 1 ? "stack" : data.content[0].type;
@@ -66,6 +68,7 @@ const ProfileGrid = ({ navigation }) => {
         );
       } catch (err) {
         crashlytics().recordError(err);
+        console.log("ProfileGrid.js : ", err);
         return;
       }
       setGridContent(posts);

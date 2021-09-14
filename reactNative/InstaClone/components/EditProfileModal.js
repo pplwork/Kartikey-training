@@ -39,6 +39,7 @@ const EditProfileModal = ({ setVisible }) => {
       try {
         extension = newDetails.Photo.match(/.+\.(.+)$/)[1];
       } catch (err) {
+        console.log("EditProfileModal.js : ", err);
         return null;
       }
       //create reference
@@ -66,9 +67,11 @@ const EditProfileModal = ({ setVisible }) => {
             })
             .catch((err) => {
               crashlytics().recordError(err);
+              console.log("EditProfileModal.js : ", err);
             });
         })
         .catch((err) => {
+          console.log("EditProfileModal.js : ", err);
           crashlytics().recordError(err);
         });
     } else {
@@ -82,6 +85,7 @@ const EditProfileModal = ({ setVisible }) => {
         })
         .catch((err) => {
           crashlytics().recordError(err);
+          console.log("EditProfileModal.js : ", err);
         });
     }
   }, [newDetails, user]);
