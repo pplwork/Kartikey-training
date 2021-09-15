@@ -146,6 +146,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
           curIndex={curItem}
           {...item}
           navigation={navigation}
+          isFromPost={false}
         />
       );
     },

@@ -8,6 +8,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import AppTabs from "./AppTabs";
 import AddStoryScreen from "../components/AddStoryScreen";
 import Post from "../components/Post";
+import CommentPage from "../components/CommentPage";
 import AddPostScreen from "../components/AddPostScreen";
 import AddPostFinalize from "../components/AddPostFinalize";
 import { useDispatch, useSelector } from "react-redux";
@@ -342,6 +343,17 @@ const MainStack = () => {
               return {
                 headerShown: true,
                 headerTitle: "User",
+                headerStyle: { elevation: 0, shadowOpacity: 0 },
+              };
+            }}
+          />
+          <Stack.Screen
+            name="Comments"
+            component={CommentPage}
+            options={({ navigation }) => {
+              return {
+                headerShown: true,
+                headerTitle: "Comments",
                 headerStyle: { elevation: 0, shadowOpacity: 0 },
               };
             }}

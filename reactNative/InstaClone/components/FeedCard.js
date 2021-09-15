@@ -52,6 +52,7 @@ const FeedCard = ({
   curIndex, // index of the current item in the feedlist
   isFocused,
   navigation,
+  isFromPost,
 }) => {
   const commentRef = useRef(null);
   const [commonLike, setCommonLike] = useState(null);
@@ -157,6 +158,7 @@ const FeedCard = ({
               Username: author.Username,
               Photo: pfp,
             };
+            cmt.id = id;
             return cmt;
           })
         );
@@ -309,16 +311,18 @@ const FeedCard = ({
     let CMNT;
     try {
       CMNT = (await cmnt.get()).data();
+      CMNT.author = {
+        uid: auth().currentUser.uid,
+        Username: user.Username,
+        Photo: user.Photo,
+      };
+      CMNT.id = cmnt.id;
     } catch (err) {
       crashlytics().recordError(err);
       console.log("FeedCard.js : ", err);
       return;
     }
-    CMNT.author = {
-      uid: auth().currentUser.uid,
-      Username: user.Username,
-      Photo: user.Photo,
-    };
+
     try {
       await firestore()
         .collection("posts")
@@ -351,11 +355,14 @@ const FeedCard = ({
           </LinearGradient>
           <Text
             style={styles.headerText}
-            onPress={() =>
-              navigation
-                .dangerouslyGetParent()
-                .navigate("User", { id: author.uid })
-            }
+            onPress={() => {
+              if (author.uid == auth().currentUser.uid) return;
+              if (isFromPost) navigation.navigate("User", { id: author.uid });
+              else
+                navigation
+                  .dangerouslyGetParent()
+                  .navigate("User", { id: author.uid });
+            }}
           >
             {author.Username}
           </Text>
@@ -509,7 +516,27 @@ const FeedCard = ({
       </View>
       {postComments.length > 1 ? (
         <View style={styles.viewAll}>
-          <Text style={{ color: "rgba(0,0,0,0.3)" }}>
+          <Text
+            style={{ color: "rgba(0,0,0,0.3)" }}
+            onPress={() => {
+              if (isFromPost)
+                navigation.navigate("Comments", {
+                  comments: postComments,
+                  author,
+                  caption,
+                  createdAt,
+                  id,
+                });
+              else
+                navigation.dangerouslyGetParent().navigate("Comments", {
+                  comments: postComments,
+                  author,
+                  caption,
+                  createdAt,
+                  id,
+                });
+            }}
+          >
             View all {postComments.length} comments
           </Text>
         </View>

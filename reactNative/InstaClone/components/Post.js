@@ -71,7 +71,16 @@ const Post = ({ route, navigation }) => {
   }, []);
   return (
     <ScrollView style={styles.container}>
-      {Post && <FeedCard {...Post} index={0} curIndex={0} isFocused={true} />}
+      {Post && (
+        <FeedCard
+          {...Post}
+          index={0}
+          curIndex={0}
+          isFocused={true}
+          navigation={navigation}
+          isFromPost={true}
+        />
+      )}
     </ScrollView>
   );
 };
