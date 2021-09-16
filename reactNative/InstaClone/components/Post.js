@@ -78,7 +78,6 @@ const Post = ({ route, navigation }) => {
           curIndex={0}
           isFocused={true}
           navigation={navigation}
-          isFromPost={true}
         />
       )}
     </ScrollView>

@@ -37,16 +37,29 @@ const timeFormatter = (createdAt) => {
   else return createdAt.toDate().toDateString();
 };
 
-const StoryRenderItem = ({ item, index, carouselRef }) => {
+const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
   const isMounted = useRef(true);
   useEffect(() => {
     return () => (isMounted.current = false);
   }, []);
+  const videoRefs = useRef({});
   const [curIndex, setCurIndex] = useState(0);
   const [progressBar, setProgressBar] = useState([]);
   useEffect(() => {
     setProgressBar(new Array(item.Stories.length).fill(0));
   }, []);
+  useEffect(() => {
+    // if current item is not visible
+    if (index != carouselIndex) {
+      for (const key in videoRefs.current) {
+        videoRefs.current[key] ? videoRefs.current[key].pauseAsync() : null;
+      }
+    } else {
+      videoRefs.current[curIndex]
+        ? videoRefs.current[curIndex].playAsync()
+        : null;
+    }
+  }, [carouselIndex, curIndex]);
   return (
     <View style={styles.storyModalContainer}>
       <Pressable
@@ -89,8 +102,8 @@ const StoryRenderItem = ({ item, index, carouselRef }) => {
               />
             ) : (
               <Video
+                ref={(ref) => (videoRefs.current[curIndex] = ref)}
                 resizeMode="contain"
-                shouldPlay={true}
                 isLooping={false}
                 isMuted={false}
                 source={{ uri: item.Stories[curIndex].content.source }}
@@ -167,6 +180,7 @@ const HomeStories = ({ navigation }) => {
   const [stories, setStories] = useState([]);
   const [storyVisible, setStoryVisible] = useState(false);
   const { user } = useSelector((state) => state);
+  const [carouselIndex, setCarouselIndex] = useState(0);
   useEffect(() => {
     return () => {
       navigation.setOptions({
@@ -253,6 +267,7 @@ const HomeStories = ({ navigation }) => {
         navigation.navigate("AddStoryScreen");
         Analytics().logEvent("AddStoryOpened");
       } else {
+        setCarouselIndex(index - 1);
         setStoryVisible(true);
         Analytics().logEvent("StoryOpened");
       }
@@ -345,13 +360,21 @@ const HomeStories = ({ navigation }) => {
         onRequestClose={() => setStoryVisible(false)}
         animationType="fade"
         transparent={true}
+        onShow={() => {
+          carouselRef.current.snapToItem(carouselIndex);
+        }}
       >
         <Carousel
-          ref={carouselRef}
+          ref={(ref) => (carouselRef.current = ref)}
           data={stories}
           renderItem={(props) => (
-            <StoryRenderItem {...props} carouselRef={carouselRef} />
+            <StoryRenderItem
+              {...props}
+              carouselRef={carouselRef}
+              carouselIndex={carouselIndex}
+            />
           )}
+          onSnapToItem={(index) => setCarouselIndex(index)}
           sliderWidth={win.width}
           layout="default"
           itemWidth={win.width}

@@ -9,6 +9,7 @@ import {
   FlatList,
   TextInput,
   SafeAreaView,
+  Pressable,
 } from "react-native";
 import {
   MaterialCommunityIcons,
@@ -52,7 +53,6 @@ const FeedCard = ({
   curIndex, // index of the current item in the feedlist
   isFocused,
   navigation,
-  isFromPost,
 }) => {
   const commentRef = useRef(null);
   const [commonLike, setCommonLike] = useState(null);
@@ -86,7 +86,7 @@ const FeedCard = ({
             let { Username } = (
               await firestore().collection("users").doc(following).get()
             ).data();
-            if (isMounted.current) setCommonLike(Username);
+            if (isMounted.current) setCommonLike({ Username, uid: following });
           } catch (err) {
             crashlytics().recordError(err);
             console.log("FeedCard.js : ", err);
@@ -279,7 +279,7 @@ const FeedCard = ({
         .update({
           likes: firestore.FieldValue.arrayUnion(auth().currentUser.uid),
         });
-    setLiked((prev) => !prev);
+    if (isMounted.current) setLiked((prev) => !prev);
   };
   const bookmarkHandler = useCallback(() => setBookmarked((prev) => !prev), []);
   const viewabilityConfig = useRef({
@@ -357,11 +357,7 @@ const FeedCard = ({
             style={styles.headerText}
             onPress={() => {
               if (author.uid == auth().currentUser.uid) return;
-              if (isFromPost) navigation.navigate("User", { id: author.uid });
-              else
-                navigation
-                  .dangerouslyGetParent()
-                  .navigate("User", { id: author.uid });
+              navigation.navigate("User", { id: author.uid });
             }}
           >
             {author.Username}
@@ -424,10 +420,26 @@ const FeedCard = ({
             style={{ marginRight: 16 }}
             onPress={likeHandler}
           />
-          <Image
-            source={require("../assets/icons/comment.png")}
-            style={{ height: 20, width: 20, marginRight: 16 }}
-          />
+          <Pressable
+            onPress={() => {
+              if (postComments.length >= 2) {
+                navigation.navigate("Comments", {
+                  comments: postComments,
+                  author,
+                  caption,
+                  createdAt,
+                  id,
+                });
+              } else {
+                commentRef.current.focus();
+              }
+            }}
+          >
+            <Image
+              source={require("../assets/icons/comment.png")}
+              style={{ height: 20, width: 20, marginRight: 16 }}
+            />
+          </Pressable>
           <Ionicons name="paper-plane-outline" size={22} color="black" />
         </View>
         <FontAwesome
@@ -498,7 +510,15 @@ const FeedCard = ({
             Liked by{" "}
             {commonLike ? (
               <>
-                <Text style={{ fontWeight: "bold" }}>{commonLike}</Text> and{" "}
+                <Text
+                  style={{ fontWeight: "bold" }}
+                  onPress={() =>
+                    navigation.navigate("User", { id: commonLike.uid })
+                  }
+                >
+                  {commonLike.Username}
+                </Text>{" "}
+                and{" "}
               </>
             ) : null}
             <Text style={{ fontWeight: "bold" }}>
@@ -510,7 +530,12 @@ const FeedCard = ({
       ) : null}
       <View style={styles.caption}>
         <Text>
-          <Text style={{ fontWeight: "bold" }}>{author.Username + " "}</Text>
+          <Text
+            style={{ fontWeight: "bold" }}
+            onPress={() => navigation.navigate("User", { id: author.uid })}
+          >
+            {author.Username + " "}
+          </Text>
           {caption}
         </Text>
       </View>
@@ -519,22 +544,13 @@ const FeedCard = ({
           <Text
             style={{ color: "rgba(0,0,0,0.3)" }}
             onPress={() => {
-              if (isFromPost)
-                navigation.navigate("Comments", {
-                  comments: postComments,
-                  author,
-                  caption,
-                  createdAt,
-                  id,
-                });
-              else
-                navigation.dangerouslyGetParent().navigate("Comments", {
-                  comments: postComments,
-                  author,
-                  caption,
-                  createdAt,
-                  id,
-                });
+              navigation.navigate("Comments", {
+                comments: postComments,
+                author,
+                caption,
+                createdAt,
+                id,
+              });
             }}
           >
             View all {postComments.length} comments

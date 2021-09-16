@@ -71,7 +71,7 @@ const ProfileGrid = ({ navigation }) => {
         console.log("ProfileGrid.js : ", err);
         return;
       }
-      setGridContent(posts);
+      if (isMounted.current) setGridContent(posts);
     })();
   }, [user.Posts]);
 

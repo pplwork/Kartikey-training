@@ -6,11 +6,12 @@ import {
   ScrollView,
   Image,
   Text,
+  Pressable,
 } from "react-native";
 var { width } = Dimensions.get("window");
 import * as _ from "lodash";
 
-const InstaGrid = ({ data }) => {
+const InstaGrid = ({ data, navigation, fetchPosts }) => {
   let currentRow = 0;
   const groupEveryNthRow = 3;
   const rowsArray = _.chunk(data, 3);
@@ -32,14 +33,18 @@ const InstaGrid = ({ data }) => {
                     ...styles.imageThumbnail,
                     backgroundColor: "rgb(220,220,220)",
                   }}
-                >
-                  <Text></Text>
-                </View>
+                ></View>
               ) : (
-                <Image
-                  style={styles.imageThumbnail}
-                  source={{ uri: smallImage1 && smallImage1.source }}
-                />
+                <Pressable
+                  onPress={() =>
+                    navigation.navigate("Post", { id: smallImage1.id })
+                  }
+                >
+                  <Image
+                    style={styles.imageThumbnail}
+                    source={{ uri: smallImage1 && smallImage1.thumbnail }}
+                  />
+                </Pressable>
               )}
             </View>
             <View style={styles.imageContainer}>
@@ -51,10 +56,16 @@ const InstaGrid = ({ data }) => {
                   }}
                 ></View>
               ) : (
-                <Image
-                  style={styles.imageThumbnail}
-                  source={{ uri: smallImage2 && smallImage2.source }}
-                />
+                <Pressable
+                  onPress={() =>
+                    navigation.navigate("Post", { id: smallImage2.id })
+                  }
+                >
+                  <Image
+                    style={styles.imageThumbnail}
+                    source={{ uri: smallImage2 && smallImage2.thumbnail }}
+                  />
+                </Pressable>
               )}
             </View>
           </View>
@@ -67,10 +78,16 @@ const InstaGrid = ({ data }) => {
                 }}
               ></View>
             ) : (
-              <Image
-                style={styles.imageThumbnailLarge}
-                source={{ uri: largeImage && largeImage.source }}
-              />
+              <Pressable
+                onPress={() =>
+                  navigation.navigate("Post", { id: largeImage.id })
+                }
+              >
+                <Image
+                  style={styles.imageThumbnailLarge}
+                  source={{ uri: largeImage && largeImage.thumbnail }}
+                />
+              </Pressable>
             )}
           </View>
         </View>
@@ -88,10 +105,16 @@ const InstaGrid = ({ data }) => {
                 }}
               ></View>
             ) : (
-              <Image
-                style={styles.imageThumbnailLarge}
-                source={{ uri: largeImage && largeImage.source }}
-              />
+              <Pressable
+                onPress={() =>
+                  navigation.navigate("Post", { id: largeImage.id })
+                }
+              >
+                <Image
+                  style={styles.imageThumbnailLarge}
+                  source={{ uri: largeImage && largeImage.thumbnail }}
+                />
+              </Pressable>
             )}
           </View>
           <View style={styles.colContainer2}>
@@ -104,10 +127,16 @@ const InstaGrid = ({ data }) => {
                   }}
                 ></View>
               ) : (
-                <Image
-                  style={styles.imageThumbnail}
-                  source={{ uri: smallImage1 && smallImage1.source }}
-                />
+                <Pressable
+                  onPress={() =>
+                    navigation.navigate("Post", { id: smallImage1.id })
+                  }
+                >
+                  <Image
+                    style={styles.imageThumbnail}
+                    source={{ uri: smallImage1 && smallImage1.thumbnail }}
+                  />
+                </Pressable>
               )}
             </View>
             <View style={styles.imageContainer}>
@@ -119,10 +148,16 @@ const InstaGrid = ({ data }) => {
                   }}
                 ></View>
               ) : (
-                <Image
-                  style={styles.imageThumbnail}
-                  source={{ uri: smallImage2 && smallImage2.source }}
-                />
+                <Pressable
+                  onPress={() =>
+                    navigation.navigate("Post", { id: smallImage2.id })
+                  }
+                >
+                  <Image
+                    style={styles.imageThumbnail}
+                    source={{ uri: smallImage2 && smallImage2.thumbnail }}
+                  />
+                </Pressable>
               )}
             </View>
           </View>
@@ -148,10 +183,14 @@ const InstaGrid = ({ data }) => {
               }}
             ></View>
           ) : (
-            <Image
-              style={styles.imageThumbnail}
-              source={{ uri: row[0] && row[0].source }}
-            />
+            <Pressable
+              onPress={() => navigation.navigate("Post", { id: row[0].id })}
+            >
+              <Image
+                style={styles.imageThumbnail}
+                source={{ uri: row[0] && row[0].thumbnail }}
+              />
+            </Pressable>
           )}
         </View>
         <View style={{ ...styles.imageContainer, marginHorizontal: 3 }}>
@@ -163,10 +202,14 @@ const InstaGrid = ({ data }) => {
               }}
             ></View>
           ) : (
-            <Image
-              style={styles.imageThumbnail}
-              source={{ uri: row[1] && row[1].source }}
-            />
+            <Pressable
+              onPress={() => navigation.navigate("Post", { id: row[1].id })}
+            >
+              <Image
+                style={styles.imageThumbnail}
+                source={{ uri: row[1] && row[1].thumbnail }}
+              />
+            </Pressable>
           )}
         </View>
         <View style={styles.imageContainer}>
@@ -178,18 +221,42 @@ const InstaGrid = ({ data }) => {
               }}
             ></View>
           ) : (
-            <Image
-              style={styles.imageThumbnail}
-              source={{ uri: row[2] && row[2].source }}
-            />
+            <Pressable
+              onPress={() => navigation.navigate("Post", { id: row[2].id })}
+            >
+              <Image
+                style={styles.imageThumbnail}
+                source={{ uri: row[2] && row[2].thumbnail }}
+              />
+            </Pressable>
           )}
         </View>
       </View>
     );
   };
 
+  const isCloseToBottom = ({
+    layoutMeasurement,
+    contentOffset,
+    contentSize,
+  }) => {
+    const paddingToBottom = 20;
+    return (
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom
+    );
+  };
+
   return (
-    <ScrollView style={{ width: "100%" }}>
+    <ScrollView
+      style={{ width: "100%" }}
+      onMomentumScrollEnd={({ nativeEvent }) => {
+        if (isCloseToBottom(nativeEvent)) {
+          fetchPosts();
+        }
+      }}
+      scrollEventThrottle={1000}
+    >
       <View style={styles.mainContainer}>
         {rowsArray.map((row) => {
           return renderCell(row);

@@ -246,7 +246,7 @@ const ProfileGrid = ({ profileUser, navigation }) => {
         console.log("UserPage.js : ", err);
         return;
       }
-      setGridContent(posts);
+      if (isMounted.current) setGridContent(posts);
     })();
   }, [user.Posts]);
 

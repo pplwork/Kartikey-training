@@ -119,7 +119,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
         console.log("FeedList.js : ", err);
         return;
       }
-      setFeed(data);
+      if (isMounted.current) setFeed(data);
     })();
   }, [user]);
 
@@ -145,8 +145,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
           index={index}
           curIndex={curItem}
           {...item}
-          navigation={navigation}
-          isFromPost={false}
+          navigation={navigation.dangerouslyGetParent()}
         />
       );
     },

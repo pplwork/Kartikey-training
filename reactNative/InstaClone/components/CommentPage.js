@@ -28,7 +28,7 @@ const timeFormatter = (createdAt) => {
   else return createdAt.toDate().toDateString();
 };
 
-const CommentItem = ({ item, index }) => {
+const CommentItem = ({ item, index, navigation }) => {
   const isMounted = useRef(true);
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
@@ -87,7 +87,12 @@ const CommentItem = ({ item, index }) => {
           <View style={styles.rightTop}>
             <View style={styles.rightText}>
               <Text style={styles.commentText}>
-                <Text style={[{ fontWeight: "bold" }, styles.commentText]}>
+                <Text
+                  style={[{ fontWeight: "bold" }, styles.commentText]}
+                  onPress={() =>
+                    navigation.navigate("User", { id: item.author.uid })
+                  }
+                >
                   {item.author.Username}
                 </Text>{" "}
                 {item.content}
@@ -188,7 +193,9 @@ const CommentPage = ({ navigation, route }) => {
         style={{ width: "100%" }}
         data={[{ author, content: caption, createdAt }, ...comments]}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={(props) => <CommentItem {...props} />}
+        renderItem={(props) => (
+          <CommentItem {...props} navigation={navigation} />
+        )}
       />
 
       <View style={styles.inputRow}>
