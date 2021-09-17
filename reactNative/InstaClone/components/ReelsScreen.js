@@ -15,10 +15,11 @@ import storage from "@react-native-firebase/storage";
 import firestore from "@react-native-firebase/firestore";
 import crashlytics from "@react-native-firebase/crashlytics";
 import perf from "@react-native-firebase/perf";
+import { useSelector } from "react-redux";
 
 const win = Dimensions.get("window");
 
-const ReelsScreen = () => {
+const ReelsScreen = ({ navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
     return () => {
@@ -28,45 +29,76 @@ const ReelsScreen = () => {
   const [reelData, setReelData] = useState([]);
   const [height, setHeight] = useState(win.height);
   const [curItem, setCurItem] = useState(0);
+  const { user } = useSelector((state) => state);
   useEffect(() => {
     (async () => {
-      let docs,
+      let docs = [],
         data = [];
 
       const trace = await perf().startTrace("Fetching Reels Data");
       crashlytics().log("Fetching reels data");
       try {
-        docs = await firestore().collection("reels").get();
-        data = docs.docs.map((doc) => doc.data());
+        docs = (await firestore().collection("reels").get()).docs;
       } catch (err) {
         crashlytics().recordError(err);
         console.log("ReelsScreen.js : ", err);
         return;
       }
-      crashlytics().log("Resolving reels image urls");
-      data.forEach((doc) => {
-        Promise.all([
-          storage().refFromURL(doc.reel).getDownloadURL(),
-          storage().refFromURL(doc.userImage).getDownloadURL(),
-          storage().refFromURL(doc.songOwnerImage).getDownloadURL(),
-        ])
-          .then((URIArray) => {
-            if (isMounted.current)
-              setReelData((prev) => [
-                ...prev,
-                {
-                  ...doc,
-                  uri: URIArray[0],
-                  userURI: URIArray[1],
-                  songOwnerURI: URIArray[2],
-                },
-              ]);
+      try {
+        data = await Promise.all(
+          docs.map(async (doc) => {
+            let dt = doc.data();
+            let author;
+            try {
+              author = await firestore()
+                .collection("users")
+                .doc(dt.author)
+                .get();
+            } catch (err) {
+              crashlytics().recordError(err);
+              console.log("ReelsScreen.js : ", err);
+              return;
+            }
+            let pfpURI = "";
+            try {
+              pfpURI = await storage()
+                .refFromURL(author.Photo)
+                .getDownloadURL();
+            } catch (err) {
+              crashlytics().recordError(err);
+              console.log("ReelsScreen.js : ", err);
+              return;
+            }
+            let sourceURI = "";
+            try {
+              sourceURI = await storage
+                .refFromURL(dt.content.source)
+                .getDownloadURL();
+            } catch (err) {
+              crashlytics().recordError(err);
+              console.log("ReelsScreen.js : ", err);
+              return;
+            }
+
+            return {
+              ...dt,
+              author: {
+                uid: dt.author,
+                Username: author.Username,
+                Photo: pfpURI,
+              },
+              content: {
+                source: sourceURI,
+              },
+            };
           })
-          .catch((err) => {
-            crashlytics().recordError(err);
-            console.log("ReelsScreen.js : ", err);
-          });
-      });
+        );
+      } catch (err) {
+        crashlytics().recordError(err);
+        console.log("ReelsScreen.js : ", err);
+        return;
+      }
+      if (isMounted.current) setReelData(data);
       await trace.stop();
     })();
   }, []);
@@ -104,7 +136,14 @@ const ReelsScreen = () => {
         <Text style={{ color: colors.white, fontSize: 24, fontWeight: "bold" }}>
           Reels
         </Text>
-        <SimpleLineIcons name="camera" size={24} color={colors.white} />
+        <SimpleLineIcons
+          name="camera"
+          size={24}
+          color={colors.white}
+          onPress={() =>
+            navigation.dangerouslyGetParent().navigate("AddReelScreen")
+          }
+        />
       </View>
     </SafeAreaView>
   );

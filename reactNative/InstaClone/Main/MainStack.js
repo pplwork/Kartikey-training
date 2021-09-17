@@ -23,6 +23,7 @@ import crashlytics from "@react-native-firebase/crashlytics";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import UserPage from "../components/UserPage";
+import AddReelScreen from "../components/AddReelScreen";
 
 const MainStack = () => {
   const isMounted = useRef(true);
@@ -358,6 +359,7 @@ const MainStack = () => {
               };
             }}
           />
+          <Stack.Screen name="AddReelScreen" component={AddReelScreen} />
         </Stack.Navigator>
       </NavigationContainer>
       <ModalBox

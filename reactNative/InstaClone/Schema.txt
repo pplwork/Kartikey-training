@@ -34,7 +34,6 @@ Story : {
 
 Reel : {
     author:UserID,
-    music:"",
     caption:"",
     comments:Comment[],
     likes:UserID[],

@@ -249,7 +249,7 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
 
   return (
     <ScrollView
-      style={{ width: "100%" }}
+      style={{ width: "100%", zIndex: 0 }}
       onMomentumScrollEnd={({ nativeEvent }) => {
         if (isCloseToBottom(nativeEvent)) {
           fetchPosts();
