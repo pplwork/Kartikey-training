@@ -18,6 +18,7 @@ const ProfileGrid = ({ navigation }) => {
   const isMounted = useRef(true);
   const { user } = useSelector((state) => state);
   useEffect(() => {
+    isMounted.current = true;
     return () => {
       isMounted.current = false;
     };

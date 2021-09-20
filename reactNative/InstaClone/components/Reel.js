@@ -17,15 +17,20 @@ import {
 } from "@expo/vector-icons";
 import colors from "../constants/colors";
 
+import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
+import crashlytics from "@react-native-firebase/crashlytics";
+
 const win = Dimensions.get("window");
 
 const Reel = ({
-  uri,
-  user,
+  id,
   caption,
-  userURI,
-  songOwner,
-  songOwnerURI,
+  comments,
+  content,
+  createdAt,
+  likes,
+  author,
   height,
   curItem,
   index,
@@ -33,6 +38,11 @@ const Reel = ({
   const [isLiked, setIsLiked] = useState(false);
   const screenIsFocused = useIsFocused();
   const videoRef = useRef(null);
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => (isMounted.current = false);
+  }, []);
   useEffect(() => {
     // if current item is not in viewport
     if (curItem != index) {
@@ -51,13 +61,39 @@ const Reel = ({
       videoRef.current.setIsMutedAsync(!e.isMuted);
     });
   }, []);
-  const likeHandler = useCallback(() => setIsLiked((prev) => !prev), []);
+  useEffect(() => {
+    if (likes && likes.includes(auth().currentUser.uid)) setIsLiked(true);
+  }, []);
+  const likeHandler = async () => {
+    try {
+      if (isLiked)
+        await firestore()
+          .collection("reels")
+          .doc(id)
+          .update({
+            likes: firestore.FieldValue.arrayUnion(auth().currentUser.uid),
+          });
+      if (!isLiked)
+        await firestore()
+          .collection("reels")
+          .doc(id)
+          .update({
+            likes: firestore.FieldValue.arrayRemove(auth().currentUser.uid),
+          });
+    } catch (err) {
+      crashlytics().recordError(err);
+      console.log("Reel.js : ", err);
+      return;
+    }
+
+    if (isMounted.current) setIsLiked((prev) => !prev);
+  };
   return (
     <>
       <TouchableWithoutFeedback onPress={muteHandler}>
         <Video
           ref={videoRef}
-          source={{ uri: uri }}
+          source={{ uri: content.source }}
           style={{
             height: height,
             width: win.width,
@@ -77,7 +113,9 @@ const Reel = ({
           style={{ marginBottom: 4 }}
           onPress={likeHandler}
         />
-        <Text style={{ color: colors.white, marginBottom: 24 }}>57.1k</Text>
+        <Text style={{ color: colors.white, marginBottom: 24 }}>
+          {likes.length}
+        </Text>
         <Image
           source={require("../assets/icons/comment-white.png")}
           style={{ height: 24, width: 24, marginBottom: 4 }}
@@ -96,7 +134,7 @@ const Reel = ({
           style={{ marginBottom: 24 }}
         />
         <Image
-          source={{ uri: userURI }}
+          source={{ uri: author.Photo }}
           style={{
             width: 30,
             height: 30,
@@ -115,7 +153,7 @@ const Reel = ({
               width: 32,
               marginRight: 8,
             }}
-            source={{ uri: songOwnerURI ? songOwnerURI : userURI }}
+            source={{ uri: author.Photo }}
           />
           <Text
             style={{
@@ -124,7 +162,7 @@ const Reel = ({
               marginRight: 8,
             }}
           >
-            {user}
+            {author.Username}
           </Text>
           <MaterialIcons
             name="verified"
@@ -136,15 +174,17 @@ const Reel = ({
             • Follow
           </Text>
         </View>
-        <View style={styles.caption}>
-          <Text
-            style={{ color: colors.white }}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {caption}{" "}
-          </Text>
-        </View>
+        {caption != "" && (
+          <View style={styles.caption}>
+            <Text
+              style={{ color: colors.white }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {caption}{" "}
+            </Text>
+          </View>
+        )}
         <View style={styles.audio}>
           <MaterialCommunityIcons
             name="waveform"
@@ -157,7 +197,7 @@ const Reel = ({
             numberOfLines={1}
             ellipsizeMode="tail"
           >
-            {songOwner ? songOwner : user} • Original Audio
+            {author.Username} • Original Audio
           </Text>
         </View>
       </View>

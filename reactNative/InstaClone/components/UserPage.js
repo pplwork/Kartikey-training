@@ -43,6 +43,7 @@ const win = Dimensions.get("window");
 const ProfileInfo = ({ profileUser }) => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
     return () => {
       isMounted.current = false;
     };
@@ -97,6 +98,7 @@ const ProfileInfo = ({ profileUser }) => {
 const ProfileStories = ({ profileUser }) => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
     return () => {
       isMounted.current = false;
     };
@@ -150,6 +152,7 @@ const ProfileStories = ({ profileUser }) => {
         console.log("UserPage.js : ", err);
         return;
       }
+      str = str.filter((e) => e != undefined);
       if (isMounted.current) setStories(str);
     })();
   }, []);
@@ -193,6 +196,8 @@ const ProfileGrid = ({ profileUser, navigation }) => {
   const isMounted = useRef(true);
   const { user } = useSelector((state) => state);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };
@@ -380,6 +385,7 @@ const ProfileGrid = ({ profileUser, navigation }) => {
 const UserPage = ({ route, navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
     return () => (isMounted.current = false);
   }, []);
   const { id } = route.params;
@@ -434,8 +440,20 @@ const UserPage = ({ route, navigation }) => {
   };
   useEffect(() => {
     (async () => {
-      let data = (await firestore().collection("users").doc(id).get()).data();
-      data.Photo = await storage().refFromURL(data.Photo).getDownloadURL();
+      let data;
+      try {
+        data = (await firestore().collection("users").doc(id).get()).data();
+      } catch (err) {
+        crashlytics().recordError(err);
+        console.log("UserPage.js : ", err);
+      }
+      try {
+        data.Photo = await storage().refFromURL(data.Photo).getDownloadURL();
+      } catch (err) {
+        crashlytics().recordError(err);
+        console.log("UserPage.js : ", err);
+        data.Photo = "";
+      }
       if (isMounted.current) setProfileUser(data);
     })();
   }, [id]);

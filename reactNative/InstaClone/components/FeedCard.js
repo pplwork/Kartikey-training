@@ -71,6 +71,8 @@ const FeedCard = ({
   const [postComments, setPostComments] = useState([]);
   useEffect(() => {
     if (likes.includes(auth().currentUser.uid)) setLiked(true);
+    isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };

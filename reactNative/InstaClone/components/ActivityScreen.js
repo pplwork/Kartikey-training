@@ -60,6 +60,7 @@ const ActivityScreen = () => {
   const [activities, setActivities] = useState([]);
   const [requestUser, setRequestUser] = useState(null);
   useEffect(() => {
+    isMounted.current = true;
     return () => {
       isMounted.current = false;
     };

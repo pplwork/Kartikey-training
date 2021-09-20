@@ -21,17 +21,22 @@ const DiscoverPeopleCard = ({ image, name, mutual, uid }) => {
   const [disabled, setDisabled] = useState(false);
   const [firstMutual, setFirstMutual] = useState("");
   useEffect(() => {
+    isMounted.current = true;
+    () => (isMounted.current = false);
+  }, []);
+  useEffect(() => {
     if (mutual.length)
       firestore()
         .collection("users")
         .doc(mutual[0])
         .get()
-        .then((doc) => setFirstMutual(doc.data().Username))
+        .then((doc) => {
+          if (isMounted.current) setFirstMutual(doc.data().Username);
+        })
         .catch((err) => {
           console.log("DiscoverPeopleCard.js : ", err);
           crashlytics().recordErr(err);
         });
-    () => (isMounted.current = false);
   }, []);
   const followUser = async () => {
     if (isMounted.current) setDisabled(true);

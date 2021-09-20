@@ -16,7 +16,7 @@ const LoginHelp = ({ navigation, helpUser, setHelpUser }) => {
   const checkAndRedirect = async () => {
     let user = await firestore()
       .collection("users")
-      .where("Email", "==", helpUser)
+      .where("Email", "==", helpUser.toLowerCase().trim())
       .get();
     if (user.empty) setErrorModalVisible(true);
     else {

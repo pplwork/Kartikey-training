@@ -17,6 +17,8 @@ import colors from "../constants/colors";
 const AppTabs = () => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => (isMounted.current = false);
   }, []);
   const { screen, user } = useSelector((state) => state);

@@ -27,11 +27,12 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
         <View style={styles.rowContainer} key={currentRow}>
           <View style={styles.colContainer2}>
             <View style={{ ...styles.imageContainer, marginBottom: 3 }}>
-              {smallImage1 == "notLoaded" ? (
+              {smallImage1 == "notLoaded" || smallImage1 == undefined ? (
                 <View
                   style={{
                     ...styles.imageThumbnail,
-                    backgroundColor: "rgb(220,220,220)",
+                    backgroundColor:
+                      smallImage1 == "notLoaded" ? "rgb(220,220,220)" : "#fff",
                   }}
                 ></View>
               ) : (
@@ -48,11 +49,12 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
               )}
             </View>
             <View style={styles.imageContainer}>
-              {smallImage1 == "notLoaded" ? (
+              {smallImage2 == "notLoaded" || smallImage2 == undefined ? (
                 <View
                   style={{
                     ...styles.imageThumbnail,
-                    backgroundColor: "rgb(220,220,220)",
+                    backgroundColor:
+                      smallImage2 == "notLoaded" ? "rgb(220,220,220)" : "#fff",
                   }}
                 ></View>
               ) : (
@@ -70,11 +72,12 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
             </View>
           </View>
           <View style={{ ...styles.imageContainer, marginLeft: 3 }}>
-            {smallImage1 == "notLoaded" ? (
+            {largeImage == "notLoaded" || largeImage == undefined ? (
               <View
                 style={{
                   ...styles.imageThumbnailLarge,
-                  backgroundColor: "rgb(220,220,220)",
+                  backgroundColor:
+                    largeImage == "notLoaded" ? "rgb(220,220,220)" : "#fff",
                 }}
               ></View>
             ) : (
@@ -97,11 +100,12 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
       return (
         <View style={styles.rowContainer} key={currentRow}>
           <View style={{ ...styles.imageContainer, marginRight: 3 }}>
-            {smallImage1 == "notLoaded" ? (
+            {largeImage == "notLoaded" || largeImage == undefined ? (
               <View
                 style={{
                   ...styles.imageThumbnailLarge,
-                  backgroundColor: "rgb(220,220,220)",
+                  backgroundColor:
+                    largeImage == "notLoaded" ? "rgb(220,220,220)" : "#fff",
                 }}
               ></View>
             ) : (
@@ -119,11 +123,12 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
           </View>
           <View style={styles.colContainer2}>
             <View style={{ ...styles.imageContainer, marginBottom: 3 }}>
-              {smallImage1 == "notLoaded" ? (
+              {smallImage1 == "notLoaded" || smallImage1 == undefined ? (
                 <View
                   style={{
                     ...styles.imageThumbnail,
-                    backgroundColor: "rgb(220,220,220)",
+                    backgroundColor:
+                      smallImage1 == "notLoaded" ? "rgb(220,220,220)" : "#fff",
                   }}
                 ></View>
               ) : (
@@ -140,11 +145,12 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
               )}
             </View>
             <View style={styles.imageContainer}>
-              {smallImage1 == "notLoaded" ? (
+              {smallImage2 == "notLoaded" || smallImage2 == undefined ? (
                 <View
                   style={{
                     ...styles.imageThumbnail,
-                    backgroundColor: "rgb(220,220,220)",
+                    backgroundColor:
+                      smallImage2 == "notLoaded" ? "rgb(220,220,220)" : "#fff",
                   }}
                 ></View>
               ) : (
@@ -175,11 +181,12 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
     return (
       <View style={styles.rowContainer} key={currentRow}>
         <View style={styles.imageContainer}>
-          {row[0] == "notLoaded" ? (
+          {row[0] == "notLoaded" || undefined ? (
             <View
               style={{
                 ...styles.imageThumbnail,
-                backgroundColor: "rgb(220,220,220)",
+                backgroundColor:
+                  row[0] == "notLoaded" ? "rgb(220,220,220)" : "#fff",
               }}
             ></View>
           ) : (
@@ -194,11 +201,12 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
           )}
         </View>
         <View style={{ ...styles.imageContainer, marginHorizontal: 3 }}>
-          {row[1] == "notLoaded" ? (
+          {row[1] == "notLoaded" || undefined ? (
             <View
               style={{
                 ...styles.imageThumbnail,
-                backgroundColor: "rgb(220,220,220)",
+                backgroundColor:
+                  row[1] == "notLoaded" ? "rgb(220,220,220)" : "#fff",
               }}
             ></View>
           ) : (
@@ -213,11 +221,12 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
           )}
         </View>
         <View style={styles.imageContainer}>
-          {row[2] == "notLoaded" ? (
+          {row[2] == "notLoaded" || undefined ? (
             <View
               style={{
                 ...styles.imageThumbnail,
-                backgroundColor: "rgb(220,220,220)",
+                backgroundColor:
+                  row[2] == "notLoaded" ? "rgb(220,220,220)" : "#fff",
               }}
             ></View>
           ) : (

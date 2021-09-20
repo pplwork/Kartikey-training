@@ -29,6 +29,8 @@ const getRandom = (arr, n) => {
 const DiscoverPeopleList = () => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };
@@ -64,7 +66,6 @@ const DiscoverPeopleList = () => {
             } catch (err) {
               crashlytics().recordError(err);
               console.log("DiscoverPeopleList.js : ", err);
-              return;
             }
             let mutual = [];
             for (const follower of ele.data.Followers) {
@@ -87,7 +88,8 @@ const DiscoverPeopleList = () => {
         if (a.mutual.length > b.mutual.length) return -1;
         else return 1;
       });
-      setDiscoverPeopleData(getRandom(people, Math.min(5, people.length)));
+      if (isMounted.current)
+        setDiscoverPeopleData(getRandom(people, Math.min(5, people.length)));
     })();
   }, [user]);
 

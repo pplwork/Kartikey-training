@@ -78,6 +78,7 @@ const rootreducer = (state = initialState, action) => {
         multiSelected: [],
         enableMultiselect: false,
         caption: "",
+        screen: "Home",
       };
     }
     default:

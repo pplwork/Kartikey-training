@@ -28,6 +28,8 @@ import AddReelScreen from "../components/AddReelScreen";
 const MainStack = () => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => (isMounted.current = false);
   }, []);
   const navRef = useRef(null);
@@ -41,6 +43,7 @@ const MainStack = () => {
     enableMultiselect,
     multiSelected,
     caption,
+    user,
   } = useSelector((state) => state);
   const savePost = async () => {
     if (isMounted.current) setModalVisible(true);
@@ -70,16 +73,12 @@ const MainStack = () => {
           ["m4a", "mp4", "flv", "mkv", "wmv", "mov"].includes(extension.trim())
         ) {
           ref = storage().ref(
-            `videos/posts/${auth().currentUser.uid}/${
-              post.id
-            }/${i}.${extension}`
+            `videos/posts/${auth().currentUser.uid}/${post.id}/${i}.mp4`
           );
           type = "video";
         } else {
           ref = storage().ref(
-            `images/posts/${auth().currentUser.uid}/${
-              post.id
-            }/${i}.${extension}`
+            `images/posts/${auth().currentUser.uid}/${post.id}/${i}.jpg`
           );
           type = "image";
         }
@@ -125,12 +124,12 @@ const MainStack = () => {
       let type;
       if (["m4a", "mp4", "flv", "mkv", "wmv", "mov"].includes(extension)) {
         ref = storage().ref(
-          `videos/posts/${auth().currentUser.uid}/${post.id}/0.${extension}`
+          `videos/posts/${auth().currentUser.uid}/${post.id}/0.mp4}`
         );
         type = "video";
       } else {
         ref = storage().ref(
-          `images/posts/${auth().currentUser.uid}/${post.id}/0.${extension}`
+          `images/posts/${auth().currentUser.uid}/${post.id}/0.jpg`
         );
         type = "image";
       }
@@ -189,7 +188,15 @@ const MainStack = () => {
                 payload: data,
               });
             })
-            .catch(crashlytics().recordError);
+            .catch((err) => {
+              crashlytics().recordError(err);
+              console.log("MainStack.js :", err);
+              data.Photo = user.Photo;
+              dispatch({
+                type: "SET_USER",
+                payload: data,
+              });
+            });
         },
         (err) => {
           crashlytics().recordError(err);
@@ -409,7 +416,7 @@ const MainStack = () => {
               { justifyContent: "center", alignItems: "center", padding: 30 },
             ]}
           >
-            <Text style={styles.modalTextHeading}>Uploading...</Text>
+            <Text style={styles.modalTextHeading}>Posting...</Text>
             <Progress.CircleSnail />
           </View>
         </View>

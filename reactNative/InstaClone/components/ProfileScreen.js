@@ -48,7 +48,7 @@ const ProfileScreen = ({ navigation }) => {
       <SafeAreaView style={styles.container}>
         <ProfileHeader navigation={navigation} />
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <ProfileInfo />
+          <ProfileInfo navigation={navigation.dangerouslyGetParent()} />
           <View
             style={{
               width: "95%",

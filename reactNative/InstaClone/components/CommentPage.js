@@ -33,6 +33,8 @@ const CommentItem = ({ item, index, navigation }) => {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => (isMounted.current = false);
   }, []);
   useEffect(() => {

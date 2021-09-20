@@ -16,6 +16,8 @@ const FeedList = ({ scrollHandler, navigation }) => {
   const { user } = useSelector((state) => state);
 
   useEffect(() => {
+    isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };

@@ -25,6 +25,8 @@ const EditProfileModal = ({ setVisible }) => {
   const { user } = useSelector((state) => state);
   const [newDetails, setNewDetails] = useState(user);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };

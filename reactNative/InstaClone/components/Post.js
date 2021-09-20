@@ -10,6 +10,8 @@ import { ScrollView } from "react-native-gesture-handler";
 const Post = ({ route, navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => (isMounted.current = false);
   });
   const [Post, setPost] = useState(null);

@@ -22,6 +22,8 @@ const win = Dimensions.get("window");
 const ReelsScreen = ({ navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };
@@ -54,6 +56,7 @@ const ReelsScreen = ({ navigation }) => {
                 .collection("users")
                 .doc(dt.author)
                 .get();
+              author = author.data();
             } catch (err) {
               crashlytics().recordError(err);
               console.log("ReelsScreen.js : ", err);
@@ -71,7 +74,7 @@ const ReelsScreen = ({ navigation }) => {
             }
             let sourceURI = "";
             try {
-              sourceURI = await storage
+              sourceURI = await storage()
                 .refFromURL(dt.content.source)
                 .getDownloadURL();
             } catch (err) {
@@ -81,6 +84,7 @@ const ReelsScreen = ({ navigation }) => {
             }
 
             return {
+              id: doc.id,
               ...dt,
               author: {
                 uid: dt.author,
@@ -98,6 +102,7 @@ const ReelsScreen = ({ navigation }) => {
         console.log("ReelsScreen.js : ", err);
         return;
       }
+      data = data.filter((e) => e != undefined);
       if (isMounted.current) setReelData(data);
       await trace.stop();
     })();

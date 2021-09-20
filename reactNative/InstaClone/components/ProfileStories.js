@@ -178,6 +178,8 @@ const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
 const ProfileStories = ({ navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };

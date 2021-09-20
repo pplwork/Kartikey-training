@@ -40,6 +40,8 @@ const timeFormatter = (createdAt) => {
 const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => (isMounted.current = false);
   }, []);
   const videoRefs = useRef({});

@@ -29,6 +29,8 @@ const SearchScreen = ({ navigation }) => {
   const [gridData, setGridData] = useState(Array(12).fill("notLoaded"));
   const { user } = useSelector((state) => state);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };
@@ -227,9 +229,13 @@ const SearchScreen = ({ navigation }) => {
                       ];
                   }}
                   onPress={() => {
-                    navigation
-                      .dangerouslyGetParent()
-                      .navigate("User", { id: item.uid });
+                    // if own profile
+                    if (auth().currentUser.uid == item.uid)
+                      navigation.navigate("Profile");
+                    else
+                      navigation
+                        .dangerouslyGetParent()
+                        .navigate("User", { id: item.uid });
                   }}
                 >
                   <Image

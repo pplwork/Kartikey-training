@@ -7,6 +7,8 @@ import {
   Image,
   TouchableOpacity,
   Modal,
+  TextInput,
+  Button,
 } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import firestore from "@react-native-firebase/firestore";
@@ -27,6 +29,8 @@ import reelIcon from "../assets/icons/instagram-reel.png";
 
 import crashlytics from "@react-native-firebase/crashlytics";
 
+import * as Progress from "react-native-progress";
+
 const flashIcons = {
   [Camera.Constants.FlashMode.off]: "flash-off",
   [Camera.Constants.FlashMode.on]: "flash",
@@ -37,17 +41,23 @@ const flashIcons = {
 const AddStoryScreen = ({ navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };
   }, []);
   const isFocused = useIsFocused();
-  const [modalVisible, setModalVisible] = useState(false);
   const cameraRef = useRef(null);
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [isRecording, setIsRecording] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("Posting...");
+  const [videoPath, setVideoPath] = useState("");
+  const [caption, setCaption] = useState("");
+  const [captionModalVisible, setCaptionModalVisible] = useState(false);
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestPermissionsAsync();
@@ -75,20 +85,22 @@ const AddStoryScreen = ({ navigation }) => {
       console.log("AddReelScreen.js : ", err);
       return;
     }
-    let name = video.uri.match(/(\/|\\)([^\/\\]+\.mp4)/)[2];
+    if (isMounted.current) setIsRecording(false);
+    if (isMounted.current) setVideoPath(video.uri);
+    if (isMounted.current) setCaptionModalVisible(true);
+  };
+
+  const postReel = async () => {
+    setCaptionModalVisible(false);
+    let name = videoPath.match(/(\/|\\)([^\/\\]+\.mp4)/)[2];
     let file = storage().ref(`videos/reels/${name}`);
-    let caption = "";
+    if (isMounted.current) setModalVisible(true);
     try {
-      caption = await getCaption();
+      await file.putFile(videoPath);
     } catch (err) {
       crashlytics().recordError(err);
       console.log("AddReelScreen.js : ", err);
-    }
-    try {
-      await file.putFile(video.uri);
-    } catch (err) {
-      crashlytics().recordError(err);
-      console.log("AddReelScreen.js : ", err);
+      if (isMounted.current) setModalVisible(false);
       return;
     }
     let reel;
@@ -108,6 +120,7 @@ const AddStoryScreen = ({ navigation }) => {
     } catch (err) {
       crashlytics().recordError(err);
       console.log("AddReelScreen.js : ", err);
+      if (isMounted.current) setModalVisible(false);
       return;
     }
     try {
@@ -115,18 +128,19 @@ const AddStoryScreen = ({ navigation }) => {
         .collection("users")
         .doc(auth().currentUser.uid)
         .update({
-          Reels: firestore.FieldValue.arrayUnion(story.id),
+          Reels: firestore.FieldValue.arrayUnion(reel.id),
         });
     } catch (err) {
       crashlytics().recordError(err);
       console.log("AddReelScreen.js : ", err);
+      if (isMounted.current) setModalVisible(false);
       return;
     }
+    if (isMounted.current) setModalVisible(false);
   };
 
   const stopRecording = async () => {
     if (isRecording) {
-      setIsRecording(false);
       cameraRef.current.stopRecording();
     }
   };
@@ -178,7 +192,7 @@ const AddStoryScreen = ({ navigation }) => {
                 name="close"
                 size={32}
                 color={colors.white}
-                onPress={() => navigation.navigate("Home")}
+                onPress={() => navigation.navigate("Reels")}
               />
             </View>
             <TouchableOpacity style={styles.button} onPress={handleRecording}>
@@ -238,7 +252,60 @@ const AddStoryScreen = ({ navigation }) => {
           <View style={{ flex: 1 }}></View>
         </View>
       </View>
-      <Modal visible={modalVisible}></Modal>
+      <Modal visible={modalVisible} transparent={true}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(24,24,24,0.9)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 16, color: "#fff", marginBottom: 10 }}>
+            {modalMessage}
+          </Text>
+          <Progress.CircleSnail color="#fff" />
+        </View>
+      </Modal>
+      <Modal
+        visible={captionModalVisible}
+        transparent={true}
+        onRequestClose={() => {
+          setCaption("");
+          setVideoPath("");
+          setCaptionModalVisible(false);
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(24,24,24,0.9)",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              padding: 20,
+              borderRadius: 10,
+            }}
+          >
+            <Text
+              style={{ alignSelf: "center", fontSize: 18, marginBottom: 10 }}
+            >
+              Enter Caption
+            </Text>
+            <TextInput
+              style={{ maxHeight: 100, width: 200, marginBottom: 10 }}
+              placeholder="Your caption..."
+              multiline
+              numberOfLines={5}
+            />
+            <Button title="Post" onPress={postReel} />
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };

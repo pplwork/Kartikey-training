@@ -7,6 +7,7 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import firestore from "@react-native-firebase/firestore";
@@ -21,6 +22,7 @@ import {
   Feather,
   Entypo,
 } from "@expo/vector-icons";
+import * as Progress from "react-native-progress";
 import colors from "../constants/colors";
 
 import crashlytics from "@react-native-firebase/crashlytics";
@@ -35,6 +37,7 @@ const flashIcons = {
 const AddStoryScreen = ({ navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
     return () => {
       isMounted.current = false;
     };
@@ -46,6 +49,8 @@ const AddStoryScreen = ({ navigation }) => {
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [showText, setShowText] = useState(false);
   const [isRecording, setIsRecording] = useState(true);
+  const [postingModalVisible, setPostingModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("Posting...");
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestPermissionsAsync();
@@ -76,11 +81,14 @@ const AddStoryScreen = ({ navigation }) => {
       }
       let name = photo.uri.match(/(\/|\\)([^\/\\]+\.jpg)/)[2];
       let file = storage().ref(`images/stories/${name}`);
+      // setup the modal
+      if (isMounted.current) setPostingModalVisible(true);
       try {
         await file.putFile(photo.uri);
       } catch (err) {
         crashlytics().recordError(err);
         console.log("AddStoryScreen.js : ", err);
+        if (isMounted.current) setPostingModalVisible(false);
         return;
       }
       let story;
@@ -98,6 +106,7 @@ const AddStoryScreen = ({ navigation }) => {
       } catch (err) {
         crashlytics().recordError(err);
         console.log("AddStoryScreen.js : ", err);
+        if (isMounted.current) setPostingModalVisible(false);
         return;
       }
       try {
@@ -110,8 +119,10 @@ const AddStoryScreen = ({ navigation }) => {
       } catch (err) {
         crashlytics().recordError(err);
         console.log("AddStoryScreen.js : ", err);
+        if (isMounted.current) setPostingModalVisible(false);
         return;
       }
+      if (isMounted.current) setPostingModalVisible(false);
     }
   };
   const startRecording = async () => {
@@ -128,13 +139,16 @@ const AddStoryScreen = ({ navigation }) => {
       console.log("AddStoryScreen.js : ", err);
       return;
     }
+    if (isMounted.current) setIsRecording(false);
     let name = video.uri.match(/(\/|\\)([^\/\\]+\.mp4)/)[2];
     let file = storage().ref(`videos/stories/${name}`);
+    if (isMounted.current) setPostingModalVisible(true);
     try {
       await file.putFile(video.uri);
     } catch (err) {
       crashlytics().recordError(err);
       console.log("AddStoryScreen.js : ", err);
+      if (isMounted.current) setPostingModalVisible(false);
       return;
     }
     let story;
@@ -152,6 +166,7 @@ const AddStoryScreen = ({ navigation }) => {
     } catch (err) {
       crashlytics().recordError(err);
       console.log("AddStoryScreen.js : ", err);
+      if (isMounted.current) setPostingModalVisible(false);
       return;
     }
     try {
@@ -164,12 +179,13 @@ const AddStoryScreen = ({ navigation }) => {
     } catch (err) {
       crashlytics().recordError(err);
       console.log("AddStoryScreen.js : ", err);
+      if (isMounted.current) setPostingModalVisible(false);
       return;
     }
+    if (isMounted.current) setPostingModalVisible(false);
   };
   const stopRecording = async () => {
     if (isRecording) {
-      setIsRecording(false);
       cameraRef.current.stopRecording();
     }
   };
@@ -357,6 +373,21 @@ const AddStoryScreen = ({ navigation }) => {
           <View style={{ flex: 1 }}></View>
         </View>
       </View>
+      <Modal visible={postingModalVisible} transparent={true}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(24,24,24,0.9)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "#fff", fontSize: 16, marginBottom: 10 }}>
+            {modalMessage}
+          </Text>
+          <Progress.CircleSnail color="#fff"></Progress.CircleSnail>
+        </View>
+      </Modal>
     </>
   );
 };
