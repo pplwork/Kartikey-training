@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="ff87d918-31d4-41dd-8952-0bf3e19b80c6" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/InstaClone/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/InstaClone/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/InstaClone/Main/MainStack.js" beforeDir="false" afterPath="$PROJECT_DIR$/InstaClone/Main/MainStack.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/InstaClone/components/EditProfileStack/EditProfile.js" beforeDir="false" afterPath="$PROJECT_DIR$/InstaClone/components/EditProfileStack/EditProfile.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/InstaClone/components/ProfileHeader.js" beforeDir="false" afterPath="$PROJECT_DIR$/InstaClone/components/ProfileHeader.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/InstaClone/reducers/rootreducer.js" beforeDir="false" afterPath="$PROJECT_DIR$/InstaClone/reducers/rootreducer.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="1xZgAbUVtjU8R4jaWPUfgGPW0MV" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="settings.editor.selected.configurable" value="terminal" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ff87d918-31d4-41dd-8952-0bf3e19b80c6" name="Default Changelist" comment="" />
+      <created>1630567882254</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1630567882254</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="168" y="120" width="1200" height="584" key="AVDManager" timestamp="1630568131191">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="168" y="120" width="1200" height="584" key="AVDManager/0.0.1536.824@0.0.1536.824" timestamp="1630568131191" />
+    <state x="277" y="57" key="SettingsEditor" timestamp="1630567972586">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="277" y="57" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1630567972586" />
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1630568117390">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="431" y="145" width="672" height="678" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1630568117390" />
+  </component>
+</project>
