@@ -11,11 +11,11 @@ const Post = ({ route, navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
-
     return () => (isMounted.current = false);
   });
   const [Post, setPost] = useState(null);
   const { id } = route.params;
+  console.log(id);
   useEffect(() => {
     (async () => {
       let data;

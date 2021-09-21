@@ -29,7 +29,10 @@ const AccessAccount = ({ helpUser }) => {
       <View style={styles.content}>
         <View style={styles.photo}>
           {pfpURI !== "" && (
-            <Image style={styles.photo} source={{ uri: pfpURI }} />
+            <Image
+              style={styles.photo}
+              source={pfpURI ? { uri: pfpURI } : null}
+            />
           )}
         </View>
         <Text style={styles.username}>{helpUser.Username}</Text>

@@ -239,7 +239,7 @@ const SearchScreen = ({ navigation }) => {
                   }}
                 >
                   <Image
-                    source={{ uri: item.Photo }}
+                    source={item.Photo ? { uri: item.Photo } : null}
                     style={styles.searchCardImage}
                   />
                   <View style={styles.searchCardText}>

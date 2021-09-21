@@ -36,6 +36,7 @@ const Reel = ({
   index,
 }) => {
   const [isLiked, setIsLiked] = useState(false);
+  const [curLikes, setCurLikes] = useState([]);
   const screenIsFocused = useIsFocused();
   const videoRef = useRef(null);
   const isMounted = useRef(true);
@@ -63,23 +64,32 @@ const Reel = ({
   }, []);
   useEffect(() => {
     if (likes && likes.includes(auth().currentUser.uid)) setIsLiked(true);
+    if (likes) setCurLikes(likes);
   }, []);
   const likeHandler = async () => {
     try {
-      if (isLiked)
+      if (!isLiked) {
         await firestore()
           .collection("reels")
           .doc(id)
           .update({
             likes: firestore.FieldValue.arrayUnion(auth().currentUser.uid),
           });
-      if (!isLiked)
+        if (isMounted.current)
+          setCurLikes((prev) => [...prev, auth().currentUser.uid]);
+      }
+      if (isLiked) {
         await firestore()
           .collection("reels")
           .doc(id)
           .update({
             likes: firestore.FieldValue.arrayRemove(auth().currentUser.uid),
           });
+        if (isMounted.current)
+          setCurLikes((prev) =>
+            prev.filter((e) => e != auth().currentUser.uid)
+          );
+      }
     } catch (err) {
       crashlytics().recordError(err);
       console.log("Reel.js : ", err);
@@ -93,7 +103,7 @@ const Reel = ({
       <TouchableWithoutFeedback onPress={muteHandler}>
         <Video
           ref={videoRef}
-          source={{ uri: content.source }}
+          source={content.source ? { uri: content.source } : null}
           style={{
             height: height,
             width: win.width,
@@ -114,7 +124,7 @@ const Reel = ({
           onPress={likeHandler}
         />
         <Text style={{ color: colors.white, marginBottom: 24 }}>
-          {likes.length}
+          {curLikes.length}
         </Text>
         <Image
           source={require("../assets/icons/comment-white.png")}
@@ -134,7 +144,7 @@ const Reel = ({
           style={{ marginBottom: 24 }}
         />
         <Image
-          source={{ uri: author.Photo }}
+          source={author.Photo ? { uri: author.Photo } : null}
           style={{
             width: 30,
             height: 30,
@@ -153,7 +163,7 @@ const Reel = ({
               width: 32,
               marginRight: 8,
             }}
-            source={{ uri: author.Photo }}
+            source={author.Photo ? { uri: author.Photo } : null}
           />
           <Text
             style={{

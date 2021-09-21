@@ -4,7 +4,6 @@ import {
   Text,
   View,
   StatusBar,
-  FlatList,
   Image,
   TouchableOpacity,
   Modal,
@@ -24,8 +23,8 @@ import {
 } from "@expo/vector-icons";
 import * as Progress from "react-native-progress";
 import colors from "../constants/colors";
-
 import crashlytics from "@react-native-firebase/crashlytics";
+import ImageResizer from "react-native-image-resizer";
 
 const flashIcons = {
   [Camera.Constants.FlashMode.off]: "flash-off",
@@ -68,11 +67,11 @@ const AddStoryScreen = ({ navigation }) => {
   }, []);
 
   const takePic = async () => {
-    if (cameraRef) {
+    if (await Camera.getCameraPermissionsAsync()) {
       let photo;
       try {
         photo = await cameraRef.current.takePictureAsync({
-          quality: 0.5,
+          quality: 1,
         });
       } catch (err) {
         crashlytics().recordError(err);
@@ -83,8 +82,27 @@ const AddStoryScreen = ({ navigation }) => {
       let file = storage().ref(`images/stories/${name}`);
       // setup the modal
       if (isMounted.current) setPostingModalVisible(true);
+      let uri = photo.uri;
       try {
-        await file.putFile(photo.uri);
+        uri = (
+          await ImageResizer.createResizedImage(
+            photo.uri,
+            500,
+            500,
+            "JPEG",
+            70,
+            0,
+            null,
+            false,
+            { mode: "contain", onlyScaleDown: true }
+          )
+        ).uri;
+      } catch (err) {
+        crashlytics().recordError(err);
+        console.log("AddStoryScreen.js : ", err);
+      }
+      try {
+        await file.putFile(uri);
       } catch (err) {
         crashlytics().recordError(err);
         console.log("AddStoryScreen.js : ", err);
@@ -128,16 +146,20 @@ const AddStoryScreen = ({ navigation }) => {
   const startRecording = async () => {
     setIsRecording(true);
     let video;
-    try {
-      video = await cameraRef.current.recordAsync({
-        quality: Camera.Constants.VideoQuality["720p"],
-        maxDuration: 30,
-        maxFileSize: 50000000,
-      });
-    } catch (err) {
-      crashlytics().recordError(err);
-      console.log("AddStoryScreen.js : ", err);
-      return;
+    if (await Camera.getPermissionsAsync()) {
+      try {
+        video = await cameraRef.current.recordAsync({
+          quality: Camera.Constants.VideoQuality["720p"],
+          maxDuration: 30,
+          maxFileSize: 15 * 1000 * 1000,
+          videoBitrate: 3 * 1000 * 1000,
+        });
+      } catch (err) {
+        crashlytics().recordError(err);
+        console.log("AddStoryScreen.js : ", err);
+        if (isMounted.current) setIsRecording(false);
+        return;
+      }
     }
     if (isMounted.current) setIsRecording(false);
     let name = video.uri.match(/(\/|\\)([^\/\\]+\.mp4)/)[2];
@@ -201,6 +223,7 @@ const AddStoryScreen = ({ navigation }) => {
       <View style={styles.container}>
         {isFocused && (
           <Camera
+            useCamera2Api={true}
             style={styles.camera}
             type={type}
             flashMode={flash}

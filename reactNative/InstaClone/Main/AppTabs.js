@@ -79,7 +79,7 @@ const AppTabs = () => {
             case "Profile":
               return (
                 <Image
-                  source={{ uri: user.Photo }}
+                  source={user.Photo ? { uri: user.Photo } : null}
                   style={{
                     height: 28,
                     width: 28,

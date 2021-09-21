@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Image,
   TextInput,
-  Dimensions,
   FlatList,
   Pressable,
 } from "react-native";
@@ -15,7 +14,6 @@ import { AntDesign } from "@expo/vector-icons";
 
 import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
-import storage from "@react-native-firebase/storage";
 import crashlytics from "@react-native-firebase/crashlytics";
 
 const timeFormatter = (createdAt) => {
@@ -34,7 +32,6 @@ const CommentItem = ({ item, index, navigation }) => {
   const [liked, setLiked] = useState(false);
   useEffect(() => {
     isMounted.current = true;
-
     return () => (isMounted.current = false);
   }, []);
   useEffect(() => {
@@ -83,7 +80,10 @@ const CommentItem = ({ item, index, navigation }) => {
     <>
       <View style={styles.comment}>
         <View style={styles.imageContainer}>
-          <Image source={{ uri: item.author.Photo }} style={styles.userPic} />
+          <Image
+            source={item.author.Photo ? { uri: item.author.Photo } : null}
+            style={styles.userPic}
+          />
         </View>
         <View style={styles.right}>
           <View style={styles.rightTop}>
@@ -91,9 +91,9 @@ const CommentItem = ({ item, index, navigation }) => {
               <Text style={styles.commentText}>
                 <Text
                   style={[{ fontWeight: "bold" }, styles.commentText]}
-                  onPress={() =>
-                    navigation.navigate("User", { id: item.author.uid })
-                  }
+                  onPress={() => {
+                    navigation.navigate("User", { id: item.author.uid });
+                  }}
                 >
                   {item.author.Username}
                 </Text>{" "}
@@ -201,7 +201,10 @@ const CommentPage = ({ navigation, route }) => {
       />
 
       <View style={styles.inputRow}>
-        <Image source={{ uri: user.Photo }} style={styles.userPic} />
+        <Image
+          source={user.Photo ? { uri: user.Photo } : null}
+          style={styles.userPic}
+        />
         <TextInput
           ref={commentRef}
           multiline

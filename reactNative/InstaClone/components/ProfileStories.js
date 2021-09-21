@@ -97,7 +97,11 @@ const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
           <View style={styles.mainContent}>
             {item[curIndex].content.type == "image" ? (
               <Image
-                source={{ uri: item[curIndex].content.source }}
+                source={
+                  item[curIndex].content.source
+                    ? { uri: item[curIndex].content.source }
+                    : null
+                }
                 resizeMode="contain"
                 style={{ width: "100%", height: "100%" }}
               />
@@ -107,7 +111,11 @@ const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
                 resizeMode="contain"
                 isLooping={false}
                 isMuted={false}
-                source={{ uri: item[curIndex].content.source }}
+                source={
+                  item[curIndex].content.source
+                    ? { uri: item[curIndex].content.source }
+                    : null
+                }
                 style={{ height: "100%", width: "100%" }}
               />
             )}
@@ -130,7 +138,7 @@ const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
           <View style={styles.userDetails}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Image
-                source={{ uri: user.Photo }}
+                source={user.Photo ? { uri: user.Photo } : null}
                 resizeMode="cover"
                 style={{
                   height: 30,
@@ -179,7 +187,6 @@ const ProfileStories = ({ navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
-
     return () => {
       isMounted.current = false;
     };
@@ -285,7 +292,11 @@ const ProfileStories = ({ navigation }) => {
         <View style={styles.storyImgLabelContainer}>
           <View style={styles.storyImgContainer}>
             <Image
-              source={{ uri: item[0].content.thumbnail }}
+              source={
+                item[0].content.thumbnail
+                  ? { uri: item[0].content.thumbnail }
+                  : null
+              }
               style={styles.storyImage}
             />
           </View>

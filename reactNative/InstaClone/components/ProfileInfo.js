@@ -123,9 +123,13 @@ const UserListCard = ({ id, navigation }) => {
     >
       <View style={{ marginRight: 10 }}>
         <Image
-          source={{
-            uri: pfp,
-          }}
+          source={
+            pfp
+              ? {
+                  uri: pfp,
+                }
+              : null
+          }
           style={{
             width: 50,
             height: 50,
@@ -188,7 +192,10 @@ const ProfileInfo = ({ navigation }) => {
       <View style={styles.profile}>
         <View style={styles.profileLeft}>
           <View style={styles.imageContainer}>
-            <Image source={{ uri: user.Photo }} style={styles.profileImage} />
+            <Image
+              source={user.Photo ? { uri: user.Photo } : null}
+              style={styles.profileImage}
+            />
           </View>
 
           <View style={{ marginTop: 6 }}>

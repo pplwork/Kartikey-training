@@ -56,14 +56,16 @@ const DiscoverPeopleCard = ({ image, name, mutual, uid }) => {
     ]).catch(() => {
       crashlytics().recordError(err);
       console.log("DiscoverPeopleCard.js : ", err);
-      if (isMounted.current) setDisabled(false);
     });
     setDisabled(false);
   };
   return (
     <View style={styles.cardContainer}>
       <View style={styles.imageContainer}>
-        <Image source={{ uri: image }} style={styles.cardImage} />
+        <Image
+          source={image ? { uri: image } : null}
+          style={styles.cardImage}
+        />
       </View>
       <Text
         style={{ fontWeight: "bold" }}

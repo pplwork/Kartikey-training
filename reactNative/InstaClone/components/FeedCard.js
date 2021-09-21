@@ -72,7 +72,6 @@ const FeedCard = ({
   useEffect(() => {
     if (likes.includes(auth().currentUser.uid)) setLiked(true);
     isMounted.current = true;
-
     return () => {
       isMounted.current = false;
     };
@@ -148,7 +147,7 @@ const FeedCard = ({
               crashlytics().recordError(err);
               console.log("FeedCard.js : ", err);
             }
-            let pfp;
+            let pfp = "";
             try {
               pfp = await storage().refFromURL(author.Photo).getDownloadURL();
             } catch (err) {
@@ -202,7 +201,7 @@ const FeedCard = ({
       if (item.type == "image") {
         return (
           <AutoHeightImage
-            source={{ uri: item.source }}
+            source={item.source ? { uri: item.source } : null}
             width={win.width}
             maxHeight={400}
             minHeight={350}
@@ -227,7 +226,7 @@ const FeedCard = ({
                 videoIndex.current[item.source] = index;
                 return (videoRefs.current[item.source] = ref);
               }}
-              source={{ uri: item.source }}
+              source={item.source ? { uri: item.source } : null}
               style={{
                 height: Math.max(Math.min(heightScaled, 400), 350),
                 width: win.width,
@@ -240,7 +239,8 @@ const FeedCard = ({
               isMuted={true}
               onReadyForDisplay={(res) => {
                 const { height, width } = res.naturalSize;
-                setHeightScaled(height * (win.width / width));
+                if (isMounted.current)
+                  setHeightScaled(height * (win.width / width));
               }}
             />
             <View
@@ -288,11 +288,13 @@ const FeedCard = ({
     viewAreaCoveragePercentThreshold: 10,
   });
   const setItem = useCallback(({ viewableItems }) => {
-    setCurItem(viewableItems[0].index);
-    if (viewableItems[0].item.type == "image")
-      Image.getSize(viewableItems[0].item.source, (width, height) => {
-        setHeightItem(win.width * (height / width));
-      });
+    if (viewableItems[0]) {
+      setCurItem(viewableItems[0].index);
+      if (viewableItems[0].item.type == "image")
+        Image.getSize(viewableItems[0].item.source, (width, height) => {
+          setHeightItem(win.width * (height / width));
+        });
+    }
   }, []);
   const addComment = async ({ nativeEvent: { text } }) => {
     let cmnt;
@@ -350,7 +352,7 @@ const FeedCard = ({
           >
             <View style={styles.imageContainer}>
               <Image
-                source={{ uri: author.Photo }}
+                source={author.Photo ? { uri: author.Photo } : null}
                 style={styles.headerImage}
               />
             </View>
@@ -462,7 +464,7 @@ const FeedCard = ({
             }}
           >
             <Image
-              source={{ uri: likeUsers[0] }}
+              source={likeUsers[0] ? { uri: likeUsers[0] } : null}
               style={{
                 ...styles.likesPic,
               }}
@@ -478,7 +480,7 @@ const FeedCard = ({
             }}
           >
             <Image
-              source={{ uri: likeUsers[1] }}
+              source={likeUsers[1] ? { uri: likeUsers[1] } : null}
               style={{
                 ...styles.likesPic,
               }}
@@ -494,7 +496,7 @@ const FeedCard = ({
             }}
           >
             <Image
-              source={{ uri: likeUsers[2] }}
+              source={likeUsers[2] ? { uri: likeUsers[2] } : null}
               style={{
                 ...styles.likesPic,
               }}
@@ -570,7 +572,10 @@ const FeedCard = ({
 
       <View style={styles.inputContainer}>
         <View style={{ flex: 1 }}>
-          <Image source={{ uri: user.Photo }} style={styles.inputPhoto} />
+          <Image
+            source={user.Photo ? { uri: user.Photo } : null}
+            style={styles.inputPhoto}
+          />
         </View>
         <View style={{ flex: 6 }}>
           <TextInput

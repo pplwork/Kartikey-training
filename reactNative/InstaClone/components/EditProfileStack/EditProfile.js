@@ -56,7 +56,7 @@ const EditProfile = ({ navigation, user, setUser }) => {
     <View style={styles.container}>
       <View style={styles.imgLabelContainer}>
         <Image
-          source={{ uri: user.Photo }}
+          source={user.Photo ? { uri: user.Photo } : null}
           style={{
             width: 100,
             height: 100,

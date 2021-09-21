@@ -41,7 +41,6 @@ const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
-
     return () => (isMounted.current = false);
   }, []);
   const videoRefs = useRef({});
@@ -98,7 +97,11 @@ const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
           <View style={styles.mainContent}>
             {item.Stories[curIndex].content.type == "image" ? (
               <Image
-                source={{ uri: item.Stories[curIndex].content.source }}
+                source={
+                  item.Stories[curIndex].content.source
+                    ? { uri: item.Stories[curIndex].content.source }
+                    : null
+                }
                 resizeMode="contain"
                 style={{ width: "100%", height: "100%" }}
               />
@@ -108,7 +111,11 @@ const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
                 resizeMode="contain"
                 isLooping={false}
                 isMuted={false}
-                source={{ uri: item.Stories[curIndex].content.source }}
+                source={
+                  item.Stories[curIndex].content.source
+                    ? { uri: item.Stories[curIndex].content.source }
+                    : null
+                }
                 style={{ height: "100%", width: "100%" }}
               />
             )}
@@ -131,7 +138,7 @@ const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
           <View style={styles.userDetails}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Image
-                source={{ uri: item.Photo }}
+                source={item.Photo ? { uri: item.Photo } : null}
                 resizeMode="cover"
                 style={{
                   height: 30,
@@ -262,7 +269,7 @@ const HomeStories = ({ navigation }) => {
       storydata = storydata.filter((e) => e.Stories.length > 0);
       if (isMounted.current) setStories(storydata);
     })();
-  }, [user]);
+  }, [user.Following]);
   const StoryImageOpened = useCallback(
     (index) => {
       if (index == 0) {
@@ -285,7 +292,9 @@ const HomeStories = ({ navigation }) => {
           <Pressable onPress={() => StoryImageOpened(itemData.index)}>
             <View style={styles.imageContainer}>
               <Image
-                source={{ uri: itemData.item.Photo }}
+                source={
+                  itemData.item.Photo ? { uri: itemData.item.Photo } : null
+                }
                 style={{
                   ...styles.storyImage,
                   transform: [{ rotateZ: "0deg" }],
@@ -332,7 +341,9 @@ const HomeStories = ({ navigation }) => {
           >
             <View style={styles.imageContainer}>
               <Image
-                source={{ uri: itemData.item.Photo }}
+                source={
+                  itemData.item.Photo ? { uri: itemData.item.Photo } : null
+                }
                 style={styles.storyImage}
               />
             </View>

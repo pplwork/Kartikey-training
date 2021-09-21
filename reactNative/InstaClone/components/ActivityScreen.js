@@ -21,7 +21,7 @@ const ActivityItem = React.memo(
       <View key={index} style={styles.activityItemContainer}>
         <View>
           <Image
-            source={{ uri: userPic }}
+            source={userPic ? { uri: userPic } : null}
             style={{
               width: 48,
               height: 48,
@@ -39,7 +39,7 @@ const ActivityItem = React.memo(
         </View>
         <View>
           <Image
-            source={{ uri: postPic }}
+            source={postPic ? { uri: postPic } : null}
             style={{
               width: 48,
               height: 48,
@@ -56,7 +56,6 @@ const ActivityItem = React.memo(
 
 const ActivityScreen = () => {
   const isMounted = useRef(true);
-  const { user } = useSelector((state) => state);
   const [activities, setActivities] = useState([]);
   const [requestUser, setRequestUser] = useState(null);
   useEffect(() => {
@@ -67,7 +66,7 @@ const ActivityScreen = () => {
   }, []);
   useEffect(() => {
     (async () => {
-      let uri;
+      let uri = "";
       try {
         uri = await storage()
           .refFromURL(
@@ -108,7 +107,7 @@ const ActivityScreen = () => {
           .catch((err) => crashlytics().recordError(err));
       });
     })();
-  }, [user]);
+  }, []);
 
   const [scroll, setScroll] = useState(0);
   const scrollHandler = useCallback((e) => {
@@ -133,7 +132,7 @@ const ActivityScreen = () => {
         <View style={styles.followRequests}>
           <View>
             <Image
-              source={{ uri: requestUser }}
+              source={requestUser ? { uri: requestUser } : null}
               style={{ width: 48, height: 48, borderRadius: 48 }}
             />
             <View

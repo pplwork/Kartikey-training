@@ -67,23 +67,23 @@ const AddStoryScreen = ({ navigation }) => {
     })();
   }, []);
 
-  const getCaption = async () => {
-    return "";
-  };
-
   const startRecording = async () => {
-    setIsRecording(true);
     let video;
-    try {
-      video = await cameraRef.current.recordAsync({
-        quality: Camera.Constants.VideoQuality["720p"],
-        maxDuration: 15,
-        maxFileSize: 50000000,
-      });
-    } catch (err) {
-      crashlytics().recordError(err);
-      console.log("AddReelScreen.js : ", err);
-      return;
+    if (await Camera.getCameraPermissionsAsync()) {
+      setIsRecording(true);
+      try {
+        video = await cameraRef.current.recordAsync({
+          quality: Camera.Constants.VideoQuality["720p"],
+          maxDuration: 15,
+          maxFileSize: 10 * 1000 * 1000,
+          videoBitrate: 3 * 1000 * 1000,
+        });
+      } catch (err) {
+        crashlytics().recordError(err);
+        console.log("AddReelScreen.js : ", err);
+        if (isMounted.current) setIsRecording(false);
+        return;
+      }
     }
     if (isMounted.current) setIsRecording(false);
     if (isMounted.current) setVideoPath(video.uri);
@@ -160,6 +160,7 @@ const AddStoryScreen = ({ navigation }) => {
       <View style={styles.container}>
         {isFocused && (
           <Camera
+            useCamera2Api={true}
             style={styles.camera}
             type={type}
             flashMode={flash}
@@ -301,6 +302,8 @@ const AddStoryScreen = ({ navigation }) => {
               placeholder="Your caption..."
               multiline
               numberOfLines={5}
+              value={caption}
+              onChangeText={(e) => setCaption(e)}
             />
             <Button title="Post" onPress={postReel} />
           </View>

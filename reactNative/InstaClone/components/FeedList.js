@@ -17,7 +17,6 @@ const FeedList = ({ scrollHandler, navigation }) => {
 
   useEffect(() => {
     isMounted.current = true;
-
     return () => {
       isMounted.current = false;
     };
@@ -63,7 +62,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
                     .get()
                     .then((post) => {
                       let stuff = post.data();
-                      stuff.id = post.id;
+                      stuff.id = uid;
                       stuff.author = {
                         uid: stuff.author,
                         Username: doc.data().Username,
@@ -123,7 +122,7 @@ const FeedList = ({ scrollHandler, navigation }) => {
       }
       if (isMounted.current) setFeed(data);
     })();
-  }, [user]);
+  }, [user.Following]);
 
   const viewabilityConfig = useRef({
     viewAreaCoveragePercentThreshold: 40,

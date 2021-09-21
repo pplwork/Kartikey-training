@@ -30,7 +30,6 @@ const DiscoverPeopleList = () => {
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
-
     return () => {
       isMounted.current = false;
     };
@@ -56,7 +55,7 @@ const DiscoverPeopleList = () => {
       }
 
       // get image, mutuals,name
-      let people;
+      let people = [];
       try {
         people = await Promise.all(
           users.map(async (ele) => {
@@ -91,7 +90,7 @@ const DiscoverPeopleList = () => {
       if (isMounted.current)
         setDiscoverPeopleData(getRandom(people, Math.min(5, people.length)));
     })();
-  }, [user]);
+  }, [user.Following]);
 
   const keyExtractorIndex = useCallback((item, index) => index.toString(), []);
 

@@ -29,7 +29,6 @@ const MainStack = () => {
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
-
     return () => (isMounted.current = false);
   }, []);
   const navRef = useRef(null);
@@ -82,7 +81,28 @@ const MainStack = () => {
           );
           type = "image";
         }
-        let uploadTask = ref.putFile(multiSelected[i]);
+        let uri = multiSelected[i];
+        if (type == "image") {
+          try {
+            uri = (
+              await ImageResizer.createResizedImage(
+                photo.uri,
+                500,
+                500,
+                "JPEG",
+                70,
+                0,
+                null,
+                false,
+                { mode: "contain", onlyScaleDown: true }
+              )
+            ).uri;
+          } catch (err) {
+            crashlytics().recordError(err);
+            console.log("MainStack.js : ", err);
+          }
+        }
+        let uploadTask = ref.putFile(uri);
 
         promiseArray.push(
           uploadTask.then(() => {
@@ -124,7 +144,7 @@ const MainStack = () => {
       let type;
       if (["m4a", "mp4", "flv", "mkv", "wmv", "mov"].includes(extension)) {
         ref = storage().ref(
-          `videos/posts/${auth().currentUser.uid}/${post.id}/0.mp4}`
+          `videos/posts/${auth().currentUser.uid}/${post.id}/0.mp4`
         );
         type = "video";
       } else {
@@ -133,8 +153,29 @@ const MainStack = () => {
         );
         type = "image";
       }
+      let uri = selected;
+      if (type == "image") {
+        try {
+          uri = (
+            await ImageResizer.createResizedImage(
+              photo.uri,
+              500,
+              500,
+              "JPEG",
+              70,
+              0,
+              null,
+              false,
+              { mode: "contain", onlyScaleDown: true }
+            )
+          ).uri;
+        } catch (err) {
+          crashlytics().recordError(err);
+          console.log("MainStack.js : ", err);
+        }
+      }
       // upload file
-      let uploadTask = ref.putFile(selected);
+      let uploadTask = ref.putFile(uri);
       crashlytics().log("Uploading Post Data");
       try {
         await uploadTask;

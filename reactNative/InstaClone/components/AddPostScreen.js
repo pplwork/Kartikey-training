@@ -94,14 +94,14 @@ const AddPostScreen = () => {
             <Video
               isLooping
               shouldPlay
-              source={{ uri: selected }}
+              source={selected ? { uri: selected } : null}
               style={{ flex: 1 }}
               resizeMode="contain"
               isMuted
             />
           ) : (
             <Image
-              source={{ uri: selected }}
+              source={selected ? { uri: selected } : null}
               style={{ flex: 1, resizeMode: "contain" }}
             />
           ))}
@@ -157,7 +157,7 @@ const AddPostScreen = () => {
             }}
           >
             <Image
-              source={{ uri: item.node.image.uri }}
+              source={item.node.image.uri ? { uri: item.node.image.uri } : null}
               style={{ height: "100%", width: "100%", position: "relative" }}
             />
             {enableMultiselect && (

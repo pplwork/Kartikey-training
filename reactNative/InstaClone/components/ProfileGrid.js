@@ -26,7 +26,7 @@ const ProfileGrid = ({ navigation }) => {
 
   useEffect(() => {
     (async () => {
-      let posts;
+      let posts = [];
       try {
         posts = await Promise.all(
           user.Posts.map(async (post_id) => {
@@ -41,7 +41,7 @@ const ProfileGrid = ({ navigation }) => {
               return;
             }
             const length = data.content.length;
-            let thumbnail;
+            let thumbnail = "";
             try {
               thumbnail = await storage()
                 .refFromURL(data.content[0].source)
@@ -96,7 +96,7 @@ const ProfileGrid = ({ navigation }) => {
                   }}
                 >
                   <Image
-                    source={{ uri: item[0] && item[0].source }}
+                    source={item[0] ? { uri: item[0].source } : null}
                     style={styles.gridImage}
                   />
                 </Pressable>
@@ -136,7 +136,7 @@ const ProfileGrid = ({ navigation }) => {
                   }}
                 >
                   <Image
-                    source={{ uri: item[1] && item[1].source }}
+                    source={item[1] ? { uri: item[1].source } : null}
                     style={styles.gridImage}
                   />
                 </Pressable>
@@ -167,7 +167,7 @@ const ProfileGrid = ({ navigation }) => {
               <View style={styles.gridImageContainer}>
                 <Pressable onPress={() => imageOpened(item[2].id)}>
                   <Image
-                    source={{ uri: item[2] && item[2].source }}
+                    source={item[2] ? { uri: item[2].source } : null}
                     style={styles.gridImage}
                   />
                 </Pressable>

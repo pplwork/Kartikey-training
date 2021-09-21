@@ -43,7 +43,11 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
                 >
                   <Image
                     style={styles.imageThumbnail}
-                    source={{ uri: smallImage1 && smallImage1.thumbnail }}
+                    source={
+                      smallImage1 && smallImage1.thumbnail
+                        ? { uri: smallImage1.thumbnail }
+                        : null
+                    }
                   />
                 </Pressable>
               )}
@@ -65,7 +69,11 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
                 >
                   <Image
                     style={styles.imageThumbnail}
-                    source={{ uri: smallImage2 && smallImage2.thumbnail }}
+                    source={
+                      smallImage2 && smallImage2.thumbnail
+                        ? { uri: smallImage2.thumbnail }
+                        : null
+                    }
                   />
                 </Pressable>
               )}
@@ -88,7 +96,11 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
               >
                 <Image
                   style={styles.imageThumbnailLarge}
-                  source={{ uri: largeImage && largeImage.thumbnail }}
+                  source={
+                    largeImage && largeImage.thumbnail
+                      ? { uri: largeImage.thumbnail }
+                      : null
+                  }
                 />
               </Pressable>
             )}
@@ -116,7 +128,11 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
               >
                 <Image
                   style={styles.imageThumbnailLarge}
-                  source={{ uri: largeImage && largeImage.thumbnail }}
+                  source={
+                    largeImage && largeImage.thumbnail
+                      ? { uri: largeImage.thumbnail }
+                      : null
+                  }
                 />
               </Pressable>
             )}
@@ -139,7 +155,11 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
                 >
                   <Image
                     style={styles.imageThumbnail}
-                    source={{ uri: smallImage1 && smallImage1.thumbnail }}
+                    source={
+                      smallImage1 && smallImage1.thumbnail
+                        ? { uri: smallImage1.thumbnail }
+                        : null
+                    }
                   />
                 </Pressable>
               )}
@@ -161,7 +181,11 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
                 >
                   <Image
                     style={styles.imageThumbnail}
-                    source={{ uri: smallImage2 && smallImage2.thumbnail }}
+                    source={
+                      smallImage2 && smallImage2.thumbnail
+                        ? { uri: smallImage2.thumbnail }
+                        : null
+                    }
                   />
                 </Pressable>
               )}
@@ -195,7 +219,9 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
             >
               <Image
                 style={styles.imageThumbnail}
-                source={{ uri: row[0] && row[0].thumbnail }}
+                source={
+                  row[0] && row[0].thumbnail ? { uri: row[0].thumbnail } : null
+                }
               />
             </Pressable>
           )}
@@ -215,7 +241,9 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
             >
               <Image
                 style={styles.imageThumbnail}
-                source={{ uri: row[1] && row[1].thumbnail }}
+                source={
+                  row[1] && row[1].thumbnail ? { uri: row[1].thumbnail } : null
+                }
               />
             </Pressable>
           )}
@@ -235,7 +263,9 @@ const InstaGrid = ({ data, navigation, fetchPosts }) => {
             >
               <Image
                 style={styles.imageThumbnail}
-                source={{ uri: row[2] && row[2].thumbnail }}
+                source={
+                  row[2] && row[2].thumbnail ? { uri: row[2].thumbnail } : null
+                }
               />
             </Pressable>
           )}
