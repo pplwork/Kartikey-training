@@ -4,15 +4,17 @@
   background-color: #aadaff;
   justify-content: flex-start;
   align-items: center;
-  padding-top: 2rem;
+  padding-top: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
+  position: relative;
 }
 
 .map {
   height: 75vh;
   width: 75%;
+  position: relative;
   &__marker {
     font-size: 1rem;
     cursor: pointer;
@@ -114,5 +116,16 @@
   }
   &:active {
     box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.lastUpdated {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  & > div:nth-child(1) {
+    text-decoration: underline;
+    font-weight: bold;
   }
 }

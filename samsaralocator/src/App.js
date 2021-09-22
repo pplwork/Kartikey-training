@@ -1,26 +1,55 @@
 import React, { useEffect, useState } from "react";
 import GoogleMapReact from "google-map-react";
-import axios from "axios";
 import pin from "./assets/circle.png";
 import home from "./assets/home.png";
 import haversineDistance from "./utilities/haversine";
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, onSnapshot } from "firebase/firestore";
+import { homeBase, homeBaseAddress } from "./constants";
+import moment from "moment";
 import "./App.scss";
 
-const homeBase = [38.000641, -121.287399];
-const homeBaseAddress = "1633 E Bianchi Rd, Stockton, CA 95210";
-const App = () => {
-  useEffect(() => {
-    let interval = setInterval(getData, 10000);
-    return () => clearInterval(interval);
-  }, []);
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+};
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const App = () => {
   const [vehicleData, setVehicleData] = useState([]);
   const [active, setActive] = useState(null);
-
-  const getData = async () => {
-    const { data } = await axios.get("http://localhost:8000/");
-    setVehicleData(data);
-  };
+  const [lastUpdated, setLastUpdated] = useState(null);
+  // Listening to changes on firestore
+  useEffect(() => {
+    const vehiclesCollection = collection(db, "vehicles");
+    const unsubscribe = onSnapshot(
+      vehiclesCollection,
+      (snapshot) => {
+        let data = snapshot.docs.map((doc) => doc.data());
+        setVehicleData(data);
+        setLastUpdated(
+          moment(
+            data.reduce((prev, cur) => {
+              let d1 = moment(cur.location.time);
+              let d2 = moment(prev.location.time);
+              if (d1 < d2) return prev;
+              else return cur;
+            }).location.time
+          ).format("YYYY-MM-DD HH:mm:ss")
+        );
+      },
+      (err) => {
+        console.log("Error Fetching From Firestore : ", err);
+      }
+    );
+    return unsubscribe;
+  }, []);
 
   const Card = ({ name, driver, id }) => {
     return (
@@ -46,11 +75,15 @@ const App = () => {
 
   return (
     <div className="container">
+      <div className="lastUpdated">
+        <div>Last Updated</div>
+        <div>{lastUpdated}</div>
+      </div>
       <div className="map">
         <GoogleMapReact
           defaultCenter={homeBase}
           defaultZoom={11}
-          bootstrapURLKeys={{ key: "AIzaSyAywJ46VQknaZbBSC5aZKgkQHffaoqEDII" }}
+          bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_MAP_API_KEY }}
         >
           <div
             className="map__marker"
@@ -102,7 +135,7 @@ const App = () => {
       <div className="buttonGroup">
         <button className="btn_download">
           <a href="http://localhost:8000/invite" download>
-            Download CSV
+            Download vehicles to invite
           </a>
         </button>
       </div>
