@@ -134,7 +134,7 @@ const App = () => {
       </div>
       <div className="buttonGroup">
         <button className="btn_download">
-          <a href="http://localhost:8000/invite" download>
+          <a href="https://samsara-pplwork.herokuapp.com/invite" download>
             Download vehicles to invite
           </a>
         </button>
