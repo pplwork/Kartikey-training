@@ -21,6 +21,6 @@ Connect your device with usb debugging enabled and run `npm run android`.
 9) Miscl Informational Modals.
 
 ## Bugs As Of Now
-1) Android automatically denying Storage, Audio Permissions when installing through apk (even though AndroidManifest.xml, app.json is properly setup to allow the permissions)
+1) Android automatically denying Storage, Audio Permissions when installing through apk (even though AndroidManifest.xml, app.json is properly setup to allow the permissions). Workaround is to manually give permissions to the app from settings.
 2) Camera black screen on first mount.
 3) Data Fetching is slow as the server is located in the US region of the free tier of firebase.
