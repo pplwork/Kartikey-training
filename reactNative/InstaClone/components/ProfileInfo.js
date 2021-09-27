@@ -118,7 +118,9 @@ const UserListCard = ({ id, navigation }) => {
           };
       }}
       onPress={() => {
-        navigation.navigate("User", { id });
+        if (auth().currentUser.uid == id)
+          navigation.navigate("AppTabs", { screen: "Profile" });
+        else navigation.navigate("User", { id });
       }}
     >
       <View style={{ marginRight: 10 }}>

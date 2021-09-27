@@ -40,6 +40,7 @@ const timeFormatter = (createdAt) => {
 const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
   const isMounted = useRef(true);
   useEffect(() => {
+    isMounted.current = true;
     return () => (isMounted.current = false);
   }, []);
   const videoRefs = useRef({});
@@ -260,7 +261,7 @@ const ProfileStories = ({ navigation }) => {
         console.log("ProfileStories.js : ", err);
         return;
       }
-
+      str = str.filter((e) => e != undefined);
       let grouped = [];
       while (str.length) {
         grouped.push(

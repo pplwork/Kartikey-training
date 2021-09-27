@@ -81,7 +81,7 @@ const FeedCard = ({
   }, [likes]);
   useEffect(() => {
     (async () => {
-      for (following of user.Following) {
+      for (const following of user.Following) {
         if (likes.includes(following)) {
           try {
             let { Username } = (
@@ -360,8 +360,9 @@ const FeedCard = ({
           <Text
             style={styles.headerText}
             onPress={() => {
-              if (author.uid == auth().currentUser.uid) return;
-              navigation.navigate("User", { id: author.uid });
+              if (author.uid == auth().currentUser.uid)
+                navigation.navigate("AppTabs", { screen: "Profile" });
+              else navigation.navigate("User", { id: author.uid });
             }}
           >
             {author.Username}
@@ -516,9 +517,12 @@ const FeedCard = ({
               <>
                 <Text
                   style={{ fontWeight: "bold" }}
-                  onPress={() =>
-                    navigation.navigate("User", { id: commonLike.uid })
-                  }
+                  onPress={() => {
+                    console.log(commonLike);
+                    if (auth().currentUser.uid == commonLike.uid)
+                      navigation.navigate("AppTabs", { screen: "Profile" });
+                    else navigation.navigate("User", { id: commonLike.uid });
+                  }}
                 >
                   {commonLike.Username}
                 </Text>{" "}
@@ -536,7 +540,11 @@ const FeedCard = ({
         <Text>
           <Text
             style={{ fontWeight: "bold" }}
-            onPress={() => navigation.navigate("User", { id: author.uid })}
+            onPress={() => {
+              if (auth().currentUser.uid == author.uid)
+                navigation.navigate("AppTabs", { screen: "Profile" });
+              else navigation.navigate("User", { id: author.uid });
+            }}
           >
             {author.Username + " "}
           </Text>

@@ -10,6 +10,8 @@ import {
   FlatList,
   Pressable,
   SafeAreaView,
+  Modal,
+  TextInput,
 } from "react-native";
 
 import firestore from "@react-native-firebase/firestore";
@@ -22,11 +24,12 @@ import colors from "../constants/colors";
 
 import { createThumbnail } from "react-native-create-thumbnail";
 
-import { Entypo } from "@expo/vector-icons";
+import { Entypo, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-
+import { Video } from "expo-av";
+import Carousel from "react-native-snap-carousel";
 import { FontAwesome5 } from "@expo/vector-icons";
-
+import * as Progress from "react-native-progress";
 import * as _ from "lodash";
 
 const parseThis = (num) => {
@@ -39,6 +42,163 @@ const parseThis = (num) => {
 };
 
 const win = Dimensions.get("window");
+
+const timeFormatter = (createdAt) => {
+  const seconds = Math.floor((Date.now() - createdAt.toDate()) / 1000);
+  if (seconds < 60) return `${seconds} seconds ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minutes ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hours ago`;
+  else return createdAt.toDate().toDateString();
+};
+
+const StoryRenderItem = ({ item, index, carouselRef, carouselIndex }) => {
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => (isMounted.current = false);
+  }, []);
+  const videoRefs = useRef({});
+  const [curIndex, setCurIndex] = useState(0);
+  const [progressBar, setProgressBar] = useState([]);
+  const { user } = useSelector((state) => state);
+  useEffect(() => {
+    setProgressBar(new Array(item.length).fill(0));
+  }, []);
+  useEffect(() => {
+    // if current item is not visible
+    if (index != carouselIndex) {
+      for (const key in videoRefs.current) {
+        videoRefs.current[key] ? videoRefs.current[key].pauseAsync() : null;
+      }
+    } else {
+      videoRefs.current[curIndex]
+        ? videoRefs.current[curIndex].playAsync()
+        : null;
+    }
+  }, [carouselIndex, curIndex]);
+  return (
+    <View style={styles.storyModalContainer}>
+      <Pressable
+        style={{ flex: 1 }}
+        onPress={(e) => {
+          let x = e.nativeEvent.locationX;
+          // tapped on 20% of left side
+          if (x < win.width / 5) {
+            // if i am on first item
+            if (curIndex == 0) return carouselRef.current.snapToPrev();
+            setProgressBar((prev) => {
+              let t = prev;
+              t[curIndex] = 0;
+              t[curIndex - 1] = 0;
+              return t;
+            });
+            setCurIndex((prev) => prev - 1);
+          }
+          // tapped on more than 20% of left side
+          else {
+            // if i am on last item
+            if (curIndex == item.length - 1)
+              return carouselRef.current.snapToNext();
+            setProgressBar((prev) => {
+              let t = prev;
+              t[curIndex] = 1;
+              return t;
+            });
+            setCurIndex((prev) => prev + 1);
+          }
+        }}
+      >
+        <View style={styles.storyContent}>
+          <View style={styles.mainContent}>
+            {item[curIndex].content.type == "image" ? (
+              <Image
+                source={
+                  item[curIndex].content.source
+                    ? { uri: item[curIndex].content.source }
+                    : null
+                }
+                resizeMode="contain"
+                style={{ width: "100%", height: "100%" }}
+              />
+            ) : (
+              <Video
+                ref={(ref) => (videoRefs.current[curIndex] = ref)}
+                resizeMode="contain"
+                isLooping={false}
+                isMuted={false}
+                source={
+                  item[curIndex].content.source
+                    ? { uri: item[curIndex].content.source }
+                    : null
+                }
+                style={{ height: "100%", width: "100%" }}
+              />
+            )}
+          </View>
+          <View style={styles.progressBars}>
+            {item.map((story, index) => {
+              return (
+                <Progress.Bar
+                  key={index}
+                  unfilledColor="#888888"
+                  height={2}
+                  progress={progressBar[index]}
+                  width={win.width / item.length - 8}
+                  color="#fff"
+                  borderWidth={0}
+                />
+              );
+            })}
+          </View>
+          <View style={styles.userDetails}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Image
+                source={user.Photo ? { uri: user.Photo } : null}
+                resizeMode="cover"
+                style={{
+                  height: 30,
+                  width: 30,
+                  borderRadius: 30,
+                }}
+              />
+              <Text style={{ color: "#fff", marginLeft: 10 }}>
+                {user.Username}
+              </Text>
+              <Text style={{ color: "#fff", fontSize: 12, marginLeft: 10 }}>
+                {timeFormatter(item[curIndex].createdAt)}
+              </Text>
+            </View>
+            <MaterialCommunityIcons
+              name="dots-vertical"
+              size={28}
+              color="#fff"
+            />
+          </View>
+        </View>
+      </Pressable>
+      <View style={styles.storyCommentField}>
+        <TextInput
+          multiline
+          placeholder="Send message"
+          placeholderTextColor="#dfdfdf"
+          style={{
+            borderWidth: 1,
+            borderColor: "#fff",
+            color: "#fff",
+            flex: 1,
+            borderRadius: 1000,
+            marginRight: 22,
+            paddingHorizontal: 20,
+            paddingVertical: 5,
+          }}
+        />
+        <Ionicons name="paper-plane-outline" size={28} color="#fff" />
+      </View>
+    </View>
+  );
+};
 
 const UserListCard = ({ id, navigation }) => {
   const [name, setName] = useState("");
@@ -131,7 +291,9 @@ const UserListCard = ({ id, navigation }) => {
           };
       }}
       onPress={() => {
-        navigation.navigate("User", { id });
+        if (auth().currentUser.uid == id)
+          navigation.navigate("AppTabs", { screen: "Profile" });
+        else navigation.navigate("User", { id });
       }}
     >
       <View style={{ marginRight: 10 }}>
@@ -184,7 +346,7 @@ const UserListCard = ({ id, navigation }) => {
   );
 };
 
-const ProfileInfo = ({ profileUser }) => {
+const ProfileInfo = ({ profileUser, navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
@@ -332,7 +494,7 @@ const ProfileInfo = ({ profileUser }) => {
   );
 };
 
-const ProfileStories = ({ profileUser }) => {
+const ProfileStories = ({ profileUser, navigation }) => {
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
@@ -341,6 +503,10 @@ const ProfileStories = ({ profileUser }) => {
     };
   }, []);
   const [stories, setStories] = useState([]);
+  const carouselRef = useRef(null);
+  const [storyVisible, setStoryVisible] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
   useEffect(() => {
     (async () => {
       let str = [];
@@ -358,7 +524,7 @@ const ProfileStories = ({ profileUser }) => {
                 console.log("UserPage.js : ", err);
                 return;
               }
-              let uri;
+              let uri = "";
               try {
                 uri = await storage()
                   .refFromURL(data.content.source)
@@ -368,13 +534,15 @@ const ProfileStories = ({ profileUser }) => {
                 console.log("UserPage.js : ", err);
                 return;
               }
+              let thumbnail = uri;
               if (data.content.type == "video")
-                uri = (await createThumbnail({ url: uri })).path;
+                thumbnail = (await createThumbnail({ url: uri })).path;
               return {
                 ...data,
                 content: {
                   source: uri,
                   type: data.content.type,
+                  thumbnail,
                 },
               };
             } catch (err) {
@@ -390,21 +558,47 @@ const ProfileStories = ({ profileUser }) => {
         return;
       }
       str = str.filter((e) => e != undefined);
-      if (isMounted.current) setStories(str);
+      let grouped = [];
+      while (str.length) {
+        grouped.push(
+          str.filter((story) => {
+            return (
+              story.createdAt.toDate().toLocaleDateString() ==
+              str[0].createdAt.toDate().toLocaleDateString()
+            );
+          })
+        );
+        str = str.filter(
+          (story) =>
+            story.createdAt.toDate().toLocaleDateString() !=
+            str[0].createdAt.toDate().toLocaleDateString()
+        );
+      }
+      if (isMounted.current) setStories(grouped);
     })();
   }, []);
   const keyExtractor = useCallback((item, index) => index.toString(), []);
-  const renderItem = useCallback(({ item }) => {
+  const renderItem = useCallback(({ item, index }) => {
     return (
       <View style={styles.storyImgLabelContainer}>
-        <View style={styles.storyImgContainer}>
+        <Pressable
+          style={styles.storyImgContainer}
+          onPress={() => {
+            setCarouselIndex(index);
+            setStoryVisible(true);
+          }}
+        >
           <Image
-            source={item.content.source ? { uri: item.content.source } : null}
+            source={
+              item[0].content.thumbnail
+                ? { uri: item[0].content.thumbnail }
+                : null
+            }
             style={styles.storyImage}
           />
-        </View>
+        </Pressable>
         <Text ellipsizeMode="tail" numberOfLines={1} style={{ fontSize: 12 }}>
-          {item.createdAt.toDate().toLocaleDateString()}
+          {item[0].createdAt.toDate().toLocaleDateString()}
         </Text>
       </View>
     );
@@ -424,6 +618,34 @@ const ProfileStories = ({ profileUser }) => {
           renderItem={renderItem}
         />
       </View>
+      <Modal
+        visible={storyVisible}
+        style={styles.storyModal}
+        onRequestClose={() => setStoryVisible(false)}
+        animationType="fade"
+        transparent={true}
+        onShow={() => {
+          carouselRef.current.snapToItem(carouselIndex);
+        }}
+      >
+        <Carousel
+          ref={(ref) => (carouselRef.current = ref)}
+          data={stories}
+          renderItem={(props) => (
+            <StoryRenderItem
+              {...props}
+              carouselRef={carouselRef}
+              carouselIndex={carouselIndex}
+            />
+          )}
+          onSnapToItem={(index) => setCarouselIndex(index)}
+          sliderWidth={win.width}
+          layout="default"
+          itemWidth={win.width}
+          sliderHeight={win.height}
+          itemHeight={win.height}
+        />
+      </Modal>
     </>
   );
 };
@@ -697,7 +919,7 @@ const UserPage = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <ProfileInfo profileUser={profileUser} />
+        <ProfileInfo profileUser={profileUser} navigation={navigation} />
         <View
           style={{
             width: "95%",
@@ -748,7 +970,9 @@ const UserPage = ({ route, navigation }) => {
             <Text>Message</Text>
           </TouchableOpacity>
         </View>
-        {profileUser && <ProfileStories profileUser={profileUser} />}
+        {profileUser && (
+          <ProfileStories profileUser={profileUser} navigation={navigation} />
+        )}
         {profileUser && (
           <ProfileGrid navigation={navigation} profileUser={profileUser} />
         )}
@@ -855,5 +1079,51 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "flex-start",
     alignContent: "flex-start",
+  },
+  storyModal: {
+    height: win.height,
+    width: win.width,
+    borderWidth: 2,
+    borderColor: "red",
+  },
+  storyModalContainer: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+  storyContent: {
+    flex: 1,
+  },
+  storyCommentField: {
+    width: "100%",
+    height: 85,
+    paddingHorizontal: 10,
+    paddingTop: 5,
+    paddingBottom: 30,
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  progressBars: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    position: "absolute",
+    top: 16,
+    left: 0,
+  },
+  userDetails: {
+    width: "100%",
+    paddingHorizontal: 10,
+    alignSelf: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    top: 40,
+    position: "absolute",
+  },
+  mainContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
   },
 });

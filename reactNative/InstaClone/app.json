@@ -33,6 +33,12 @@
       "@react-native-firebase/app",
       "@react-native-firebase/crashlytics",
       "@react-native-firebase/perf"
+    ],
+    "permissions": [
+      "CAMERA",
+      "RECORD_AUDIO",
+      "READ_EXTERNAL_STORAGE",
+      "WRITE_EXTERNAL_STORAGE"
     ]
   }
 }

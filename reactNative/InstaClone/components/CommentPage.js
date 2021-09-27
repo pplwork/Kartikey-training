@@ -92,7 +92,9 @@ const CommentItem = ({ item, index, navigation }) => {
                 <Text
                   style={[{ fontWeight: "bold" }, styles.commentText]}
                   onPress={() => {
-                    navigation.navigate("User", { id: item.author.uid });
+                    if (auth().currentUser.uid == item.author.uid)
+                      navigation.navigate("AppTabs", { screen: "Profile" });
+                    else navigation.navigate("User", { id: item.author.uid });
                   }}
                 >
                   {item.author.Username}
