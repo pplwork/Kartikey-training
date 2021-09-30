@@ -4,13 +4,16 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "rimraf && tsc"
+    "build": "rimraf && tsc",
+    "watch": "tsc --watch"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@types/react-native": "^0.65.0",
+    "mobx": "^6.3.3",
+    "mobx-react-lite": "^3.2.1",
     "react": "^17.0.2",
     "react-native": "^0.65.1"
   },
